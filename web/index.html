@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gridiron Sim — Player Stats</title>
+<link rel="stylesheet" href="styles.css">
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="logo">GS</span>
+    <div>
+      <h1>Gridiron Sim</h1>
+      <p class="sub">NFL player stats · DK &amp; FD scoring · updated nightly</p>
+    </div>
+  </div>
+  <div class="controls">
+    <label>Season
+      <select id="season"></select>
+    </label>
+    <label>Week
+      <select id="week">
+        <option value="all">Season total</option>
+      </select>
+    </label>
+    <label>Position
+      <select id="position">
+        <option value="ALL">All</option>
+        <option value="QB">QB</option>
+        <option value="RB">RB</option>
+        <option value="WR">WR</option>
+        <option value="TE">TE</option>
+      </select>
+    </label>
+    <label>Search
+      <input id="search" type="search" placeholder="player or team">
+    </label>
+  </div>
+</header>
+
+<main>
+  <div id="status" class="status">Loading…</div>
+  <div class="table-wrap">
+    <table id="stats">
+      <thead></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</main>
+
+<footer class="foot">
+  Data: nflverse · Scoring: DraftKings classic / FanDuel · Click any column header to sort.
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
