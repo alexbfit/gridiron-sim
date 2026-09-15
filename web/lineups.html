@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gridiron Sim — Lineup Builder</title>
+<link rel="stylesheet" href="styles.css">
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="logo">GS</span>
+    <div>
+      <h1>Gridiron Sim</h1>
+      <p class="sub">Lineup builder · DK &amp; FD</p>
+    </div>
+    <nav class="nav"><a href="index.html">Stats</a><a href="lineups.html" class="active">Lineups</a></nav>
+  </div>
+  <div class="controls">
+    <label>Slate <select id="slate"></select></label>
+    <label>Contest
+      <select id="contest">
+        <option value="cash">Cash (50/50, double-up)</option>
+        <option value="gpp">GPP (tournament)</option>
+      </select>
+    </label>
+    <label>Lineups <input id="nLineups" type="number" min="1" max="150" value="1"></label>
+    <label>Position <select id="posFilter">
+      <option value="ALL">All</option><option>QB</option><option>RB</option><option>WR</option><option>TE</option><option>DST</option>
+    </select></label>
+    <label>Search <input id="search" type="search" placeholder="player or team"></label>
+  </div>
+</header>
+
+<main class="builder">
+  <section class="pool">
+    <div id="status" class="status">Loading…</div>
+    <div class="table-wrap pool-wrap">
+      <table id="pool"><thead></thead><tbody></tbody></table>
+    </div>
+  </section>
+
+  <aside class="side">
+    <details class="panel" open>
+      <summary>Rules</summary>
+      <div class="grid2">
+        <label>Min salary used <input id="minSalary" type="number" step="100" value="0"></label>
+        <label>Max per team <input id="maxTeam" type="number" min="1" max="8" value="4"></label>
+        <label>QB stack (pass catchers) <select id="stack"><option value="0">none</option><option value="1" selected>QB + 1</option><option value="2">QB + 2</option></select></label>
+        <label>Bring-back from opponent <select id="bringback"><option value="0">no</option><option value="1">yes</option></select></label>
+        <label>Max exposure % <input id="maxExp" type="number" min="5" max="100" value="60"></label>
+        <label>Min unique players / lineup <input id="minUniq" type="number" min="1" max="8" value="2"></label>
+        <label>Randomness (GPP) % <input id="rand" type="number" min="0" max="50" value="15"></label>
+        <label>Exclude Q / D <select id="exclQ"><option value="0">no</option><option value="1">yes</option></select></label>
+      </div>
+      <p class="hint" id="objHint"></p>
+    </details>
+    <div class="actions">
+      <button id="generate" class="primary">Generate</button>
+      <button id="exportBtn" disabled>Export CSV</button>
+      <button id="clearBtn">Clear locks</button>
+    </div>
+    <div id="results" class="results"></div>
+  </aside>
+</main>
+
+<footer class="foot">
+  Projections: baseline model (recent form → salary prior → opponent → Vegas). Optimizer runs in your browser (GLPK).
+</footer>
+
+<script type="module" src="lineups.js"></script>
+</body>
+</html>

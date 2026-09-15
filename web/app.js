@@ -161,6 +161,7 @@
   // ---- data ----------------------------------------------------------
   async function fetchAll(query) {
     // PostgREST caps at 1000 rows by default; page through.
+    // The query MUST carry an .order() — without it pages overlap and rows go missing.
     const page = 1000;
     let from = 0, out = [];
     for (;;) {
@@ -196,10 +197,10 @@
     const season = Number(seasonEl.value);
     let data;
     if (weekEl.value === "all") {
-      data = await fetchAll(supa.from("player_season_stats").select("*").eq("season", season).eq("season_type", "REG"));
+      data = await fetchAll(supa.from("player_season_stats").select("*").eq("season", season).eq("season_type", "REG").order("player_id"));
     } else {
       data = await fetchAll(supa.from("player_game_stats").select("*")
-        .eq("season", season).eq("week", Number(weekEl.value)).eq("season_type", "REG"));
+        .eq("season", season).eq("week", Number(weekEl.value)).eq("season_type", "REG").order("player_id"));
       data.forEach(r => { r.fumbles_lost = (r.rushing_fumbles_lost || 0) + (r.receiving_fumbles_lost || 0); });
     }
     rows = data;

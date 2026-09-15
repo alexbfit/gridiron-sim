@@ -1,0 +1,48 @@
+name: slate-pipeline
+
+# Drop a DraftKings / FanDuel salary CSV into data/slates/ and push.
+# This imports it (slates + slate_salaries) and writes baseline projections.
+
+on:
+  push:
+    paths:
+      - "data/slates/**.csv"
+      - "jobs/project.py"
+  workflow_dispatch:
+    inputs:
+      reproject:
+        description: "Slate key to re-project (e.g. DK-2026-02-main); blank = import changed CSVs"
+        required: false
+        default: ""
+
+jobs:
+  slate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r jobs/requirements.txt
+      - name: Find changed salary files
+        id: changed
+        run: |
+          if [ -n "${{ github.event.inputs.reproject }}" ]; then
+            echo "files=" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "files=$(ls data/slates/*.csv | tr '\n' ' ')" >> $GITHUB_OUTPUT
+          else
+            echo "files=$(git diff --name-only HEAD~1 HEAD -- 'data/slates/*.csv' | tr '\n' ' ')" >> $GITHUB_OUTPUT
+          fi
+      - name: Import + project
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          if [ -n "${{ github.event.inputs.reproject }}" ]; then
+            python jobs/pipeline.py --reproject "${{ github.event.inputs.reproject }}"
+          else
+            python jobs/pipeline.py ${{ steps.changed.outputs.files }}
+          fi

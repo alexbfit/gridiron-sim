@@ -29,3 +29,9 @@ jobs:
           else
             python jobs/ingest.py
           fi
+      - name: Re-project latest slate (lines / new games)
+        if: ${{ github.event.inputs.seasons == '' }}
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: python jobs/project.py --latest || echo "no slate yet"
