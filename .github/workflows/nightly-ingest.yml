@@ -34,4 +34,6 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-        run: python jobs/project.py --latest || echo "no slate yet"
+        run: |
+          python jobs/project.py --latest || echo "no slate yet"
+          python jobs/simulate.py --latest || echo "no slate yet"

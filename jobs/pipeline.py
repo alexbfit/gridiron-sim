@@ -1,5 +1,5 @@
 """
-Slate-day pipeline: import one or more salary CSVs, then project each slate.
+Slate-day pipeline: import one or more salary CSVs, then project + simulate each slate.
 
   python jobs/pipeline.py data/slates/DKSalaries_2026_wk02_main.csv [more.csv ...]
   python jobs/pipeline.py --reproject DK-2026-02-main       # projections only
@@ -49,6 +49,7 @@ def main():
         keys.append(args.reproject)
     for k in keys:
         run("project.py", "--slate-key", k)
+        run("simulate.py", "--slate-key", k)
     if not keys:
         print("nothing to do")
 

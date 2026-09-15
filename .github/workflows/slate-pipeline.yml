@@ -8,6 +8,7 @@ on:
     paths:
       - "data/slates/**.csv"
       - "jobs/project.py"
+      - "jobs/simulate.py"
   workflow_dispatch:
     inputs:
       reproject:

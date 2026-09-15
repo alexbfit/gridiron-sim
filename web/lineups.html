@@ -54,6 +54,7 @@
         <label>Min unique players / lineup <input id="minUniq" type="number" min="1" max="8" value="2"></label>
         <label>Randomness (GPP) % <input id="rand" type="number" min="0" max="50" value="15"></label>
         <label>Exclude Q / D <select id="exclQ"><option value="0">no</option><option value="1">yes</option></select></label>
+        <label title="Build this many × lineups, keep the best by simulated median (cash) or 90th percentile (GPP)">Candidates × (needs sim) <input id="poolMult" type="number" min="1" max="5" value="2"></label>
       </div>
       <p class="hint" id="objHint"></p>
     </details>
@@ -67,7 +68,7 @@
 </main>
 
 <footer class="foot">
-  Projections: baseline model (recent form → salary prior → opponent → Vegas). Optimizer runs in your browser (GLPK).
+  Projections: Monte Carlo game sim (falls back to the baseline model). Lineup p10/p50/p90 are totals across the same simulated games, so stacks and game correlation are priced in. Optimizer runs in your browser (GLPK).
 </footer>
 
 <script type="module" src="lineups.js"></script>

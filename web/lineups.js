@@ -16,6 +16,7 @@ let supa, glpk;
 let slates = [], slate = null, players = [], byId = new Map();
 let locks = new Set(), excludes = new Set(), overrides = new Map();
 let lineups = [];
+let sim = null;                  // { n, index: Map(site_player_id -> Float32Array) }
 let sortKey = "mean", sortAsc = false;
 
 function setStatus(msg, err) { statusEl.textContent = msg; statusEl.classList.toggle("error", !!err); }
@@ -52,9 +53,39 @@ async function loadBoard() {
     p85: Number(r.p85), p15: Number(r.p15), floor: Number(r.floor), ceiling: Number(r.ceiling), stdev: Number(r.stdev),
     salary: Number(r.salary), boom_prob: Number(r.boom_prob), bust_prob: Number(r.bust_prob) }));
   byId = new Map(players.map(p => [p.site_player_id, p]));
-  locks.clear(); excludes.clear(); overrides.clear(); lineups = [];
+  locks.clear(); excludes.clear(); overrides.clear(); lineups = []; sim = null;
   renderResults();
   render();
+  loadSim().catch(e => { console.warn("sim matrix unavailable", e); render(); });
+}
+
+async function loadSim() {
+  const url = slate.sim_meta?.url;
+  if (!url) return;
+  const res = await fetch(url, { cache: "no-cache" });
+  if (!res.ok) throw new Error("sim fetch " + res.status);
+  let text;
+  if (typeof DecompressionStream === "function" && !res.headers.get("content-encoding")) {
+    text = await new Response(res.body.pipeThrough(new DecompressionStream("gzip"))).text();
+  } else {
+    text = await res.text();
+  }
+  const data = JSON.parse(text);
+  const index = new Map();
+  data.players.forEach((id, i) => index.set(id, Float32Array.from(data.scores[i])));
+  sim = { n: data.n, index, generated_at: data.generated_at };
+  render();
+}
+
+function lineupSim(ids) {
+  if (!sim) return null;
+  const tot = new Float32Array(sim.n);
+  let covered = 0;
+  ids.forEach(id => { const a = sim.index.get(id); if (a) { covered++; for (let i = 0; i < sim.n; i++) tot[i] += a[i]; }
+    else { const m = proj(byId.get(id)); for (let i = 0; i < sim.n; i++) tot[i] += m; } });
+  const sorted = Float32Array.from(tot).sort();
+  const q = (p) => sorted[Math.min(sim.n - 1, Math.floor(p * sim.n))];
+  return { p10: q(0.10), p50: q(0.50), p90: q(0.90), p98: q(0.98), covered };
 }
 
 function proj(p) { return overrides.has(p.site_player_id) ? overrides.get(p.site_player_id) : (p.mean ?? 0); }
@@ -133,7 +164,9 @@ function render() {
     frag.appendChild(r);
   });
   tbody.replaceChildren(frag);
-  setStatus(`${slate.site} · ${slate.season} wk ${slate.week} · ${rows.length} players · ${locks.size} locked · ${excludes.size} excluded`);
+  const nSim = players.filter(p => p.method === "sim").length;
+  setStatus(`${slate.site} · ${slate.season} wk ${slate.week} · ${rows.length} players · ${nSim ? nSim + " sim-projected" : "baseline projections"}`
+    + (sim ? ` · sim matrix ${sim.n} sims loaded` : "") + ` · ${locks.size} locked · ${excludes.size} excluded`);
   $("objHint").textContent = $("contest").value === "cash"
     ? "Cash: maximizes projected points with a floor tilt (0.8·proj + 0.2·floor)."
     : "GPP: maximizes ceiling-tilted score (0.6·proj + 0.4·p85), random jitter for diversity, stacks enforced.";
@@ -194,7 +227,9 @@ async function generate() {
     stack: contest === "gpp" ? +$("stack").value : 0, bringback: contest === "gpp" && $("bringback").value === "1",
     maxExp: (+$("maxExp").value || 100) / 100, minUniq: +$("minUniq").value || 1,
     rand: contest === "gpp" ? (+$("rand").value || 0) / 100 : 0, exclQ: $("exclQ").value === "1",
+    poolMult: sim ? Math.max(1, Math.min(5, +$("poolMult").value || 1)) : 1,
   };
+  const nCand = Math.min(300, n * opts.poolMult);
   const pool = players.filter(p => !excludes.has(p.site_player_id) && p.mean != null && proj(p) > 0 &&
     !["OUT","IR","O"].includes((p.status || "").toUpperCase()) &&
     !(opts.exclQ && ["Q","D"].includes((p.status || "").toUpperCase())));
@@ -203,8 +238,8 @@ async function generate() {
   lineups = []; $("generate").disabled = true;
   const usage = new Map(); const blocked = new Set();
   try {
-    for (let k = 0; k < n; k++) {
-      setStatus(`Solving lineup ${k + 1} of ${n}…`);
+    for (let k = 0; k < nCand; k++) {
+      setStatus(`Solving lineup ${k + 1} of ${nCand}…`);
       const jitter = new Map(pool.map(p => [p.site_player_id, opts.rand ? 1 + opts.rand * gauss() * (p.stdev / Math.max(p.mean, 1)) : 1]));
       opts.score = (p) => {
         const m = proj(p);
@@ -219,20 +254,36 @@ async function generate() {
       }
       const ids = Object.entries(res.result.vars).filter(([, v]) => v > 0.5).map(([name]) => name.slice(1));
       const L = summarize(ids); lineups.push(L);
-      ids.forEach(id => { const u = (usage.get(id) || 0) + 1; usage.set(id, u); if (!locks.has(id) && u >= Math.ceil(opts.maxExp * n)) blocked.add(id); });
-      renderResults();
+      ids.forEach(id => { const u = (usage.get(id) || 0) + 1; usage.set(id, u); if (!locks.has(id) && u >= Math.ceil(opts.maxExp * nCand)) blocked.add(id); });
+      if (k % 5 === 4 || k === nCand - 1) renderResults();
       await new Promise(r => setTimeout(r));
     }
+    // rank by the sim metric that matters for the contest, keep the best n
+    if (sim && lineups.length > 1) {
+      const key = contest === "cash" ? "p50" : "p90";
+      lineups.sort((a, b) => (b.sim?.[key] ?? b.proj) - (a.sim?.[key] ?? a.proj));
+    }
+    // keep the best n while still honouring the exposure cap on the final set
+    const cap = Math.max(1, Math.ceil(opts.maxExp * n)), used = new Map(), kept = [];
+    for (const L of lineups) {
+      if (kept.length >= n) break;
+      if (L.ids.every(id => locks.has(id) || (used.get(id) || 0) < cap)) {
+        kept.push(L); L.ids.forEach(id => used.set(id, (used.get(id) || 0) + 1));
+      }
+    }
+    lineups = kept;
+    renderResults();
   } catch (e) { setStatus("Optimizer error: " + (e.message || e), true); console.error(e); }
   $("generate").disabled = false; $("exportBtn").disabled = !lineups.length;
-  if (lineups.length) setStatus(`${lineups.length} lineup${lineups.length > 1 ? "s" : ""} built · avg proj ${f1(lineups.reduce((s, L) => s + L.proj, 0) / lineups.length)}`);
+  if (lineups.length) setStatus(`${lineups.length} lineup${lineups.length > 1 ? "s" : ""} built · avg proj ${f1(lineups.reduce((s, L) => s + L.proj, 0) / lineups.length)}`
+    + (sim ? ` · ranked by sim ${contest === "cash" ? "median" : "90th pct"}` : ""));
 }
 
 function summarize(ids) {
   const ps = ids.map(id => byId.get(id));
   const order = { QB: 0, RB: 1, WR: 2, TE: 3, DST: 5 };
   const slots = assignSlots(ps);
-  return { ids, slots, salary: ps.reduce((s, p) => s + p.salary, 0), proj: ps.reduce((s, p) => s + proj(p), 0),
+  return { ids, slots, sim: lineupSim(ids), salary: ps.reduce((s, p) => s + p.salary, 0), proj: ps.reduce((s, p) => s + proj(p), 0),
     ceil: ps.reduce((s, p) => s + p.p85, 0), floor: ps.reduce((s, p) => s + p.floor, 0),
     players: ps.sort((a, b) => order[a.position] - order[b.position] || b.salary - a.salary) };
 }
@@ -260,7 +311,9 @@ function renderResults() {
     .map(([id, c]) => `${byId.get(id).player_name} ${Math.round(100 * c / lineups.length)}%`).join(" · ");
   box.innerHTML = `<p class="hint">Exposure: ${top}</p>` + lineups.map((L, i) => `
     <div class="lineup">
-      <div class="lu-head"><b>#${i + 1}</b> <span>${money(L.salary)}</span> <span>proj <b>${f1(L.proj)}</b></span> <span>floor ${f1(L.floor)}</span> <span>p85 ${f1(L.ceil)}</span></div>
+      <div class="lu-head"><b>#${i + 1}</b> <span>${money(L.salary)}</span> <span>proj <b>${f1(L.proj)}</b></span>${L.sim
+        ? ` <span title="lineup total across simulated games">sim p10 ${f1(L.sim.p10)} · <b>p50 ${f1(L.sim.p50)}</b> · p90 ${f1(L.sim.p90)} · p98 ${f1(L.sim.p98)}</span>`
+        : ` <span>floor ${f1(L.floor)}</span> <span>p85 ${f1(L.ceil)}</span>`}</div>
       <table class="lu">${L.players.map(p => `<tr><td><span class="pos ${["QB","RB","WR","TE"].includes(p.position) ? p.position : "other"}">${p.position}</span></td>
         <td class="left">${p.player_name}${p.status ? ` <em class="inj">${p.status}</em>` : ""}</td><td class="left">${p.team} v ${p.opponent}</td><td>${money(p.salary)}</td><td>${f1(proj(p))}</td></tr>`).join("")}</table>
     </div>`).join("");

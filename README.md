@@ -8,9 +8,11 @@ Supabase (Postgres) for data, Netlify for the front end, GitHub Actions for the 
 ```
 supabase/migrations/001_schema.sql   schema, DK/FD scoring as generated columns, views, RLS
 supabase/migrations/002_slates.sql   slates, salaries, projections, slate_board view (Phase 2)
+supabase/migrations/003_sim.sql      projections keyed by method, sims storage bucket (Phase 3)
 jobs/ingest.py                       nightly nflverse → Supabase pull (nflreadpy)
 jobs/import_salaries.py              DK/FD salary CSV → slates + slate_salaries (name → player_id)
-jobs/project.py                      baseline projections → slate_projections
+jobs/project.py                      baseline projections → slate_projections (method=baseline)
+jobs/simulate.py                     Monte Carlo game sim → slate_projections (method=sim) + sims bucket
 jobs/pipeline.py                     import + project in one go
 .github/workflows/nightly-ingest.yml scheduled ingest + re-project latest slate
 .github/workflows/slate-pipeline.yml runs on push of data/slates/*.csv
@@ -62,6 +64,23 @@ injury status (OUT/IR = 0, D ×0.5, Q ×0.95). Stdev from the player's own varia
 to a position default; floor/ceiling/boom/bust from a normal. DST: opponents' sacks + INTs
 allowed + expected points-allowed tier from the opponent's implied total.
 
+### Monte Carlo game sim (Phase 3)
+`jobs/simulate.py` runs 10,000 simulations of every game on the slate. Per sim it draws the
+score from the Vegas line (margin ~ N(spread, 13.5), total ~ N(total, 10.5)), plays and pass
+rate (team pace, shifted by game script), team TDs ~ Poisson(points/7.3) split pass/rush, then
+each player's target and carry share (noisy around his usage with his *current* team; OUT
+players are removed and their share flows to teammates; D/Q players are active in 50%/90% of
+sims), receptions, yards (tied to the simulated score), TDs, INTs, fumbles, and finally DK / FD
+points with bonuses. DST scores come from the opponent's simulated points, sacks and turnovers.
+Because every player's line comes from the same drawn game, outcomes are correlated (QB ↔ his
+receivers ≈ +0.3, QB ↔ opposing DST ≈ −0.3).
+
+Outputs: `slate_projections` rows with `method = 'sim'` (the board prefers these over baseline),
+and a 2,000-column player × sim matrix (`sims/<slate_key>.json.gz` in Supabase storage) that
+the lineup builder downloads to score whole lineups (p10 / p50 / p90 / p98 of the lineup total).
+With the matrix loaded, "Candidates ×" builds extra lineups and keeps the best by simulated
+median (cash) or 90th percentile (GPP), still honouring exposure caps.
+
 ### Optimizer
 Mixed-integer program solved in the browser (glpk.js). Cash: 0.8·proj + 0.2·floor.
 GPP: 0.6·proj + 0.4·p85 with per-lineup jitter, QB stacks, bring-back, exposure caps,
@@ -87,6 +106,6 @@ Stored in the DB as generated columns on `player_game_stats`:
 
 1. ✅ Data pipeline + sortable stats site
 2. ✅ DK/FD salary CSV import, baseline projections, MIP optimizer with upload-CSV export
-3. Monte Carlo game sim (player × sim matrix, correlations)
+3. ✅ Monte Carlo game sim (player × sim matrix, correlations)
 4. Backtesting harness (calibration of percentiles vs actuals)
 5. Ownership model + multi-lineup GPP builder with stacks/exposure limits
