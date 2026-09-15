@@ -317,7 +317,7 @@ def main():
         print(f"dry run — wrote {path}")
         return
     for batch in chunked(rows):
-        client.table("slate_projections").upsert(batch, on_conflict="slate_id,site_player_id").execute()
+        client.table("slate_projections").upsert(batch, on_conflict="slate_id,site_player_id,method").execute()
     print(f"done — {len(rows)} projections written")
 
 
