@@ -14,7 +14,9 @@ const SITES = {
 
 let supa, glpk;
 let slates = [], slate = null, players = [], byId = new Map();
-let locks = new Set(), excludes = new Set(), overrides = new Map();
+let locks = new Set(), excludes = new Set(), overrides = new Map(), ownOverrides = new Map();
+let ownership = new Map();       // site_player_id -> projected ownership % (heuristic unless overridden)
+const SLOTS_PER_POS = { QB: 1.0, RB: 2.4, WR: 3.4, TE: 1.2, DST: 1.0 };
 let lineups = [];
 let sim = null;                  // { n, index: Map(site_player_id -> Float32Array) }
 let sortKey = "mean", sortAsc = false;
@@ -53,7 +55,8 @@ async function loadBoard() {
     p85: Number(r.p85), p15: Number(r.p15), floor: Number(r.floor), ceiling: Number(r.ceiling), stdev: Number(r.stdev),
     salary: Number(r.salary), boom_prob: Number(r.boom_prob), bust_prob: Number(r.bust_prob) }));
   byId = new Map(players.map(p => [p.site_player_id, p]));
-  locks.clear(); excludes.clear(); overrides.clear(); lineups = []; sim = null;
+  locks.clear(); excludes.clear(); overrides.clear(); ownOverrides.clear(); lineups = []; sim = null;
+  estimateOwnership();
   renderResults();
   render();
   loadSim().catch(e => { console.warn("sim matrix unavailable", e); render(); });
@@ -89,6 +92,23 @@ function lineupSim(ids) {
 }
 
 function proj(p) { return overrides.has(p.site_player_id) ? overrides.get(p.site_player_id) : (p.mean ?? 0); }
+function own(p) { return ownOverrides.has(p.site_player_id) ? ownOverrides.get(p.site_player_id) : (ownership.get(p.site_player_id) ?? 0); }
+
+// Heuristic projected ownership: within each position, the field chases value (pts per $1k) and
+// raw projection; a softmax over those turns them into shares of the position's roster slots.
+function estimateOwnership() {
+  ownership = new Map();
+  for (const pos of Object.keys(SLOTS_PER_POS)) {
+    const pool = players.filter(p => p.position === pos && (p.mean ?? 0) > 0 && !["OUT","IR","O"].includes((p.status || "").toUpperCase()));
+    if (!pool.length) continue;
+    const val = pool.map(p => proj(p) / (p.salary / 1000)), pr = pool.map(p => proj(p));
+    const z = (a) => { const m = a.reduce((s, v) => s + v, 0) / a.length, sd = Math.sqrt(a.reduce((s, v) => s + (v - m) ** 2, 0) / a.length) || 1; return a.map(v => (v - m) / sd); };
+    const zv = z(val), zp = z(pr);
+    const w = pool.map((p, i) => Math.exp(1.4 * zv[i] + 0.8 * zp[i]) * (["Q","D"].includes((p.status || "").toUpperCase()) ? 0.7 : 1));
+    const tot = w.reduce((s, v) => s + v, 0);
+    pool.forEach((p, i) => ownership.set(p.site_player_id, Math.min(60, 100 * SLOTS_PER_POS[pos] * w[i] / tot)));
+  }
+}
 
 // ---------------------------------------------------------------- pool table
 const COLS = [
@@ -101,6 +121,7 @@ const COLS = [
   { key: "value", label: "Val", fmt: f2 },
   { key: "floor", label: "Floor", fmt: f1 }, { key: "ceiling", label: "Ceil", fmt: f1 },
   { key: "boom_prob", label: "Boom", fmt: pct }, { key: "bust_prob", label: "Bust", fmt: pct },
+  { key: "own", label: "Own%", edit: true },
   { key: "games_used", label: "G" },
 ];
 
@@ -122,10 +143,10 @@ function render() {
   });
   thead.replaceChildren(tr);
 
-  const rows = visiblePlayers().map(p => ({ p, mean: proj(p), value: p.salary ? proj(p) / (p.salary / 1000) : 0 }));
+  const rows = visiblePlayers().map(p => ({ p, mean: proj(p), value: p.salary ? proj(p) / (p.salary / 1000) : 0, own: own(p) }));
   rows.sort((a, b) => {
-    const ka = sortKey === "mean" ? a.mean : sortKey === "value" ? a.value : a.p[sortKey];
-    const kb = sortKey === "mean" ? b.mean : sortKey === "value" ? b.value : b.p[sortKey];
+    const ka = sortKey === "mean" ? a.mean : sortKey === "value" ? a.value : sortKey === "own" ? a.own : a.p[sortKey];
+    const kb = sortKey === "mean" ? b.mean : sortKey === "value" ? b.value : sortKey === "own" ? b.own : b.p[sortKey];
     let c = (ka == null) - (kb == null) || (typeof ka === "number" ? ka - kb : String(ka ?? "").localeCompare(String(kb ?? "")));
     return sortAsc ? c : -c;
   });
@@ -150,6 +171,12 @@ function render() {
         if (overrides.has(id)) inp.classList.add("overridden");
         inp.addEventListener("change", () => { const v = parseFloat(inp.value); if (Number.isNaN(v) || v === (p.mean ?? 0)) overrides.delete(id); else overrides.set(id, v); render(); });
         td.appendChild(inp);
+      } else if (c.key === "own") {
+        const inp = document.createElement("input"); inp.type = "number"; inp.step = "1"; inp.min = "0"; inp.max = "100"; inp.className = "projedit";
+        inp.value = Math.round(own(p));
+        if (ownOverrides.has(id)) inp.classList.add("overridden");
+        inp.addEventListener("change", () => { const v = parseFloat(inp.value); if (Number.isNaN(v)) ownOverrides.delete(id); else ownOverrides.set(id, v); render(); });
+        td.appendChild(inp);
       } else if (c.key === "value") {
         td.textContent = f2(value);
       } else if (c.key === "position") {
@@ -169,7 +196,7 @@ function render() {
     + (sim ? ` · sim matrix ${sim.n} sims loaded` : "") + ` · ${locks.size} locked · ${excludes.size} excluded`);
   $("objHint").textContent = $("contest").value === "cash"
     ? "Cash: maximizes projected points with a floor tilt (0.8·proj + 0.2·floor)."
-    : "GPP: maximizes ceiling-tilted score (0.6·proj + 0.4·p85), random jitter for diversity, stacks enforced.";
+    : "GPP: maximizes ceiling-tilted score (0.6·proj + 0.4·p85) minus an ownership fade, random jitter for diversity, stacks enforced.";
 }
 
 // ---------------------------------------------------------------- optimizer
@@ -227,6 +254,7 @@ async function generate() {
     stack: contest === "gpp" ? +$("stack").value : 0, bringback: contest === "gpp" && $("bringback").value === "1",
     maxExp: (+$("maxExp").value || 100) / 100, minUniq: +$("minUniq").value || 1,
     rand: contest === "gpp" ? (+$("rand").value || 0) / 100 : 0, exclQ: $("exclQ").value === "1",
+    fade: contest === "gpp" ? (+$("fade").value || 0) / 100 : 0,
     poolMult: sim ? Math.max(1, Math.min(5, +$("poolMult").value || 1)) : 1,
   };
   const nCand = Math.min(300, n * opts.poolMult);
@@ -244,7 +272,8 @@ async function generate() {
       opts.score = (p) => {
         const m = proj(p);
         const base = contest === "cash" ? 0.8 * m + 0.2 * p.floor : 0.6 * m + 0.4 * (p.p85 * (m / Math.max(p.mean, 0.1)));
-        return base * jitter.get(p.site_player_id);
+        // ownership fade: at 100% fade a 30%-owned player gives up ~1.8 pts of score
+        return base * jitter.get(p.site_player_id) - opts.fade * 0.06 * own(p);
       };
       const lp = buildLP(pool, opts, lineups.map(L => L.ids), blocked);
       const res = await glpk.solve(lp, { msglev: glpk.GLP_MSG_OFF, tmlim: 20 });
@@ -284,6 +313,7 @@ function summarize(ids) {
   const order = { QB: 0, RB: 1, WR: 2, TE: 3, DST: 5 };
   const slots = assignSlots(ps);
   return { ids, slots, sim: lineupSim(ids), salary: ps.reduce((s, p) => s + p.salary, 0), proj: ps.reduce((s, p) => s + proj(p), 0),
+    own: ps.reduce((s, p) => s + own(p), 0),
     ceil: ps.reduce((s, p) => s + p.p85, 0), floor: ps.reduce((s, p) => s + p.floor, 0),
     players: ps.sort((a, b) => order[a.position] - order[b.position] || b.salary - a.salary) };
 }
@@ -311,7 +341,7 @@ function renderResults() {
     .map(([id, c]) => `${byId.get(id).player_name} ${Math.round(100 * c / lineups.length)}%`).join(" · ");
   box.innerHTML = `<p class="hint">Exposure: ${top}</p>` + lineups.map((L, i) => `
     <div class="lineup">
-      <div class="lu-head"><b>#${i + 1}</b> <span>${money(L.salary)}</span> <span>proj <b>${f1(L.proj)}</b></span>${L.sim
+      <div class="lu-head"><b>#${i + 1}</b> <span>${money(L.salary)}</span> <span>proj <b>${f1(L.proj)}</b></span> <span title="sum of projected ownership">own ${Math.round(L.own)}%</span>${L.sim
         ? ` <span title="lineup total across simulated games">sim p10 ${f1(L.sim.p10)} · <b>p50 ${f1(L.sim.p50)}</b> · p90 ${f1(L.sim.p90)} · p98 ${f1(L.sim.p98)}</span>`
         : ` <span>floor ${f1(L.floor)}</span> <span>p85 ${f1(L.ceil)}</span>`}</div>
       <table class="lu">${L.players.map(p => `<tr><td><span class="pos ${["QB","RB","WR","TE"].includes(p.position) ? p.position : "other"}">${p.position}</span></td>
@@ -342,6 +372,6 @@ async function init() {
   $("contest").addEventListener("change", render);
   $("generate").addEventListener("click", generate);
   $("exportBtn").addEventListener("click", exportCSV);
-  $("clearBtn").addEventListener("click", () => { locks.clear(); excludes.clear(); overrides.clear(); render(); });
+  $("clearBtn").addEventListener("click", () => { locks.clear(); excludes.clear(); overrides.clear(); ownOverrides.clear(); estimateOwnership(); render(); });
 }
 init();

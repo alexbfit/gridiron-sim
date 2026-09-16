@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gridiron Sim — Backtest</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  .bt { padding: 12px 20px 32px; max-width: 1200px; }
+  .bt h2 { font-size: 15px; margin: 22px 0 8px; color: var(--accent); }
+  .bt p.lead { color: var(--muted); font-size: 13px; max-width: 900px; margin: 0 0 6px; }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 12px 0; }
+  .tile { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }
+  .tile .k { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+  .tile .v { font-size: 22px; font-weight: 700; margin-top: 2px; font-variant-numeric: tabular-nums; }
+  .tile .s { font-size: 11px; color: var(--muted); }
+  table.m { border-collapse: collapse; width: 100%; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  table.m th, table.m td { padding: 6px 10px; text-align: right; font-variant-numeric: tabular-nums; border-bottom: 1px solid #202634; font-size: 13px; }
+  table.m th { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .04em; background: var(--panel-2); }
+  table.m td.l, table.m th.l { text-align: left; }
+  table.m td.best { color: var(--accent); font-weight: 600; }
+  .chart { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; margin: 8px 0; }
+  .chart svg { width: 100%; height: auto; display: block; }
+  .legend { display: flex; gap: 14px; font-size: 12px; color: var(--muted); margin: 0 0 6px; }
+  .legend span::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; background: var(--c); }
+  .tt { position: fixed; pointer-events: none; background: #0e1116; border: 1px solid var(--border); border-radius: 6px; padding: 6px 8px; font-size: 12px; color: var(--text); display: none; z-index: 9; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 900px) { .row2 { grid-template-columns: 1fr; } }
+  :root { --s-sim: #3987e5; --s-base: #d95926; --s-naive: #199e70; }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="logo">GS</span>
+    <div><h1>Gridiron Sim</h1><p class="sub">Backtest · how good are the projections?</p></div>
+    <nav class="nav"><a href="index.html">Stats</a><a href="lineups.html">Lineups</a><a href="backtest.html" class="active">Backtest</a></nav>
+  </div>
+</header>
+
+<main class="bt">
+  <p class="lead" id="meta">Loading…</p>
+  <p class="lead">Each past week is replayed with only the data available before kickoff (closing Vegas lines, prior game logs, players who dressed). Three models are scored against actual DraftKings points for DFS-relevant players: the <b>Monte Carlo sim</b>, the <b>baseline</b> model, and a <b>naive</b> season-to-date average.</p>
+  <div class="tiles" id="tiles"></div>
+
+  <h2>Accuracy by position</h2>
+  <p class="lead">MAE = mean absolute error in DK points (lower is better). r = correlation with actuals (higher is better). Bias = projection − actual (0 is calibrated). The sim's mean is compared; its median scores like the baseline on MAE because point scores are right-skewed.</p>
+  <table class="m" id="pos"></table>
+
+  <div class="row2">
+    <div>
+      <h2>Weekly error</h2>
+      <div class="chart" id="weekly"></div>
+    </div>
+    <div>
+      <h2>Calibration of the sim's distribution</h2>
+      <p class="lead">Where each actual score landed inside that player's simulated distribution (PIT). A perfectly calibrated sim is flat at the dashed line. A tall right bar = the sim under-rates ceilings; tall edges = too narrow.</p>
+      <div class="chart" id="pit"></div>
+      <table class="m" id="cov"></table>
+    </div>
+  </div>
+</main>
+<div class="tt" id="tt"></div>
+<footer class="foot">Regenerate with <code>python jobs/backtest.py --season 2025 --weeks 5-18</code> (writes web/data/backtest.json).</footer>
+<script src="backtest.js"></script>
+</body>
+</html>

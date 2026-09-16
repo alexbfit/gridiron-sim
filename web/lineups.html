@@ -16,7 +16,7 @@
       <h1>Gridiron Sim</h1>
       <p class="sub">Lineup builder · DK &amp; FD</p>
     </div>
-    <nav class="nav"><a href="index.html">Stats</a><a href="lineups.html" class="active">Lineups</a></nav>
+    <nav class="nav"><a href="index.html">Stats</a><a href="lineups.html" class="active">Lineups</a><a href="backtest.html">Backtest</a></nav>
   </div>
   <div class="controls">
     <label>Slate <select id="slate"></select></label>
@@ -54,6 +54,7 @@
         <label>Min unique players / lineup <input id="minUniq" type="number" min="1" max="8" value="2"></label>
         <label>Randomness (GPP) % <input id="rand" type="number" min="0" max="50" value="15"></label>
         <label>Exclude Q / D <select id="exclQ"><option value="0">no</option><option value="1">yes</option></select></label>
+        <label title="GPP only: penalises highly-owned players (0 = ignore ownership, 100 = strong fade). Ownership is a heuristic — overwrite the Own% column with real numbers if you have them.">Ownership fade (GPP) % <input id="fade" type="number" min="0" max="100" value="40"></label>
         <label title="Build this many × lineups, keep the best by simulated median (cash) or 90th percentile (GPP)">Candidates × (needs sim) <input id="poolMult" type="number" min="1" max="5" value="2"></label>
       </div>
       <p class="hint" id="objHint"></p>

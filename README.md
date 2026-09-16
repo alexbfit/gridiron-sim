@@ -13,12 +13,14 @@ jobs/ingest.py                       nightly nflverse → Supabase pull (nflread
 jobs/import_salaries.py              DK/FD salary CSV → slates + slate_salaries (name → player_id)
 jobs/project.py                      baseline projections → slate_projections (method=baseline)
 jobs/simulate.py                     Monte Carlo game sim → slate_projections (method=sim) + sims bucket
+jobs/backtest.py                     replay past weeks, score sim/baseline/naive → web/data/backtest.json
 jobs/pipeline.py                     import + project in one go
 .github/workflows/nightly-ingest.yml scheduled ingest + re-project latest slate
 .github/workflows/slate-pipeline.yml runs on push of data/slates/*.csv
 data/slates/                         drop DK / FD salary exports here
 web/index.html                       sortable stats site
 web/lineups.html                     lineup builder + optimizer (GLPK in the browser), DK/FD CSV export
+web/backtest.html                    backtest report (accuracy by position, weekly error, calibration)
 ```
 
 ## Setup
@@ -81,6 +83,20 @@ the lineup builder downloads to score whole lineups (p10 / p50 / p90 / p98 of th
 With the matrix loaded, "Candidates ×" builds extra lineups and keeps the best by simulated
 median (cash) or 90th percentile (GPP), still honouring exposure caps.
 
+### Backtest (Phase 4)
+`jobs/backtest.py --season 2025 --weeks 5-18` replays each week with only pre-kickoff data
+(closing lines, prior logs, players who dressed), runs the sim and the baseline, and scores them
+against actual DK points for DFS-relevant players. Report at `/backtest.html`; regenerate from
+Actions → *backtest* (commits `web/data/backtest.json`). Calibration result on 2025 wk 5–18:
+sim MAE 6.20 / r 0.45 / bias −0.2 vs naive 6.50 / 0.39; 11% of actuals under p10, 89% under
+p90. Constants tuned from it: `PTS_PER_TD 8.8`, TE priors, `DECAY 0.90`.
+
+### Ownership (Phase 5, first cut)
+The builder shows a heuristic projected ownership (softmax over value and projection within each
+position, scaled to the position's roster slots). Overwrite the Own% column with real projected
+ownership if you have a source. GPP objective subtracts `fade × 0.06 × own%`; lineup cards show
+summed ownership.
+
 ### Optimizer
 Mixed-integer program solved in the browser (glpk.js). Cash: 0.8·proj + 0.2·floor.
 GPP: 0.6·proj + 0.4·p85 with per-lineup jitter, QB stacks, bring-back, exposure caps,
@@ -107,5 +123,6 @@ Stored in the DB as generated columns on `player_game_stats`:
 1. ✅ Data pipeline + sortable stats site
 2. ✅ DK/FD salary CSV import, baseline projections, MIP optimizer with upload-CSV export
 3. ✅ Monte Carlo game sim (player × sim matrix, correlations)
-4. Backtesting harness (calibration of percentiles vs actuals)
-5. Ownership model + multi-lineup GPP builder with stacks/exposure limits
+4. ✅ Backtesting harness (calibration of percentiles vs actuals)
+5. ◐ Ownership: heuristic + fade in the GPP objective (multi-lineup builder with stacks/exposure done in phase 2)
+6. Next: real ownership source, lineup-level backtest (needs historical salaries), snap/route data for usage

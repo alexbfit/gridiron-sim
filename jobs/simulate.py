@@ -39,22 +39,28 @@ from common import chunked, fetch_all, get_client
 
 N_SIMS = 10000
 DIAG = {}
+COMPONENTS = None      # set to {} to collect per-player mean stat lines (backtest diagnostics)
 STORE_SIMS = 2000
-DECAY, PRIOR_SEASON_W, MAX_GAMES = 0.85, 0.5, 20
+DECAY, PRIOR_SEASON_W, MAX_GAMES = 0.90, 0.5, 20
 MARGIN_SD, TOTAL_SD, PLAYS_SD = 13.5, 10.5, 5.0
-PTS_PER_TD = 7.3
+PTS_PER_TD = 8.8                   # calibrated on 2025 wk 5-18 backtest (QB pass-TD bias -> 0)
 SCRIPT_PASS_SLOPE = 0.005          # pass-rate change per point of deficit
 ACTIVE_PROB = {"OUT": 0.0, "IR": 0.0, "O": 0.0, "D": 0.5, "Q": 0.9}
 FUMBLE_RATE = 0.010                # lost fumbles per touch
 OTHER_TGT = (0.05, 0.15)           # share of targets left for players not on the slate (min, max)
 OTHER_CAR = (0.03, 0.12)
+YDS_BASE, YDS_PER_PT, YDS_SD = 140.0, 8.5, 45.0   # team yards ~ N(base + per_pt * points, sd)
+OTHER_YPT = 0.65 * 9.0             # yards per target for the "other" receiving bucket
+RB_TD_PRIOR, QB_TD_PRIOR = 0.03, 0.045
+SHARE_CV_MIN = 0.15                # floor on per-sim usage-share noise (coefficient of variation)
+YDS_COUPLING = 1.0                 # 1 = force team yards to the score-implied total, 0.5 = half-way
 
 # position priors for regression
 POS = {
     "catch_rate": {"RB": 0.76, "WR": 0.64, "TE": 0.70, "QB": 0.6},
-    "ypr":        {"RB": 8.0,  "WR": 13.0, "TE": 10.5, "QB": 8.0},
+    "ypr":        {"RB": 8.0,  "WR": 13.0, "TE": 11.5, "QB": 8.0},
     "ypc":        {"RB": 4.3,  "WR": 6.0,  "TE": 4.0,  "QB": 5.0},
-    "rec_td":     {"RB": 0.035, "WR": 0.055, "TE": 0.065, "QB": 0.03},   # per target
+    "rec_td":     {"RB": 0.035, "WR": 0.055, "TE": 0.08, "QB": 0.03},    # per target
     "rush_td":    {"RB": 0.03, "WR": 0.03,  "TE": 0.03,  "QB": 0.045},   # per carry
 }
 K = {"catch_rate": 20, "ypr": 15, "ypc": 40, "rec_td": 60, "rush_td": 80}
@@ -196,7 +202,7 @@ def player_params(logs, games_by_key, season, current_team):
             "ypr": ratio(ryd, rec, w, POS["ypr"][pos], K["ypr"]),
             "ypc": ratio(cyd, car, w, POS["ypc"][pos], K["ypc"]),
             "rec_td": ratio(rtd, tgt, w, POS["rec_td"][pos], K["rec_td"]),
-            "rush_td": ratio(ctd, car, w, POS["rush_td"][pos], K["rush_td"]),
+            "rush_td": ratio(ctd, car, w, (QB_TD_PRIOR if pos == "QB" else RB_TD_PRIOR if pos == "RB" else POS["rush_td"][pos]), K["rush_td"]),
         }
     return out
 
@@ -249,7 +255,7 @@ def pa_tier(pts):
 
 def lognoise(mu, sd, n):
     """Multiplicative share noise: mu * exp(N(0, cv)) with the mean preserved (no clipping bias)."""
-    cv = np.clip(sd / np.maximum(mu, 1e-6), 0.15, 0.6)
+    cv = np.clip(sd / np.maximum(mu, 1e-6), SHARE_CV_MIN, 0.6)
     z = np.random.normal(0, 1, (n, len(mu)))
     return mu * np.exp(cv * z - 0.5 * cv ** 2)
 
@@ -365,10 +371,10 @@ def simulate(slate, salaries, ctx, n_sims):
 
             # ---- tie yardage to the simulated score: NFL teams gain ~140 + 8.5 yds per point
             other_tg = np.maximum(targets_total - (tgts.sum(1) if P else 0), 0)
-            other_yds = clipnorm(other_tg * 0.65 * 9.0, np.sqrt(np.maximum(other_tg, 1)) * 9.0)
+            other_yds = clipnorm(other_tg * OTHER_YPT, np.sqrt(np.maximum(other_tg, 1)) * 9.0)
             raw_total = (ryds.sum(1) if P else 0) + other_yds + (cyds.sum(1) if R else 0) + qb_cyd + other_car * 4.2
-            target_yds = clipnorm(140 + 8.5 * own, 45, lo=120)
-            f = np.clip(target_yds / np.maximum(raw_total, 80), 0.6, 1.5)[:, None]
+            target_yds = clipnorm(YDS_BASE + YDS_PER_PT * own, YDS_SD, lo=120)
+            f = (np.clip(target_yds / np.maximum(raw_total, 80), 0.6, 1.5) ** YDS_COUPLING)[:, None]
             if P:
                 ryds = ryds * f
             if R:
@@ -388,6 +394,10 @@ def simulate(slate, salaries, ctx, n_sims):
                 fum = np.random.binomial(touches, FUMBLE_RATE)
                 dk, fd = score(0, 0, 0, cyds[:, j], ctds[:, j], recs[:, i], ryds[:, i], rtds[:, i], fum)
                 scores_dk[s["site_player_id"]], scores_fd[s["site_player_id"]] = dk, fd
+                if COMPONENTS is not None:
+                    COMPONENTS[s["site_player_id"]] = {"targets": tgts[:, i].mean(), "receptions": recs[:, i].mean(),
+                        "receiving_yards": ryds[:, i].mean(), "receiving_tds": rtds[:, i].mean(),
+                        "carries": cars[:, j].mean(), "rushing_yards": cyds[:, j].mean(), "rushing_tds": ctds[:, j].mean()}
 
             # QB line: passing yards = all receiving yards incl. the "other" bucket
             pass_yds = (ryds.sum(1) if P else 0) + other_yds
@@ -399,6 +409,10 @@ def simulate(slate, salaries, ctx, n_sims):
                     fum = np.random.binomial(sacks + qb_car, FUMBLE_RATE * 1.5)
                     dk, fd = score(pass_yds * a, pass_tds * a, ints * a, qb_cyd * a, qb_ctds * a, 0, 0, 0, fum * a)
                     scores_dk[s["site_player_id"]], scores_fd[s["site_player_id"]] = dk, fd
+                    if COMPONENTS is not None:
+                        COMPONENTS[s["site_player_id"]] = {"attempts": (att * a).mean(), "passing_yards": (pass_yds * a).mean(),
+                            "passing_tds": (pass_tds * a).mean(), "interceptions": (ints * a).mean(),
+                            "carries": (qb_car * a).mean(), "rushing_yards": (qb_cyd * a).mean(), "rushing_tds": (qb_ctds * a).mean()}
                 elif s["player_id"] in pp:
                     scores_dk[s["site_player_id"]] = scores_fd[s["site_player_id"]] = np.zeros(N)
 
