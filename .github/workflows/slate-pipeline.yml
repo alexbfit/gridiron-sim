@@ -8,6 +8,7 @@ on:
     paths:
       - "data/slates/**.csv"
       - "data/ownership/**.csv"
+      - "data/projections/**.csv"
       - "jobs/project.py"
       - "jobs/simulate.py"
   workflow_dispatch:
@@ -34,9 +35,9 @@ jobs:
           if [ -n "${{ github.event.inputs.reproject }}" ]; then
             echo "files=" >> $GITHUB_OUTPUT
           elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "files=$(ls data/slates/*.csv data/ownership/*.csv 2>/dev/null | tr '\n' ' ')" >> $GITHUB_OUTPUT
+            echo "files=$(ls data/slates/*.csv data/ownership/*.csv data/projections/*.csv 2>/dev/null | tr '\n' ' ')" >> $GITHUB_OUTPUT
           else
-            echo "files=$(git diff --name-only HEAD~1 HEAD -- 'data/slates/*.csv' 'data/ownership/*.csv' | tr '\n' ' ')" >> $GITHUB_OUTPUT
+            echo "files=$(git diff --name-only HEAD~1 HEAD -- 'data/slates/*.csv' 'data/ownership/*.csv' 'data/projections/*.csv' | tr '\n' ' ')" >> $GITHUB_OUTPUT
           fi
       - name: Import + project
         env:

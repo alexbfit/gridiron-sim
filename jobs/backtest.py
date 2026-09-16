@@ -33,6 +33,8 @@ from common import fetch_all, get_client
 
 RELEVANT = {"QB": 12.0, "RB": 8.0, "WR": 8.0, "TE": 5.0}     # sim-mean threshold to count a player
 SNAPS = None   # {(player_id, season, week): (offense_snaps, offense_pct)} — set by run()
+DEPTH = None   # {(player_id, season, week): [pos, rank, team]}
+INJ = None     # {(season, week): {player_id: {"status","practice"}}}
 PCTS = [5, 10, 25, 50, 75, 90, 95]
 
 
@@ -78,8 +80,13 @@ def build_week(season, week, games, team, logs):
             team_games[r["team"]].append((r["season"], r["week"]))
     recent = {t: set(sorted(v)[-4:]) for t, v in team_games.items()}
 
-    # players who dressed that week — stands in for the injury report (DK "OUT" removes them live)
+    # players who dressed that week — stands in for the injury report (DK "OUT" removes them live).
+    # With real injury reports loaded (INJ), use those instead: drop Out/Doubtful, keep Q (the sim
+    # decides play probability from practice status) — this is what the live slate sees.
     dressed = {r["player_id"] for r in logs if r["season"] == season and r["week"] == week}
+    if INJ and cutoff in INJ:
+        rep = INJ[cutoff]
+        dressed = {r["player_id"] for r in logs if (r["season"], r["week"]) < cutoff} - {pid for pid, v in rep.items() if v["status"] in ("Out", "Doubtful")}
     roster, seen = [], set()
     for r in logs:
         t = r["team"]
@@ -100,6 +107,8 @@ def build_week(season, week, games, team, logs):
     pre_games = [dict(g, home_score=None, away_score=None) if (g["season"], g["week"]) >= cutoff else g for g in games]
     ctx = {
         "snaps": {k: v for k, v in (SNAPS or {}).items() if (k[1], k[2]) < cutoff},
+        "depth": {k[0]: v for k, v in (DEPTH or {}).items() if (k[1], k[2]) == cutoff},
+        "injuries": (INJ or {}).get(cutoff, {}),
         "games": pre_games,
         "team": [r for r in team if (r["season"], r["week"]) < cutoff],
         "logs": [r for r in logs if (r["season"], r["week"]) < cutoff],
@@ -179,6 +188,40 @@ def run(season, weeks, n_sims, client=None, quiet=False, data=None):
             print(f"  (player_snaps unavailable: {e})")
         if not quiet:
             print(f"snap rows: {len(SNAPS)}")
+    global DEPTH, INJ
+    if INJ is None:
+        INJ = {}
+        try:
+            for r in fetch_all(client.table("injury_reports").select("player_id,season,week,report_status,practice_status")
+                               .eq("season", season).eq("season_type", "REG"), order=["player_id", "season", "week"]):
+                INJ.setdefault((r["season"], r["week"]), {})[r["player_id"]] = {"status": r["report_status"], "practice": r["practice_status"]}
+        except Exception as e:
+            print(f"  (injury_reports unavailable: {e})")
+        if not quiet:
+            print(f"injury report weeks: {len(INJ)}")
+    if DEPTH is None:
+        DEPTH = {}
+        try:
+            # historical depth charts are not stored week-by-week (only the current snapshot), so
+            # the backtest rebuilds them from nflverse: latest snapshot before each week's first game
+            import nflreadpy as nfl, polars as pl
+            d = nfl.load_depth_charts([season]).filter(pl.col("pos_abb").is_in(["QB", "RB", "WR", "TE"]) & pl.col("gsis_id").is_not_null())
+            d = d.with_columns(pl.col("dt").str.slice(0, 10).alias("day"))
+            days = sorted(d["day"].unique().to_list())
+            firsts = {}
+            for g in games:
+                if g["season"] == season and g["gameday"]:
+                    firsts[g["week"]] = min(firsts.get(g["week"], "9999"), g["gameday"])
+            for wk, first in firsts.items():
+                prior = [x for x in days if x < first]
+                if not prior:
+                    continue
+                for x in d.filter(pl.col("day") == prior[-1]).iter_rows(named=True):
+                    DEPTH[(x["gsis_id"], season, wk)] = [x["pos_abb"], x["pos_rank"], x["team"]]
+        except Exception as e:
+            print(f"  (depth charts unavailable: {e})")
+        if not quiet:
+            print(f"depth rows: {len(DEPTH)}")
     if not quiet:
         print(f"loaded {len(games)} games, {len(team)} team rows, {len(logs)} player rows in {time.time() - t0:.0f}s")
     results = []

@@ -58,6 +58,19 @@ SNAP_ALPHA = {"QB": 0.0, "RB": 0.0, "WR": 0.0, "TE": 1.0}    # damping exponent 
                                    # (backtest 2025: helps TE, hurts RB/WR where snaps don't track touches)
 SNAP_RECENT_W = (0.6, 0.4)         # weights on the last two games' snap share
 YDS_COUPLING = 1.0                 # 1 = force team yards to the score-implied total, 0.5 = half-way
+# depth-chart usage multipliers by (position, rank): the chart says who the starters are this week
+# backups only — boosting starters or trimming TE2s tested worse; the chart is best at saying who is buried
+DEPTH_MULT = {"QB": {1: 1.0, 2: 0.2, 3: 0.1}, "RB": {1: 1.0, 2: 1.0, 3: 0.8, 4: 0.6},
+              "WR": {1: 1.0, 2: 1.0, 3: 1.0, 4: 0.8, 5: 0.6}, "TE": {1: 1.0, 2: 1.0, 3: 1.0}}
+DEPTH_STRENGTH = 1.0               # 0 = ignore depth charts; 1 = full multiplier (tuned by backtest: r .455->.460)
+PRACTICE_PROB = {"Full Participation in Practice": 1.0, "Limited Participation in Practice": 0.85,
+                 "Did Not Participate In Practice": 0.55}   # play probability for Questionable players by Friday practice
+# weather (outdoor games only): wind cuts passing efficiency and pass rate; cold trims yards slightly
+WIND_PASS_RATE = 0.004             # pass-rate drop per mph above WIND_FLOOR
+WIND_YPT = 0.010                   # yards-per-target / passing-yards drop per mph above WIND_FLOOR
+WIND_FLOOR = 10.0
+COLD_YDS = 0.002                   # total-yards drop per degree F below 40
+WEATHER_STRENGTH = 0.0             # off: with actual conditions it did not beat the Vegas total, which already prices weather
 
 # position priors for regression
 POS = {
@@ -108,11 +121,18 @@ def load_context(client, season, week, player_ids):
                                .in_("player_id", batch).in_("season", [season, season - 1]).eq("season_type", "REG"),
                                order=["player_id", "season", "week"]):
                 ctx["snaps"][(r["player_id"], r["season"], r["week"])] = (r["offense_snaps"], float(r["offense_pct"] or 0))
-        for r in fetch_all(client.table("injury_reports").select("player_id,report_status")
+        for r in fetch_all(client.table("injury_reports").select("player_id,report_status,practice_status")
                            .eq("season", season).eq("week", week).eq("season_type", "REG"), order="player_id"):
-            ctx["injuries"][r["player_id"]] = r["report_status"]
+            ctx["injuries"][r["player_id"]] = {"status": r["report_status"], "practice": r["practice_status"]}
     except Exception as e:
         print(f"  (snaps/injuries unavailable: {e})")
+    ctx["depth"] = {}
+    try:
+        for r in fetch_all(client.table("depth_charts").select("player_id,position,pos_rank")
+                           .eq("season", season).eq("week", week), order="player_id"):
+            ctx["depth"][r["player_id"]] = [r["position"], r["pos_rank"], None]
+    except Exception as e:
+        print(f"  (depth charts unavailable: {e})")
     return ctx
 
 
@@ -166,7 +186,7 @@ def team_params(team_rows, season):
     return out, games_by_key
 
 
-def player_params(logs, games_by_key, season, current_team, snaps=None):
+def player_params(logs, games_by_key, season, current_team, snaps=None, depth=None):
     team_latest = {}
     for (t, se, wk) in games_by_key:
         if (se, wk) > team_latest.get(t, (0, 0)):
@@ -213,6 +233,12 @@ def player_params(logs, games_by_key, season, current_team, snaps=None):
         latest = team_latest.get(team)
         if latest and (usage_rows[0]["season"], usage_rows[0]["week"]) != latest:
             tsm, csm = 0.5 * tsm, 0.5 * csm
+        # depth chart: pull usage toward what this week's chart implies (starter vs backup)
+        if depth and DEPTH_STRENGTH > 0 and pid in depth:
+            dpos, rank = depth[pid][0], depth[pid][1]
+            m = DEPTH_MULT.get(dpos, {}).get(rank, 0.3 if rank else 1.0)
+            mult = 1 + DEPTH_STRENGTH * (m - 1)
+            tsm, csm = tsm * mult, csm * mult
         sd_floor = 0.35 if len(usage_rows) < 3 else 0.25
 
         w = weights(len(rows), [r["season"] for r in rows], season)
@@ -297,7 +323,7 @@ def simulate(slate, salaries, ctx, n_sims):
     season, week, site = slate["season"], slate["week"], slate["site"]
     tp, gkey = team_params(ctx["team"], season)
     pp = player_params(ctx["logs"], gkey, season, {s["player_id"]: s["team"] for s in salaries if s["player_id"]},
-                       snaps=ctx.get("snaps"))
+                       snaps=ctx.get("snaps"), depth=ctx.get("depth"))
     dvp = dvp_factors(ctx["dvp"], season)
 
     games = [g for g in ctx["games"] if g["season"] == season and g["week"] == week
@@ -321,12 +347,21 @@ def simulate(slate, salaries, ctx, n_sims):
         tot = np.maximum(np.random.normal(total, TOTAL_SD, N), 17)
         pts = {home: np.maximum((tot + margin) / 2, 0), away: np.maximum((tot - margin) / 2, 0)}
 
+        wx = ctx.get("weather", {}).get(g["game_id"]) or {}
+        outdoor = (g.get("roof") or wx.get("roof") or "outdoors") in ("outdoors", "open")
+        wind = float(wx.get("wind") if wx.get("wind") is not None else (g.get("wind") or 0)) if outdoor else 0.0
+        temp = float(wx.get("temp") if wx.get("temp") is not None else (g.get("temp") if g.get("temp") is not None else 60)) if outdoor else 65.0
+        wind_x = max(0.0, wind - WIND_FLOOR) * WEATHER_STRENGTH
+        cold_x = max(0.0, 40.0 - temp) * WEATHER_STRENGTH
+        pass_eff = max(0.6, 1 - WIND_YPT * wind_x)
+        yds_eff = max(0.7, 1 - COLD_YDS * cold_x)
+
         for team, opp in ((home, away), (away, home)):
             T = tp.get(team) or {"plays": 63, "plays_sd": 5, "pass_rate": 0.58, "sack_rate": 0.065,
                                  "int_rate": 0.022, "pass_td_share": 0.58, "tgt_per_att": 0.97}
             own, other = pts[team], pts[opp]
             plays = np.maximum(np.random.normal(T["plays"], T["plays_sd"], N) + 0.15 * (tot - total), 40)
-            pass_rate = np.clip(T["pass_rate"] + SCRIPT_PASS_SLOPE * (other - own) + np.random.normal(0, 0.03, N), 0.35, 0.78)
+            pass_rate = np.clip(T["pass_rate"] - WIND_PASS_RATE * wind_x + SCRIPT_PASS_SLOPE * (other - own) + np.random.normal(0, 0.03, N), 0.35, 0.78)
             dropbacks = np.round(plays * pass_rate).astype(int)
             sacks = np.random.binomial(dropbacks, T["sack_rate"])
             att = dropbacks - sacks
@@ -340,19 +375,31 @@ def simulate(slate, salaries, ctx, n_sims):
             roster = [s for s in by_team.get(team, []) if s["position"] != "DST"]
             modeled = [s for s in roster if s["player_id"] in pp]
             # starting QB: highest recent attempt share among non-OUT QBs, else highest salary
+            def _rep(s):
+                inj = ctx.get("injuries", {}).get(s["player_id"])
+                return inj["status"] if isinstance(inj, dict) else inj
             qbs = [s for s in roster if s["position"] == "QB" and ACTIVE_PROB.get(
-                (s["status"] or "").upper() or INJURY_MAP.get(ctx.get("injuries", {}).get(s["player_id"]) or "", ""), 1.0) > 0]
+                (s["status"] or "").upper() or INJURY_MAP.get(_rep(s) or "", ""), 1.0) > 0]
+            # depth chart names the starter when the box score is ambiguous (new starter, bye-week trade)
+            if qbs and ctx.get("depth"):
+                d1 = [s for s in qbs if ctx["depth"].get(s["player_id"], [None, None])[1] == 1]
+                if d1:
+                    qbs = d1
             qb = None
             if qbs:
                 qb = max(qbs, key=lambda s: (pp.get(s["player_id"], {}).get("att_share_recent", 0), s["salary"]))
-                if pp.get(qb["player_id"], {}).get("att_share_recent", 0) < 0.3:
+                if pp.get(qb["player_id"], {}).get("att_share_recent", 0) < 0.3 and len(qbs) > 1:
                     qb = max(qbs, key=lambda s: s["salary"])
 
             # active masks (injury designations)
             act = {}
             for s in modeled:
-                st = (s["status"] or "").upper() or INJURY_MAP.get(ctx.get("injuries", {}).get(s["player_id"]) or "", "")
+                inj = ctx.get("injuries", {}).get(s["player_id"])
+                rep = inj["status"] if isinstance(inj, dict) else inj
+                st = (s["status"] or "").upper() or INJURY_MAP.get(rep or "", "")
                 p_act = ACTIVE_PROB.get(st, 1.0)
+                if st == "Q" and isinstance(inj, dict) and inj.get("practice") in PRACTICE_PROB:
+                    p_act = PRACTICE_PROB[inj["practice"]]
                 act[s["site_player_id"]] = (np.random.random(N) < p_act) if p_act < 1 else np.ones(N, bool)
 
             # ---- receiving shares
@@ -368,7 +415,7 @@ def simulate(slate, salaries, ctx, n_sims):
                 tgts = allocate(targets_total, np.concatenate([sh, np.full((N, 1), other_sh)], 1))[:, :P]
                 cr = np.array([pp[s["player_id"]]["catch_rate"] for s in recv])
                 recs = np.random.binomial(tgts, np.clip(cr, 0.3, 0.95))
-                ypr = np.array([pp[s["player_id"]]["ypr"] * dvp.get((opp, s["position"]), 1.0) for s in recv])
+                ypr = np.array([pp[s["player_id"]]["ypr"] * dvp.get((opp, s["position"]), 1.0) for s in recv]) * pass_eff
                 ryds = np.where(recs > 0, clipnorm(recs * ypr, np.sqrt(np.maximum(recs, 1)) * ypr * 1.1), 0)
                 tdw = sh * np.array([pp[s["player_id"]]["rec_td"] for s in recv]) / 0.05
                 rtds = allocate(pass_tds, np.concatenate([tdw, np.full((N, 1), other_sh)], 1))[:, :P]
@@ -403,7 +450,7 @@ def simulate(slate, salaries, ctx, n_sims):
             other_tg = np.maximum(targets_total - (tgts.sum(1) if P else 0), 0)
             other_yds = clipnorm(other_tg * OTHER_YPT, np.sqrt(np.maximum(other_tg, 1)) * 9.0)
             raw_total = (ryds.sum(1) if P else 0) + other_yds + (cyds.sum(1) if R else 0) + qb_cyd + other_car * 4.2
-            target_yds = clipnorm(YDS_BASE + YDS_PER_PT * own, YDS_SD, lo=120)
+            target_yds = clipnorm((YDS_BASE + YDS_PER_PT * own) * yds_eff * (1 - 0.3 * (1 - pass_eff)), YDS_SD, lo=120)
             f = (np.clip(target_yds / np.maximum(raw_total, 80), 0.6, 1.5) ** YDS_COUPLING)[:, None]
             if P:
                 ryds = ryds * f

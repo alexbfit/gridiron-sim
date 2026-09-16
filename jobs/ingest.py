@@ -198,6 +198,28 @@ def pull_extras(seasons: list[int]) -> tuple[pl.DataFrame, pl.DataFrame]:
     return snaps, inj
 
 
+def pull_depth(seasons: list[int], schedules: pl.DataFrame) -> pl.DataFrame:
+    """Latest depth-chart snapshot, assigned to the upcoming REG week (the first week whose
+    games are not all final). One row per player."""
+    d = nfl.load_depth_charts(seasons)
+    if not isinstance(d, pl.DataFrame):
+        d = pl.DataFrame(d)
+    d = d.filter(pl.col("gsis_id").is_not_null() & pl.col("pos_abb").is_in(["QB", "RB", "WR", "TE"]))
+    latest = d["dt"].max()
+    d = d.filter(pl.col("dt") == latest)
+    season = int(max(seasons))
+    reg = schedules.filter((pl.col("season") == season) & (pl.col("season_type") == "REG"))
+    pending = reg.filter(pl.col("home_score").is_null())
+    week = int(pending["week"].min()) if pending.height else int(reg["week"].max())
+    out = d.select([
+        pl.col("gsis_id").alias("player_id"), pl.lit(season).alias("season"), pl.lit(week).alias("week"),
+        pl.col("team"), pl.col("pos_abb").alias("position"),
+        pl.col("pos_rank").cast(pl.Int64, strict=False), pl.col("dt").alias("snapshot_at"),
+    ]).unique(subset=["player_id"], keep="first")
+    print(f"  depth chart snapshot {latest} -> season {season} week {week}: {out.height} players")
+    return out
+
+
 def to_records(df: pl.DataFrame) -> list[dict]:
     recs = df.to_dicts()
     # NaN -> None for JSON
@@ -227,6 +249,11 @@ def main():
     except Exception as e:          # never let the extras block the core stats
         print(f"  extras failed: {e}")
         snaps = injuries = None
+    try:
+        depth = pull_depth(args.seasons, games)
+    except Exception as e:
+        print(f"  depth charts failed: {e}")
+        depth = None
 
     if args.dry_run:
         print(players.head(5))
@@ -244,6 +271,20 @@ def main():
     from supabase import create_client
     client = create_client(url, key)
 
+    # don't clobber live odds-api lines with nflverse's (older) numbers for upcoming games
+    try:
+        live = client.table("games").select("game_id,spread_line,total_line").eq("lines_source", "odds-api").execute().data
+    except Exception:
+        live = []
+    keep = {r["game_id"]: (r["spread_line"], r["total_line"]) for r in live}
+    if keep:
+        games = games.with_columns([
+            pl.col("game_id").map_elements(lambda g: float(keep[g][0]) if g in keep else None, return_dtype=pl.Float64).alias("_s"),
+            pl.col("game_id").map_elements(lambda g: float(keep[g][1]) if g in keep else None, return_dtype=pl.Float64).alias("_t"),
+        ]).with_columns([
+            pl.coalesce([pl.col("_s"), pl.col("spread_line")]).alias("spread_line"),
+            pl.coalesce([pl.col("_t"), pl.col("total_line")]).alias("total_line"),
+        ]).drop(["_s", "_t"])
     upsert(client, "games", games, "game_id")
     upsert(client, "team_game_stats", teams, "team,season,week,season_type")
     upsert(client, "player_game_stats", players, "player_id,season,week,season_type")
@@ -253,6 +294,11 @@ def main():
             upsert(client, "injury_reports", injuries, "player_id,season,week,season_type")
         except Exception as e:
             print(f"  snaps/injuries not written (run 004_snaps_injuries.sql?): {e}")
+    if depth is not None:
+        try:
+            upsert(client, "depth_charts", depth, "player_id,season,week")
+        except Exception as e:
+            print(f"  depth charts not written (run 006_depth_odds.sql?): {e}")
     print("done")
 
 

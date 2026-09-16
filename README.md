@@ -11,6 +11,11 @@ supabase/migrations/002_slates.sql   slates, salaries, projections, slate_board 
 supabase/migrations/003_sim.sql      projections keyed by method, sims storage bucket (Phase 3)
 supabase/migrations/004_snaps_injuries.sql  snap counts + official injury reports (Phase 6)
 supabase/migrations/005_results_ownership.sql  slate_results, slate_ownership (Phase 7)
+supabase/migrations/006_depth_odds.sql  depth_charts, live-odds columns (Phase 8)
+jobs/odds.py                         live spreads/totals from The Odds API (needs ODDS_API_KEY secret)
+jobs/import_projections.py           third-party projection CSV → slate_projections (method=external)
+data/projections/                    drop 4for4 / ETR / own projection CSVs here
+.github/workflows/gameday-refresh.yml Thu/Sat evening + Sun 7:00 / 10:00 / 11:45 AM ET re-sims
 jobs/results.py                      score a finished slate: proj vs actual, PIT, ownership → slate_results
 jobs/import_ownership.py             DK contest standings CSV → slate_ownership (real %drafted + exact FPTS)
 jobs/fit_ownership.py                fit the builder's ownership heuristic to real ownership → model_params
@@ -111,6 +116,25 @@ The nightly ingest also pulls nflverse snap counts (`player_snaps`) and official
 them). When the DK/FD status is blank, the official report (Out / Doubtful / Questionable) is
 applied instead, and the builder shows it as `OUT*` / `D*` / `Q*` with the injury on hover.
 
+### Closing the projection gap (Phase 8)
+Tested on the 2025 backtest, each in isolation, kept only what helped:
+- **Practice reports** (Friday DNP / Limited / Full) set a Questionable player's play probability
+  (55% / 85% / 100%) instead of a flat 90%. MAE 6.19 → 6.12, every position better. ✅
+- **Depth charts** (nflverse daily snapshot, assigned to the upcoming week): buried backups
+  (RB3+, WR4+, QB2+) get their usage trimmed; also names the starting QB. Correlation .455 → .460. ✅
+  Boosting starters or trimming TE2s made things worse, so the chart is used only for backups.
+- **Weather**: even with the *actual* game-day wind and temperature the backtest did not improve —
+  the Vegas total already prices the forecast. Plumbing is in (`WEATHER_STRENGTH`), off by default.
+- **Live odds**: `jobs/odds.py` refreshes spread/total from The Odds API (free tier, 500 req/mo)
+  when the `ODDS_API_KEY` repo secret exists; nflverse lines are used otherwise and never
+  overwrite live ones.
+- **Game-day refresh**: `gameday-refresh` re-ingests and re-sims Thu/Sat evening and Sun 7:00,
+  10:00 and 11:45 AM ET so final designations and line moves are in before you build.
+- **External projections**: drop any CSV with name + projection (+ optional ownership) into
+  `data/projections/`, named with the slate key. The builder gets a "Blend external %" control;
+  external ownership replaces the heuristic when present.
+Backtest after all of the above: sim MAE **6.08**, r **0.458** (was 6.20 / 0.447).
+
 ### Results + ownership (Phase 7)
 Once a slate's games are final, the nightly job scores it (`jobs/results.py --all`): projection
 vs actual per player, PIT (where the actual landed in the sim distribution), calibration
@@ -153,4 +177,5 @@ Stored in the DB as generated columns on `player_game_stats`:
 5. ◐ Ownership: heuristic + fade in the GPP objective (multi-lineup builder with stacks/exposure done in phase 2)
 6. ✅ Snap counts (TE usage) + official injury reports
 7. ✅ Results tracking + real ownership from contest exports
-8. Next: showdown slates, FanDuel validation, route data, QB modelling
+8. ✅ Practice reports, depth charts, live-odds hook, game-day refresh, external projection blend
+9. Next: showdown slates, FanDuel validation, QB modelling

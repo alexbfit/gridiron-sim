@@ -16,7 +16,9 @@ let supa, glpk;
 let slates = [], slate = null, players = [], byId = new Map();
 let locks = new Set(), excludes = new Set(), overrides = new Map(), ownOverrides = new Map();
 let ownership = new Map();       // site_player_id -> projected ownership % (heuristic unless overridden)
-let ownModel = { b: 1.4, c: 0.8, cap: 60 };   // replaced by model_params.ownership_model once fitted to real ownership
+let ownModel = { b: 1.4, c: 0.8, cap: 60 };
+let external = new Map();        // site_player_id -> { mean, own } from an imported projection file
+let blend = 0;                   // 0..1 weight on external projections   // replaced by model_params.ownership_model once fitted to real ownership
 const SLOTS_PER_POS = { QB: 1.0, RB: 2.4, WR: 3.4, TE: 1.2, DST: 1.0 };
 let lineups = [];
 let sim = null;                  // { n, index: Map(site_player_id -> Float32Array) }
@@ -61,6 +63,13 @@ async function loadBoard() {
     salary: Number(r.salary), boom_prob: Number(r.boom_prob), bust_prob: Number(r.bust_prob) }));
   byId = new Map(players.map(p => [p.site_player_id, p]));
   locks.clear(); excludes.clear(); overrides.clear(); ownOverrides.clear(); lineups = []; sim = null;
+  external = new Map();
+  try {
+    const ext = await fetchAll(supa.from("slate_projections").select("site_player_id,mean,components").eq("slate_id", slate.slate_id).eq("method", "external").order("site_player_id"));
+    ext.forEach(r => external.set(r.site_player_id, { mean: Number(r.mean), own: r.components?.ownership == null ? null : Number(r.components.ownership) }));
+  } catch (e) { /* none */ }
+  const bl = $("blendWrap"); bl.style.display = external.size ? "" : "none";
+  if (external.size) { $("blendSrc").textContent = `${external.size} players`; blend = (+$("blend").value || 0) / 100; } else blend = 0;
   estimateOwnership();
   renderResults();
   render();
@@ -96,8 +105,19 @@ function lineupSim(ids) {
   return { p10: q(0.10), p50: q(0.50), p90: q(0.90), p98: q(0.98), covered };
 }
 
-function proj(p) { return overrides.has(p.site_player_id) ? overrides.get(p.site_player_id) : (p.mean ?? 0); }
-function own(p) { return ownOverrides.has(p.site_player_id) ? ownOverrides.get(p.site_player_id) : (ownership.get(p.site_player_id) ?? 0); }
+function proj(p) {
+  if (overrides.has(p.site_player_id)) return overrides.get(p.site_player_id);
+  const ext = external.get(p.site_player_id);
+  const own_ = p.mean ?? 0;
+  if (ext && blend > 0) return p.mean == null ? ext.mean : (1 - blend) * own_ + blend * ext.mean;
+  return own_;
+}
+function own(p) {
+  if (ownOverrides.has(p.site_player_id)) return ownOverrides.get(p.site_player_id);
+  const ext = external.get(p.site_player_id);
+  if (ext && ext.own != null && blend > 0) return ext.own;
+  return ownership.get(p.site_player_id) ?? 0;
+}
 
 // Heuristic projected ownership: within each position, the field chases value (pts per $1k) and
 // raw projection; a softmax over those turns them into shares of the position's roster slots.
@@ -189,6 +209,7 @@ function render() {
       } else if (c.key === "status") {
         const rep = p.injury_report ? { Out: "OUT", Doubtful: "D", Questionable: "Q" }[p.injury_report] || "" : "";
         td.textContent = p.status || (rep ? rep + "*" : "");
+        if (!p.status && !rep && p.practice_status && /Did Not|Limited/.test(p.practice_status)) { td.textContent = p.practice_status.startsWith("Did") ? "DNP" : "LP"; td.classList.add("inj"); td.title = `Practice: ${p.practice_status}${p.primary_injury ? ` (${p.primary_injury})` : ""} — no game designation yet`; }
         if (p.status || rep) { td.classList.add("inj"); td.title = (p.injury_report ? `Official report: ${p.injury_report}` : "") + (p.primary_injury ? ` (${p.primary_injury})` : "") + (p.practice_status ? ` · ${p.practice_status}` : "") + (rep && !p.status ? " — * from the NFL report, not the site" : ""); }
       } else {
         td.textContent = c.fmt ? c.fmt(p[c.key]) : (p[c.key] ?? "–");
@@ -385,6 +406,7 @@ async function init() {
   $("slate").addEventListener("change", loadBoard);
   ["posFilter", "search"].forEach(id => $(id).addEventListener("input", render));
   $("contest").addEventListener("change", render);
+  $("blend").addEventListener("input", () => { blend = (+$("blend").value || 0) / 100; estimateOwnership(); render(); });
   $("generate").addEventListener("click", generate);
   $("exportBtn").addEventListener("click", exportCSV);
   $("clearBtn").addEventListener("click", () => { locks.clear(); excludes.clear(); overrides.clear(); ownOverrides.clear(); estimateOwnership(); render(); });

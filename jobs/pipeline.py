@@ -37,6 +37,9 @@ def main():
     for csv in args.csvs:
         path = Path(csv).resolve()
         stem = path.stem.lower()
+        if "projections" in str(path.parent).lower():
+            run("import_projections.py", str(path))
+            continue
         if "ownership" in str(path.parent).lower() or "standings" in stem or "contest" in stem:
             out = run("import_ownership.py", str(path))
             for line in out.splitlines():

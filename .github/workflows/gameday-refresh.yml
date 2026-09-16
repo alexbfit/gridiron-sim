@@ -1,0 +1,32 @@
+name: gameday-refresh
+
+# Extra refreshes close to kickoff: injury reports, depth charts and line moves land in the
+# projections before you build. Times are UTC (ET + 4 in September/October, +5 after Nov 1).
+on:
+  schedule:
+    - cron: "30 22 * * 4"     # Thu 6:30 PM ET
+    - cron: "30 22 * * 6"     # Sat 6:30 PM ET — final injury designations
+    - cron: "0 11 * * 0"      # Sun 7:00 AM ET
+    - cron: "0 14 * * 0"      # Sun 10:00 AM ET
+    - cron: "45 15 * * 0"     # Sun 11:45 AM ET — last look before 1 PM lock
+  workflow_dispatch:
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r jobs/requirements.txt
+      - name: Refresh data + re-sim
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+        run: |
+          python jobs/ingest.py
+          python jobs/odds.py || echo "odds skipped"
+          python jobs/project.py --latest || echo "no slate"
+          python jobs/simulate.py --latest || echo "no slate"

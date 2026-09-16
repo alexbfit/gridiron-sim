@@ -34,7 +34,9 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
         run: |
+          python jobs/odds.py || echo "odds skipped"
           python jobs/project.py --latest || echo "no slate yet"
           python jobs/simulate.py --latest || echo "no slate yet"
           python jobs/results.py --all || echo "results skipped"
