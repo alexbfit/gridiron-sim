@@ -102,6 +102,26 @@ def compute_results(slate, sal, best, own, actual, matrix, dst_fn=lambda team: N
     return rows, meta
 
 
+def method_comparison(rows, by_method):
+    """Score every projection source on the same players: sim, baseline, external, and a 50/50
+    sim+external blend. Only DFS-relevant players who played, same set for every source."""
+    scored = [r for r in rows if r["played"] and r["proj_mean"] is not None and r["proj_mean"] >= RELEVANT.get(r["position"], 8)]
+    sources = dict(by_method)
+    if "sim" in sources and "external" in sources:
+        sources["blend50"] = {k: 0.5 * sources["sim"][k] + 0.5 * sources["external"][k]
+                              for k in sources["sim"] if k in sources["external"]
+                              and sources["sim"][k] is not None and sources["external"][k] is not None}
+    out = {}
+    for name, m in sources.items():
+        pairs = [(m[r["site_player_id"]], r["actual"]) for r in scored if m.get(r["site_player_id"]) is not None]
+        if len(pairs) < 10:
+            continue
+        p = np.array([x for x, _ in pairs]); a = np.array([y for _, y in pairs])
+        out[name] = {"n": len(pairs), "mae": round(float(np.abs(p - a).mean()), 2),
+                     "r": round(float(np.corrcoef(p, a)[0, 1]), 3), "bias": round(float((p - a).mean()), 2)}
+    return out
+
+
 def slate_complete(client, slate):
     ids = slate.get("game_ids") or []
     if not ids:
@@ -131,8 +151,9 @@ def score_slate(client, slate, write=True):
     pts_col = "dk_points" if site == "DK" else "fd_points"
     sal = fetch_all(client.table("slate_salaries").select("*").eq("slate_id", sid), order="site_player_id")
     proj = fetch_all(client.table("slate_projections").select("*").eq("slate_id", sid), order=["site_player_id", "method"])
-    best = {}
-    for p in proj:                                   # prefer sim over baseline
+    best, by_method = {}, {}
+    for p in proj:                                   # prefer sim over baseline for the headline
+        by_method.setdefault(p["method"], {})[p["site_player_id"]] = float(p["mean"]) if p["mean"] is not None else None
         cur = best.get(p["site_player_id"])
         if cur is None or (p["method"] == "sim" and cur["method"] != "sim"):
             best[p["site_player_id"]] = p
@@ -157,6 +178,7 @@ def score_slate(client, slate, write=True):
             print(f"  (sim matrix unavailable: {e})")
 
     rows, meta = compute_results(slate, sal, best, own, actual, matrix, dst_fn=lambda team: dst_actual(client, slate, team))
+    meta["by_method"] = method_comparison(rows, by_method)
     print(f"  {slate['slate_key']}: {len(rows)} players, {meta['n']} scored · MAE {meta['mae']} r {meta['r']} bias {meta['bias']} · cov {meta['coverage']}")
     if write:
         for batch in chunked(rows):

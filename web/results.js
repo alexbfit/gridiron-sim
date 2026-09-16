@@ -37,7 +37,7 @@
     rows = await fetchAll(supa.from("slate_results").select("*").eq("slate_id", slate.slate_id).order("site_player_id"));
     rows.forEach(r => { ["proj_mean", "proj_p10", "proj_p50", "proj_p90", "actual", "pit", "own_actual", "own_heuristic", "salary"].forEach(k => { if (r[k] != null) r[k] = Number(r[k]); }); r.diff = r.proj_mean == null ? null : r.actual - r.proj_mean; });
     await loadSim();
-    renderTiles(); renderMine(); renderTable(); renderTrend();
+    renderTiles(); renderSources(); renderMine(); renderTable(); renderTrend();
   }
 
   function renderTiles() {
@@ -53,6 +53,22 @@
     const pos = Object.entries(m.by_pos || {}).map(([p, v]) => `${p} ${f1(v.mae)} (${v.bias > 0 ? "+" : ""}${f1(v.bias)})`).join(" · ");
     $("tiles").innerHTML = tiles.map(([k, v, s]) => `<div class="tile"><div class="k">${k}</div><div class="v">${v}</div><div class="s">${s}</div></div>`).join("")
       + (pos ? `<div class="tile" style="grid-column:1/-1"><div class="k">MAE (bias) by position</div><div class="s" style="font-size:13px;color:var(--text)">${pos}</div></div>` : "");
+  }
+
+  function renderSources() {
+    const names = ["sim", "baseline", "external", "blend50"];
+    const week = slate.results_meta?.by_method || {};
+    const agg = {};
+    slates.forEach(s => Object.entries(s.results_meta?.by_method || {}).forEach(([k, v]) => { const a = agg[k] = agg[k] || { n: 0, mae: 0, r: 0, bias: 0, w: 0 }; a.n += v.n; a.mae += v.mae * v.n; a.r += v.r * v.n; a.bias += v.bias * v.n; a.w += 1; }));
+    const present = names.filter(k => week[k] || agg[k]);
+    if (!present.length) { $("sources").innerHTML = ""; return; }
+    const bestW = Math.min(...present.filter(k => week[k]).map(k => week[k].mae));
+    const bestS = Math.min(...present.filter(k => agg[k]).map(k => agg[k].mae / agg[k].n));
+    $("sources").innerHTML = `<tr><th class="l">Source</th><th>This week MAE</th><th>r</th><th>bias</th><th>Season MAE</th><th>r</th><th>bias</th><th>weeks</th></tr>` +
+      present.map(k => { const w = week[k], a = agg[k];
+        return `<tr><td class="l"><b>${k}</b></td>
+          <td class="${w && w.mae === bestW ? "best" : ""}">${w ? w.mae.toFixed(2) : "–"}</td><td>${w ? w.r.toFixed(3) : "–"}</td><td>${w ? (w.bias > 0 ? "+" : "") + w.bias.toFixed(2) : "–"}</td>
+          <td class="${a && a.mae / a.n === bestS ? "best" : ""}">${a ? (a.mae / a.n).toFixed(2) : "–"}</td><td>${a ? (a.r / a.n).toFixed(3) : "–"}</td><td>${a ? ((a.bias / a.n) > 0 ? "+" : "") + (a.bias / a.n).toFixed(2) : "–"}</td><td>${a ? a.w : "–"}</td></tr>`; }).join("");
   }
 
   function renderMine() {
