@@ -32,6 +32,7 @@ import simulate as sim
 from common import fetch_all, get_client
 
 RELEVANT = {"QB": 12.0, "RB": 8.0, "WR": 8.0, "TE": 5.0}     # sim-mean threshold to count a player
+SNAPS = None   # {(player_id, season, week): (offense_snaps, offense_pct)} — set by run()
 PCTS = [5, 10, 25, 50, 75, 90, 95]
 
 
@@ -98,6 +99,7 @@ def build_week(season, week, games, team, logs):
              "game_ids": [g["game_id"] for g in wk_games]}
     pre_games = [dict(g, home_score=None, away_score=None) if (g["season"], g["week"]) >= cutoff else g for g in games]
     ctx = {
+        "snaps": {k: v for k, v in (SNAPS or {}).items() if (k[1], k[2]) < cutoff},
         "games": pre_games,
         "team": [r for r in team if (r["season"], r["week"]) < cutoff],
         "logs": [r for r in logs if (r["season"], r["week"]) < cutoff],
@@ -163,7 +165,20 @@ def summarize(results):
 # ------------------------------------------------------------------ main
 def run(season, weeks, n_sims, client=None, quiet=False, data=None):
     t0 = time.time()
-    games, team, logs = data or load_all(client or get_client(), season)
+    global SNAPS
+    client = client or get_client()
+    games, team, logs = data or load_all(client, season)
+    if SNAPS is None:
+        SNAPS = {}
+        try:
+            for r in fetch_all(client.table("player_snaps").select("player_id,season,week,offense_snaps,offense_pct")
+                               .in_("season", [season - 1, season]).eq("season_type", "REG"),
+                               order=["player_id", "season", "week"]):
+                SNAPS[(r["player_id"], r["season"], r["week"])] = (r["offense_snaps"], float(r["offense_pct"] or 0))
+        except Exception as e:
+            print(f"  (player_snaps unavailable: {e})")
+        if not quiet:
+            print(f"snap rows: {len(SNAPS)}")
     if not quiet:
         print(f"loaded {len(games)} games, {len(team)} team rows, {len(logs)} player rows in {time.time() - t0:.0f}s")
     results = []

@@ -182,7 +182,9 @@ function render() {
       } else if (c.key === "position") {
         const s = document.createElement("span"); s.className = "pos " + (["QB","RB","WR","TE"].includes(p.position) ? p.position : "other"); s.textContent = p.position; td.appendChild(s);
       } else if (c.key === "status") {
-        td.textContent = p.status || ""; if (p.status) td.classList.add("inj");
+        const rep = p.injury_report ? { Out: "OUT", Doubtful: "D", Questionable: "Q" }[p.injury_report] || "" : "";
+        td.textContent = p.status || (rep ? rep + "*" : "");
+        if (p.status || rep) { td.classList.add("inj"); td.title = (p.injury_report ? `Official report: ${p.injury_report}` : "") + (p.primary_injury ? ` (${p.primary_injury})` : "") + (p.practice_status ? ` · ${p.practice_status}` : "") + (rep && !p.status ? " — * from the NFL report, not the site" : ""); }
       } else {
         td.textContent = c.fmt ? c.fmt(p[c.key]) : (p[c.key] ?? "–");
       }
@@ -258,9 +260,10 @@ async function generate() {
     poolMult: sim ? Math.max(1, Math.min(5, +$("poolMult").value || 1)) : 1,
   };
   const nCand = Math.min(300, n * opts.poolMult);
+  const eff = (p) => (p.status || "").toUpperCase() || ({ Out: "OUT", Doubtful: "D", Questionable: "Q" }[p.injury_report] || "");
   const pool = players.filter(p => !excludes.has(p.site_player_id) && p.mean != null && proj(p) > 0 &&
-    !["OUT","IR","O"].includes((p.status || "").toUpperCase()) &&
-    !(opts.exclQ && ["Q","D"].includes((p.status || "").toUpperCase())));
+    !["OUT","IR","O"].includes(eff(p)) &&
+    !(opts.exclQ && ["Q","D"].includes(eff(p))));
   if (!pool.some(p => p.position === "DST")) { setStatus("No DST rows with projections in this slate.", true); return; }
 
   lineups = []; $("generate").disabled = true;

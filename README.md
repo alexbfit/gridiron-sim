@@ -9,6 +9,7 @@ Supabase (Postgres) for data, Netlify for the front end, GitHub Actions for the 
 supabase/migrations/001_schema.sql   schema, DK/FD scoring as generated columns, views, RLS
 supabase/migrations/002_slates.sql   slates, salaries, projections, slate_board view (Phase 2)
 supabase/migrations/003_sim.sql      projections keyed by method, sims storage bucket (Phase 3)
+supabase/migrations/004_snaps_injuries.sql  snap counts + official injury reports (Phase 6)
 jobs/ingest.py                       nightly nflverse → Supabase pull (nflreadpy)
 jobs/import_salaries.py              DK/FD salary CSV → slates + slate_salaries (name → player_id)
 jobs/project.py                      baseline projections → slate_projections (method=baseline)
@@ -97,6 +98,13 @@ position, scaled to the position's roster slots). Overwrite the Own% column with
 ownership if you have a source. GPP objective subtracts `fade × 0.06 × own%`; lineup cards show
 summed ownership.
 
+### Snap counts + injury reports (Phase 6)
+The nightly ingest also pulls nflverse snap counts (`player_snaps`) and official injury reports
+(`injury_reports`). The sim scales a **TE's** usage by the change in his recent snap share
+(backtest: TE MAE 5.30 → 5.18, r 0.30 → 0.34; the same adjustment hurt RB/WR, so it is off for
+them). When the DK/FD status is blank, the official report (Out / Doubtful / Questionable) is
+applied instead, and the builder shows it as `OUT*` / `D*` / `Q*` with the injury on hover.
+
 ### Optimizer
 Mixed-integer program solved in the browser (glpk.js). Cash: 0.8·proj + 0.2·floor.
 GPP: 0.6·proj + 0.4·p85 with per-lineup jitter, QB stacks, bring-back, exposure caps,
@@ -125,4 +133,5 @@ Stored in the DB as generated columns on `player_game_stats`:
 3. ✅ Monte Carlo game sim (player × sim matrix, correlations)
 4. ✅ Backtesting harness (calibration of percentiles vs actuals)
 5. ◐ Ownership: heuristic + fade in the GPP objective (multi-lineup builder with stacks/exposure done in phase 2)
-6. Next: real ownership source, lineup-level backtest (needs historical salaries), snap/route data for usage
+6. ✅ Snap counts (TE usage) + official injury reports
+7. Next: real ownership source, lineup-level backtest (needs historical salaries), route data

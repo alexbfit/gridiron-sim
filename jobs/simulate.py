@@ -46,6 +46,7 @@ MARGIN_SD, TOTAL_SD, PLAYS_SD = 13.5, 10.5, 5.0
 PTS_PER_TD = 8.8                   # calibrated on 2025 wk 5-18 backtest (QB pass-TD bias -> 0)
 SCRIPT_PASS_SLOPE = 0.005          # pass-rate change per point of deficit
 ACTIVE_PROB = {"OUT": 0.0, "IR": 0.0, "O": 0.0, "D": 0.5, "Q": 0.9}
+INJURY_MAP = {"Out": "OUT", "Doubtful": "D", "Questionable": "Q"}   # official report -> site-style status
 FUMBLE_RATE = 0.010                # lost fumbles per touch
 OTHER_TGT = (0.05, 0.15)           # share of targets left for players not on the slate (min, max)
 OTHER_CAR = (0.03, 0.12)
@@ -53,6 +54,9 @@ YDS_BASE, YDS_PER_PT, YDS_SD = 140.0, 8.5, 45.0   # team yards ~ N(base + per_pt
 OTHER_YPT = 0.65 * 9.0             # yards per target for the "other" receiving bucket
 RB_TD_PRIOR, QB_TD_PRIOR = 0.03, 0.045
 SHARE_CV_MIN = 0.15                # floor on per-sim usage-share noise (coefficient of variation)
+SNAP_ALPHA = {"QB": 0.0, "RB": 0.0, "WR": 0.0, "TE": 1.0}    # damping exponent on the snap-share change, per position
+                                   # (backtest 2025: helps TE, hurts RB/WR where snaps don't track touches)
+SNAP_RECENT_W = (0.6, 0.4)         # weights on the last two games' snap share
 YDS_COUPLING = 1.0                 # 1 = force team yards to the score-implied total, 0.5 = half-way
 
 # position priors for regression
@@ -97,6 +101,18 @@ def load_context(client, season, week, player_ids):
                           .in_("player_id", batch).in_("season", [season, season - 1]).eq("season_type", "REG"),
                           order=["player_id", "season", "week"])
     ctx["logs"] = logs
+    ctx["snaps"], ctx["injuries"] = {}, {}
+    try:
+        for batch in chunked(sorted(set(player_ids)), 200):
+            for r in fetch_all(client.table("player_snaps").select("player_id,season,week,offense_snaps,offense_pct")
+                               .in_("player_id", batch).in_("season", [season, season - 1]).eq("season_type", "REG"),
+                               order=["player_id", "season", "week"]):
+                ctx["snaps"][(r["player_id"], r["season"], r["week"])] = (r["offense_snaps"], float(r["offense_pct"] or 0))
+        for r in fetch_all(client.table("injury_reports").select("player_id,report_status")
+                           .eq("season", season).eq("week", week).eq("season_type", "REG"), order="player_id"):
+            ctx["injuries"][r["player_id"]] = r["report_status"]
+    except Exception as e:
+        print(f"  (snaps/injuries unavailable: {e})")
     return ctx
 
 
@@ -150,7 +166,7 @@ def team_params(team_rows, season):
     return out, games_by_key
 
 
-def player_params(logs, games_by_key, season, current_team):
+def player_params(logs, games_by_key, season, current_team, snaps=None):
     team_latest = {}
     for (t, se, wk) in games_by_key:
         if (se, wk) > team_latest.get(t, (0, 0)):
@@ -179,8 +195,19 @@ def player_params(logs, games_by_key, season, current_team):
 
         w_u, ts, cs, as_, car_u = shares(usage_rows)
         tsm, csm = wmean(ts, w_u), wmean(cs, w_u)
-        if usage_rows is rows and team and rows[0]["team"] != team:
-            tsm, csm = 0.7 * tsm, 0.7 * csm        # moved teams, no games there yet: haircut old-team usage
+        # snap-count adjustment: scale usage by how the player's recent snap share compares
+        # with his snap share over the usage window (damped). A new starter moves up before
+        # his box score catches up; a player losing snaps moves down.
+        if snaps and SNAP_ALPHA.get(pos, 0) > 0:
+            sp = np.array([snaps.get((pid, r["season"], r["week"]), (None, None))[1] or 0.0 for r in usage_rows])
+            have = sp > 0
+            if have.sum() >= 2:
+                recent = sp[:2]
+                rw = np.array(SNAP_RECENT_W[:len(recent)])
+                snap_recent = float((recent * rw).sum() / rw.sum())
+                snap_hist = wmean(sp[have], w_u[have])
+                mult = float(np.clip((snap_recent + 0.05) / (snap_hist + 0.05), 0.5, 1.6)) ** SNAP_ALPHA[pos]
+                tsm, csm = tsm * mult, csm * mult
         # bench haircut: shares from scattered fill-in weeks overstate a player's role once the
         # starters are all active. If he didn't appear in the team's most recent game, halve it.
         latest = team_latest.get(team)
@@ -269,7 +296,8 @@ def simulate(slate, salaries, ctx, n_sims):
     np.random.seed(int(dt.datetime.now().timestamp()) % 2 ** 31)
     season, week, site = slate["season"], slate["week"], slate["site"]
     tp, gkey = team_params(ctx["team"], season)
-    pp = player_params(ctx["logs"], gkey, season, {s["player_id"]: s["team"] for s in salaries if s["player_id"]})
+    pp = player_params(ctx["logs"], gkey, season, {s["player_id"]: s["team"] for s in salaries if s["player_id"]},
+                       snaps=ctx.get("snaps"))
     dvp = dvp_factors(ctx["dvp"], season)
 
     games = [g for g in ctx["games"] if g["season"] == season and g["week"] == week
@@ -312,7 +340,8 @@ def simulate(slate, salaries, ctx, n_sims):
             roster = [s for s in by_team.get(team, []) if s["position"] != "DST"]
             modeled = [s for s in roster if s["player_id"] in pp]
             # starting QB: highest recent attempt share among non-OUT QBs, else highest salary
-            qbs = [s for s in roster if s["position"] == "QB" and ACTIVE_PROB.get((s["status"] or "").upper(), 1.0) > 0]
+            qbs = [s for s in roster if s["position"] == "QB" and ACTIVE_PROB.get(
+                (s["status"] or "").upper() or INJURY_MAP.get(ctx.get("injuries", {}).get(s["player_id"]) or "", ""), 1.0) > 0]
             qb = None
             if qbs:
                 qb = max(qbs, key=lambda s: (pp.get(s["player_id"], {}).get("att_share_recent", 0), s["salary"]))
@@ -322,7 +351,8 @@ def simulate(slate, salaries, ctx, n_sims):
             # active masks (injury designations)
             act = {}
             for s in modeled:
-                p_act = ACTIVE_PROB.get((s["status"] or "").upper(), 1.0)
+                st = (s["status"] or "").upper() or INJURY_MAP.get(ctx.get("injuries", {}).get(s["player_id"]) or "", "")
+                p_act = ACTIVE_PROB.get(st, 1.0)
                 act[s["site_player_id"]] = (np.random.random(N) < p_act) if p_act < 1 else np.ones(N, bool)
 
             # ---- receiving shares
