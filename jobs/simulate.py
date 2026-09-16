@@ -35,7 +35,7 @@ from collections import defaultdict
 
 import numpy as np
 
-from common import chunked, fetch_all, get_client
+from common import chunked, fetch_all, get_client, slate_started
 
 N_SIMS = 10000
 DIAG = {}
@@ -508,12 +508,16 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--slate-key")
     ap.add_argument("--latest", action="store_true")
+    ap.add_argument("--force", action="store_true", help="re-run even if the slate's games have started")
     ap.add_argument("--sims", type=int, default=N_SIMS)
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args()
 
     client = get_client(need_write=not args.dry_run)
     slate, salaries = load_slate(client, args.slate_key, args.latest)
+    if not args.dry_run and not args.force and slate_started(client, slate):
+        print(f"{slate['slate_key']} has started — projections frozen for results tracking (use --force to override)")
+        return
     print(f"simulating {slate['slate_key']}: {len(salaries)} players, {args.sims} sims")
     pids = [s["player_id"] for s in salaries if s["player_id"] and not s["player_id"].startswith("DST_")]
     ctx = load_context(client, slate["season"], slate["week"], pids)

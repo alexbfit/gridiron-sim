@@ -10,6 +10,12 @@ supabase/migrations/001_schema.sql   schema, DK/FD scoring as generated columns,
 supabase/migrations/002_slates.sql   slates, salaries, projections, slate_board view (Phase 2)
 supabase/migrations/003_sim.sql      projections keyed by method, sims storage bucket (Phase 3)
 supabase/migrations/004_snaps_injuries.sql  snap counts + official injury reports (Phase 6)
+supabase/migrations/005_results_ownership.sql  slate_results, slate_ownership (Phase 7)
+jobs/results.py                      score a finished slate: proj vs actual, PIT, ownership → slate_results
+jobs/import_ownership.py             DK contest standings CSV → slate_ownership (real %drafted + exact FPTS)
+jobs/fit_ownership.py                fit the builder's ownership heuristic to real ownership → model_params
+data/ownership/                      drop DK contest standings exports here
+web/results.html                     results page: last week's projections vs actual, your exported lineups
 jobs/ingest.py                       nightly nflverse → Supabase pull (nflreadpy)
 jobs/import_salaries.py              DK/FD salary CSV → slates + slate_salaries (name → player_id)
 jobs/project.py                      baseline projections → slate_projections (method=baseline)
@@ -105,6 +111,18 @@ The nightly ingest also pulls nflverse snap counts (`player_snaps`) and official
 them). When the DK/FD status is blank, the official report (Out / Doubtful / Questionable) is
 applied instead, and the builder shows it as `OUT*` / `D*` / `Q*` with the injury on hover.
 
+### Results + ownership (Phase 7)
+Once a slate's games are final, the nightly job scores it (`jobs/results.py --all`): projection
+vs actual per player, PIT (where the actual landed in the sim distribution), calibration
+summary in `slates.results_meta`, and a Season-to-date trend on `/results.html`. Lineups you
+export from the builder are remembered in your browser and scored there too. Projections
+freeze once a slate's games start (no post-hoc re-sim).
+
+For real ownership: DK → any contest you entered → download the standings CSV → save it as
+`data/ownership/<slate-key>_standings.csv` (e.g. `DK-2026-02-main_standings.csv`) → push. The
+pipeline imports %Drafted and exact FPTS (incl. DST), re-scores the slate with exact points,
+and `fit_ownership.py` re-fits the builder's ownership coefficients once ≥100 player rows exist.
+
 ### Optimizer
 Mixed-integer program solved in the browser (glpk.js). Cash: 0.8·proj + 0.2·floor.
 GPP: 0.6·proj + 0.4·p85 with per-lineup jitter, QB stacks, bring-back, exposure caps,
@@ -134,4 +152,5 @@ Stored in the DB as generated columns on `player_game_stats`:
 4. ✅ Backtesting harness (calibration of percentiles vs actuals)
 5. ◐ Ownership: heuristic + fade in the GPP objective (multi-lineup builder with stacks/exposure done in phase 2)
 6. ✅ Snap counts (TE usage) + official injury reports
-7. Next: real ownership source, lineup-level backtest (needs historical salaries), route data
+7. ✅ Results tracking + real ownership from contest exports
+8. Next: showdown slates, FanDuel validation, route data, QB modelling

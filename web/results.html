@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gridiron Sim — Results</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  .rs { padding: 12px 20px 32px; max-width: 1300px; }
+  .rs h2 { font-size: 15px; margin: 22px 0 8px; color: var(--accent); }
+  .rs p.lead { color: var(--muted); font-size: 13px; max-width: 900px; margin: 0 0 6px; }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 12px 0; }
+  .tile { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }
+  .tile .k { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+  .tile .v { font-size: 22px; font-weight: 700; margin-top: 2px; font-variant-numeric: tabular-nums; }
+  .tile .s { font-size: 11px; color: var(--muted); }
+  table.m { border-collapse: collapse; width: 100%; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  table.m th, table.m td { padding: 6px 10px; text-align: right; font-variant-numeric: tabular-nums; border-bottom: 1px solid #202634; font-size: 13px; white-space: nowrap; }
+  table.m th { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .04em; background: var(--panel-2); cursor: pointer; position: sticky; top: 0; }
+  table.m td.l, table.m th.l { text-align: left; }
+  td.pos-diff { color: var(--accent); } td.neg-diff { color: #ff6b6b; }
+  .table-wrap.rs-wrap { max-height: 70vh; }
+  .lineup { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; }
+  .lu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 10px; }
+  .bar { height: 8px; background: var(--panel-2); border-radius: 4px; overflow: hidden; margin-top: 4px; }
+  .bar i { display: block; height: 100%; background: var(--accent); }
+  .trend { display: flex; gap: 8px; flex-wrap: wrap; }
+  .trend .tile { min-width: 150px; }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="logo">GS</span>
+    <div><h1>Gridiron Sim</h1><p class="sub">Results · how last week's projections did</p></div>
+    <nav class="nav"><a href="index.html">Stats</a><a href="lineups.html">Lineups</a><a href="backtest.html">Backtest</a><a href="results.html" class="active">Results</a></nav>
+  </div>
+  <div class="controls">
+    <label>Slate <select id="slate"></select></label>
+    <label>Position <select id="posFilter"><option value="ALL">All</option><option>QB</option><option>RB</option><option>WR</option><option>TE</option><option>DST</option></select></label>
+    <label>Search <input id="search" type="search" placeholder="player or team"></label>
+  </div>
+</header>
+
+<main class="rs">
+  <p class="lead" id="status">Loading…</p>
+  <div class="tiles" id="tiles"></div>
+
+  <h2>Your exported lineups</h2>
+  <p class="lead">Lineups you exported from the builder (remembered in this browser) scored with actual points. The percentile is where the actual total landed in the lineup's own simulated distribution.</p>
+  <div class="lu-grid" id="mine"></div>
+
+  <h2>Players</h2>
+  <p class="lead">Proj = projection live at kickoff. PIT = where the actual landed in the sim distribution (0.5 = dead on; near 0 or 1 = a bust or a boom the sim gave little weight to). Own = actual ownership if a contest file was imported, else the heuristic.</p>
+  <div class="table-wrap rs-wrap"><table class="m" id="players"><thead></thead><tbody></tbody></table></div>
+
+  <h2>Season to date</h2>
+  <div class="trend" id="trend"></div>
+</main>
+<footer class="foot">Scored automatically by the nightly job once a slate's games are final. Import a DK contest standings CSV into data/ownership/ for exact points + real ownership.</footer>
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="results.js"></script>
+</body>
+</html>

@@ -29,7 +29,7 @@ import math
 import statistics
 from collections import defaultdict
 
-from common import chunked, fetch_all, get_client
+from common import chunked, fetch_all, get_client, slate_started
 
 DECAY = 0.85          # per game ago
 PRIOR_SEASON_W = 0.5
@@ -291,6 +291,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--slate-key")
     ap.add_argument("--latest", action="store_true")
+    ap.add_argument("--force", action="store_true", help="re-run even if the slate's games have started")
     ap.add_argument("--dry-run", metavar="SLATE_JSON", help="project from an import --dry-run file; writes projections_<key>.json")
     args = ap.parse_args()
 
@@ -300,6 +301,9 @@ def main():
         slate, salaries = {**d["slate"], "slate_id": None}, d["salaries"]
     else:
         slate, salaries = load_slate(client, args.slate_key, args.latest)
+        if not args.force and slate_started(client, slate):
+            print(f"{slate['slate_key']} has started — projections frozen for results tracking (use --force to override)")
+            return
     print(f"projecting {slate['slate_key']}: {len(salaries)} players")
 
     pids = [s["player_id"] for s in salaries if s["player_id"] and not s["player_id"].startswith("DST_")]

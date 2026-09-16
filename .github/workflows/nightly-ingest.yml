@@ -37,3 +37,5 @@ jobs:
         run: |
           python jobs/project.py --latest || echo "no slate yet"
           python jobs/simulate.py --latest || echo "no slate yet"
+          python jobs/results.py --all || echo "results skipped"
+          python jobs/fit_ownership.py || echo "fit skipped"

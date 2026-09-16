@@ -84,3 +84,14 @@ def fetch_all(query, order: str | list[str] = "id", page: int = 1000) -> list[di
 def chunked(seq, n=500):
     for i in range(0, len(seq), n):
         yield seq[i:i + n]
+
+
+def slate_started(client, slate) -> bool:
+    """True once any game on the slate has a score (or its kickoff date has passed)."""
+    import datetime as _dt
+    ids = slate.get("game_ids") or []
+    if not ids:
+        return False
+    games = fetch_all(client.table("games").select("game_id,gameday,home_score").in_("game_id", ids), order="game_id")
+    today = _dt.date.today().isoformat()
+    return any(g["home_score"] is not None or (g["gameday"] and g["gameday"] < today) for g in games)

@@ -16,6 +16,7 @@ let supa, glpk;
 let slates = [], slate = null, players = [], byId = new Map();
 let locks = new Set(), excludes = new Set(), overrides = new Map(), ownOverrides = new Map();
 let ownership = new Map();       // site_player_id -> projected ownership % (heuristic unless overridden)
+let ownModel = { b: 1.4, c: 0.8, cap: 60 };   // replaced by model_params.ownership_model once fitted to real ownership
 const SLOTS_PER_POS = { QB: 1.0, RB: 2.4, WR: 3.4, TE: 1.2, DST: 1.0 };
 let lineups = [];
 let sim = null;                  // { n, index: Map(site_player_id -> Float32Array) }
@@ -43,6 +44,10 @@ async function loadSlates() {
   const { data, error } = await supa.from("slates").select("*").order("imported_at", { ascending: false }).limit(50);
   if (error) throw error;
   slates = data.filter(s => s.slate_key);
+  try {
+    const { data: mp } = await supa.from("model_params").select("param_value").eq("param_key", "ownership_model").maybeSingle();
+    if (mp?.param_value?.b != null) ownModel = { b: +mp.param_value.b, c: +mp.param_value.c, cap: +mp.param_value.cap || 60, fitted: mp.param_value };
+  } catch (e) { /* defaults */ }
   if (!slates.length) throw new Error("No slates imported yet. Drop a salary CSV into data/slates/ and push.");
   $("slate").replaceChildren(...slates.map(s => new Option(`${s.site} · ${s.season} wk ${s.week} · ${s.slate_type} (${s.n_players})`, s.slate_id)));
 }
@@ -104,9 +109,9 @@ function estimateOwnership() {
     const val = pool.map(p => proj(p) / (p.salary / 1000)), pr = pool.map(p => proj(p));
     const z = (a) => { const m = a.reduce((s, v) => s + v, 0) / a.length, sd = Math.sqrt(a.reduce((s, v) => s + (v - m) ** 2, 0) / a.length) || 1; return a.map(v => (v - m) / sd); };
     const zv = z(val), zp = z(pr);
-    const w = pool.map((p, i) => Math.exp(1.4 * zv[i] + 0.8 * zp[i]) * (["Q","D"].includes((p.status || "").toUpperCase()) ? 0.7 : 1));
+    const w = pool.map((p, i) => Math.exp(ownModel.b * zv[i] + ownModel.c * zp[i]) * (["Q","D"].includes((p.status || "").toUpperCase()) ? 0.7 : 1));
     const tot = w.reduce((s, v) => s + v, 0);
-    pool.forEach((p, i) => ownership.set(p.site_player_id, Math.min(60, 100 * SLOTS_PER_POS[pos] * w[i] / tot)));
+    pool.forEach((p, i) => ownership.set(p.site_player_id, Math.min(ownModel.cap, 100 * SLOTS_PER_POS[pos] * w[i] / tot)));
   }
 }
 
@@ -196,9 +201,9 @@ function render() {
   const nSim = players.filter(p => p.method === "sim").length;
   setStatus(`${slate.site} · ${slate.season} wk ${slate.week} · ${rows.length} players · ${nSim ? nSim + " sim-projected" : "baseline projections"}`
     + (sim ? ` · sim matrix ${sim.n} sims loaded` : "") + ` · ${locks.size} locked · ${excludes.size} excluded`);
-  $("objHint").textContent = $("contest").value === "cash"
+  $("objHint").textContent = (ownModel.fitted ? `Ownership model fitted to ${ownModel.fitted.slates} contest(s). ` : "Ownership is a heuristic until a contest standings file is imported. ") + ($("contest").value === "cash"
     ? "Cash: maximizes projected points with a floor tilt (0.8·proj + 0.2·floor)."
-    : "GPP: maximizes ceiling-tilted score (0.6·proj + 0.4·p85) minus an ownership fade, random jitter for diversity, stacks enforced.";
+    : "GPP: maximizes ceiling-tilted score (0.6·proj + 0.4·p85) minus an ownership fade, random jitter for diversity, stacks enforced.");
 }
 
 // ---------------------------------------------------------------- optimizer
@@ -357,6 +362,13 @@ function exportCSV() {
   const header = site.slots.join(",");
   const slotKeys = ["QB", "RB1", "RB2", "WR1", "WR2", "WR3", "TE", "FLEX", site.defLabel];
   const lines = lineups.map(L => slotKeys.map(k => L.slots[k]?.site_player_id ?? "").join(","));
+  try {   // remember what was exported so the Results page can score it after the games
+    const key = "gs_lineups_" + slate.slate_key;
+    const prev = JSON.parse(localStorage.getItem(key) || "[]");
+    const now = new Date().toISOString();
+    const add = lineups.map(L => ({ ids: L.ids, proj: +L.proj.toFixed(1), exported_at: now }));
+    localStorage.setItem(key, JSON.stringify(prev.concat(add).slice(-300)));
+  } catch (e) { /* storage unavailable */ }
   const blob = new Blob([header + "\n" + lines.join("\n") + "\n"], { type: "text/csv" });
   const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
   a.download = `${slate.slate_key}_lineups.csv`; a.click(); URL.revokeObjectURL(a.href);

@@ -2,6 +2,7 @@
 Slate-day pipeline: import one or more salary CSVs, then project + simulate each slate.
 
   python jobs/pipeline.py data/slates/DKSalaries_2026_wk02_main.csv [more.csv ...]
+  python jobs/pipeline.py data/ownership/DK-2026-02-main_standings.csv    # ownership → results → fit
   python jobs/pipeline.py --reproject DK-2026-02-main       # projections only
 """
 from __future__ import annotations
@@ -32,10 +33,16 @@ def main():
     ap.add_argument("--slate-type", default="main")
     args = ap.parse_args()
 
-    keys = []
+    keys, own_keys = [], []
     for csv in args.csvs:
         path = Path(csv).resolve()
         stem = path.stem.lower()
+        if "ownership" in str(path.parent).lower() or "standings" in stem or "contest" in stem:
+            out = run("import_ownership.py", str(path))
+            for line in out.splitlines():
+                if line.startswith("done — ") and " for " in line:
+                    own_keys.append(line.rsplit(" for ", 1)[1].strip())
+            continue
         slate_type = args.slate_type
         for t in ("showdown", "primetime", "early", "afternoon", "sunday", "main"):
             if t in stem:
@@ -50,7 +57,11 @@ def main():
     for k in keys:
         run("project.py", "--slate-key", k)
         run("simulate.py", "--slate-key", k)
-    if not keys:
+    for k in own_keys:
+        run("results.py", "--slate-key", k, "--force")
+    if own_keys:
+        run("fit_ownership.py")
+    if not keys and not own_keys:
         print("nothing to do")
 
 
