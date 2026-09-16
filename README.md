@@ -13,6 +13,7 @@ supabase/migrations/004_snaps_injuries.sql  snap counts + official injury report
 supabase/migrations/005_results_ownership.sql  slate_results, slate_ownership (Phase 7)
 supabase/migrations/006_depth_odds.sql  depth_charts, live-odds columns (Phase 8)
 jobs/odds.py                         live spreads/totals from The Odds API (needs ODDS_API_KEY secret)
+jobs/build_lineups.py                command-line lineup builder (same rules as the site) → DK/FD CSV
 jobs/import_projections.py           third-party projection CSV → slate_projections (method=external)
 data/projections/                    drop 4for4 / ETR / own projection CSVs here
 .github/workflows/gameday-refresh.yml Thu/Sat evening + Sun 7:00 / 10:00 / 11:45 AM ET re-sims
@@ -146,6 +147,13 @@ For real ownership: DK → any contest you entered → download the standings CS
 `data/ownership/<slate-key>_standings.csv` (e.g. `DK-2026-02-main_standings.csv`) → push. The
 pipeline imports %Drafted and exact FPTS (incl. DST), re-scores the slate with exact points,
 and `fit_ownership.py` re-fits the builder's ownership coefficients once ≥100 player rows exist.
+
+### Sunday lineups from Claude (Phase 9)
+A scheduled Claude task runs every Sunday morning: it clones this repo, builds cash + GPP lineups
+with `jobs/build_lineups.py` from the live sim, web-searches the morning's injury / inactive news
+for every player involved, applies overrides (`--exclude`, `--set "Name=proj"`), rebuilds, and
+delivers the DK upload CSVs with a short writeup. Same optimizer as the site, so anything it
+sends can be reproduced there.
 
 ### Optimizer
 Mixed-integer program solved in the browser (glpk.js). Cash: 0.8·proj + 0.2·floor.
