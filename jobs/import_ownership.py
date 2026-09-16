@@ -34,6 +34,17 @@ def read_rows(path):
     ri = next((cols[k] for k in ("roster position", "position", "pos") if k in cols), None)
     if pi is None or oi is None:
         raise SystemExit(f"could not find Player / %Drafted columns in header: {header}")
+    # entries block (left side of a DK standings export): Rank, EntryId, EntryName, TimeRemaining, Points, Lineup
+    ei = next((cols[k] for k in ("points", "score") if k in cols), None)
+    scores = []
+    if ei is not None and ei != fi:
+        for r in rows[1:]:
+            if len(r) > ei and r[ei].strip():
+                try:
+                    scores.append(float(r[ei]))
+                except ValueError:
+                    pass
+    read_rows.scores = scores
     out = []
     for r in rows[1:]:
         if len(r) <= max(pi, oi) or not r[pi].strip():
@@ -115,6 +126,15 @@ def main():
         return
     for batch in chunked(rows):
         client.table("slate_ownership").upsert(batch, on_conflict="slate_id,site_player_id").execute()
+    scores = getattr(read_rows, "scores", [])
+    if len(scores) >= 20:                     # contest score distribution → slates.contest_meta (lineup finish estimates)
+        import numpy as np
+        a = np.array(scores)
+        meta = {"name": args.contest or args.csv.split("/")[-1], "entries": int(len(a)),
+                "quantiles": [round(float(x), 2) for x in np.percentile(a, range(0, 101))],
+                "top": round(float(a.max()), 2), "mean": round(float(a.mean()), 2), "median": round(float(np.median(a)), 2)}
+        client.table("slates").update({"contest_meta": meta}).eq("slate_id", slate["slate_id"]).execute()
+        print(f"  contest distribution: {meta['entries']} entries, median {meta['median']}, top {meta['top']}")
     print(f"done — {len(rows)} ownership rows for {slate['slate_key']}")
 
 

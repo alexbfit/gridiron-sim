@@ -6,8 +6,9 @@ built (and reviewed) without a browser. Reads the slate board + sim matrix with 
   python jobs/build_lineups.py --contest gpp --n 20 --stack 1 --bringback --max-exp 0.5 --fade 0.4
   python jobs/build_lineups.py --contest gpp --n 20 --lock "Bijan Robinson" --exclude "Zay Flowers" \
       --set "George Kittle=9.5" --set-own "Kalif Raymond=25" --out lineups.csv --json lineups.json
+  python jobs/build_lineups.py --contest gpp --n 20 ... --save --note "faded X (DNP Fri)"   # record for Monday scoring
 
-Env: SUPABASE_URL + SUPABASE_ANON_KEY (read-only is enough).
+Env: SUPABASE_URL + SUPABASE_ANON_KEY (read-only is enough; --save goes through the save_lineups RPC).
 Objective / rules mirror web/lineups.js:
   cash: 0.8*proj + 0.2*floor        gpp: 0.6*proj + 0.4*p85 - fade*0.06*own + jitter
   DK: 1 QB, 2-3 RB, 3-4 WR, 1-2 TE, 1 DST, 9 total, <= $50k, players from >= 2 games, max N per team
@@ -186,6 +187,10 @@ def main():
     ap.add_argument("--seed", type=int, default=None)
     ap.add_argument("--out", help="DK/FD upload CSV path")
     ap.add_argument("--json", help="lineup details JSON path")
+    ap.add_argument("--save", action="store_true", help="record the lineups in the DB (slate_lineups) so Monday's scoring grades them")
+    ap.add_argument("--source", default="claude", choices=["claude", "web"])
+    ap.add_argument("--note", default=None, help="short note stored with saved lineups (what was overridden and why)")
+    ap.add_argument("--append", action="store_true", help="with --save: add to existing lineups instead of replacing")
     args = ap.parse_args()
     if args.seed is not None:
         random.seed(args.seed); np.random.seed(args.seed)
@@ -296,6 +301,16 @@ def main():
                                  "salary": p["salary"], "proj": round(proj(p), 1), "own": round(own_map[p["site_player_id"]]),
                                  "status": eff_status(p) or None, "id": p["site_player_id"]} for p in L["players"]]} for L in lineups],
                   open(args.json, "w"), indent=1)
+    if args.save:
+        payload = [{"ids": L["ids"], "proj": L["proj"], "own": L["own"], "p10": L.get("p10"), "p50": L.get("p50"), "p90": L.get("p90"),
+                    "note": args.note} for L in lineups]
+        try:
+            n = client.rpc("save_lineups", {"p_slate_key": slate["slate_key"], "p_source": args.source, "p_contest": args.contest,
+                                            "p_lineups": payload, "p_replace": not args.append}).execute().data
+            print(f"saved {n} {args.contest} lineups to slate_lineups ({args.source}) — scored automatically after the games", file=sys.stderr)
+        except Exception as e:
+            print(f"save failed: {e}", file=sys.stderr)
+            sys.exit(2)
 
 
 if __name__ == "__main__":

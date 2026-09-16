@@ -122,6 +122,73 @@ def method_comparison(rows, by_method):
     return out
 
 
+def contest_percentile(total, contest_meta):
+    """Share of real contest entries this total would have beaten (from the imported standings distribution)."""
+    q = (contest_meta or {}).get("quantiles")
+    if not q or len(q) < 2:
+        return None
+    q = np.array(q, dtype=float)
+    # quantiles[k] = score at the k-th percentile; invert by interpolation
+    if total <= q[0]:
+        return 0.0
+    if total >= q[-1]:
+        return 1.0
+    k = int(np.searchsorted(q, total, side="right")) - 1
+    lo, hi = q[k], q[min(k + 1, len(q) - 1)]
+    frac = 0.0 if hi <= lo else (total - lo) / (hi - lo)
+    return round(float(min(1.0, (k + frac) / (len(q) - 1))), 3)
+
+
+def score_lineups(client, slate, rows, matrix, write=True):
+    """Grade every saved lineup for the slate (Claude's Sunday lineups + web exports):
+    actual total, percentile within its own sim distribution, and contest finish if a standings file exists."""
+    sid = slate["slate_id"]
+    lus = fetch_all(client.table("slate_lineups").select("*").eq("slate_id", sid), order=["source", "contest", "idx"])
+    if not lus:
+        return {}
+    actual = {r["site_player_id"]: r["actual"] for r in rows}
+    proj = {r["site_player_id"]: r["proj_mean"] or 0 for r in rows}
+    cm = slate.get("contest_meta")
+    for L in lus:
+        ids = L["player_ids"] or []
+        tot = round(float(sum(actual.get(i, 0) or 0 for i in ids)), 2)
+        L["actual"] = tot
+        L["sim_pct"] = None
+        if matrix is not None:
+            n = len(next(iter(matrix.values())))
+            sim = np.zeros(n)
+            for i in ids:
+                a = matrix.get(i)
+                sim += a if a is not None else proj.get(i, 0)
+            L["sim_pct"] = round(float((sim <= tot).mean()), 3)
+        L["contest_pct"] = contest_percentile(tot, cm)
+        L["scored_at"] = dt.datetime.now(dt.timezone.utc).isoformat()
+    if write:
+        for L in lus:
+            client.table("slate_lineups").update({k: L[k] for k in ("actual", "sim_pct", "contest_pct", "scored_at")}) \
+                .eq("slate_id", sid).eq("source", L["source"]).eq("contest", L["contest"]).eq("idx", L["idx"]).execute()
+    summary = {}
+    for src in sorted({L["source"] for L in lus}):
+        for con in ("cash", "gpp"):
+            g = [L for L in lus if L["source"] == src and L["contest"] == con]
+            if not g:
+                continue
+            acts = np.array([L["actual"] for L in g]); projs = np.array([float(L["proj"] or 0) for L in g])
+            sp = [L["sim_pct"] for L in g if L["sim_pct"] is not None]
+            cp = [L["contest_pct"] for L in g if L["contest_pct"] is not None]
+            summary.setdefault(src, {})[con] = {
+                "n": len(g), "proj": round(float(projs.mean()), 1), "actual": round(float(acts.mean()), 1),
+                "best": round(float(acts.max()), 1), "sim_pct": round(float(np.mean(sp)), 3) if sp else None,
+                "contest_pct": round(float(np.mean(cp)), 3) if cp else None,
+                "best_contest_pct": round(float(max(cp)), 3) if cp else None,
+                "cash_line_hit": (round(float(np.mean([c >= 0.5 for c in cp])), 3) if cp else None),   # share above the field median
+            }
+    for src, d in summary.items():
+        for con, m in d.items():
+            print(f"  lineups {src}/{con}: n={m['n']} proj {m['proj']} actual {m['actual']} best {m['best']} sim_pct {m['sim_pct']} contest_pct {m['contest_pct']}")
+    return summary
+
+
 def slate_complete(client, slate):
     ids = slate.get("game_ids") or []
     if not ids:
@@ -179,6 +246,10 @@ def score_slate(client, slate, write=True):
 
     rows, meta = compute_results(slate, sal, best, own, actual, matrix, dst_fn=lambda team: dst_actual(client, slate, team))
     meta["by_method"] = method_comparison(rows, by_method)
+    try:
+        meta["lineups"] = score_lineups(client, slate, rows, matrix, write=write)
+    except Exception as e:
+        print(f"  (lineup scoring failed: {e})")
     print(f"  {slate['slate_key']}: {len(rows)} players, {meta['n']} scored · MAE {meta['mae']} r {meta['r']} bias {meta['bias']} · cov {meta['coverage']}")
     if write:
         for batch in chunked(rows):

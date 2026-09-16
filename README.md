@@ -12,6 +12,7 @@ supabase/migrations/003_sim.sql      projections keyed by method, sims storage b
 supabase/migrations/004_snaps_injuries.sql  snap counts + official injury reports (Phase 6)
 supabase/migrations/005_results_ownership.sql  slate_results, slate_ownership (Phase 7)
 supabase/migrations/006_depth_odds.sql  depth_charts, live-odds columns (Phase 8)
+supabase/migrations/007_lineups.sql  slate_lineups + save_lineups RPC, slates.contest_meta (Phase 9)
 jobs/odds.py                         live spreads/totals from The Odds API (needs ODDS_API_KEY secret)
 jobs/build_lineups.py                command-line lineup builder (same rules as the site) → DK/FD CSV
 jobs/import_projections.py           third-party projection CSV → slate_projections (method=external)
@@ -154,6 +155,16 @@ with `jobs/build_lineups.py` from the live sim, web-searches the morning's injur
 for every player involved, applies overrides (`--exclude`, `--set "Name=proj"`), rebuilds, and
 delivers the DK upload CSVs with a short writeup. Same optimizer as the site, so anything it
 sends can be reproduced there.
+
+**Lineup tracking (automatic).** The task's final builds run with `--save`, which records the
+lineups in `slate_lineups` through the `save_lineups` RPC (anon-callable, validated: real slate,
+9 slate players, under the cap, and only *before* kickoff — no back-dating). Exporting from the
+builder saves the same way (source = web). On Monday `results.py` grades every saved lineup:
+actual total, percentile inside its own sim distribution, and — once a contest standings CSV is
+in `data/ownership/` — the share of the real field it beat (`slates.contest_meta` holds the
+contest's score quantiles). The Results page shows the lineup scoreboard for the week and a
+season record per source/contest. No real entries needed to grade the model; enter small until
+the record earns more.
 
 ### Optimizer
 Mixed-integer program solved in the browser (glpk.js). Cash: 0.8·proj + 0.2·floor.

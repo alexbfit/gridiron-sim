@@ -25,6 +25,8 @@
   .lu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 10px; }
   .bar { height: 8px; background: var(--panel-2); border-radius: 4px; overflow: hidden; margin-top: 4px; }
   .bar i { display: block; height: 100%; background: var(--accent); }
+  .lu-group { margin: 14px 0 6px; font-size: 13px; }
+  .muted { color: var(--muted); }
   .trend { display: flex; gap: 8px; flex-wrap: wrap; }
   .trend .tile { min-width: 150px; }
 </style>
@@ -51,9 +53,12 @@
   <p class="lead">Every source scored on the same players. <b>sim</b> = Monte Carlo, <b>baseline</b> = the simple model, <b>external</b> = an imported projection file (if any), <b>blend50</b> = half sim, half external. Season-to-date is the average across all scored weeks — give it 3–4 weeks before trusting the ranking.</p>
   <table class="m" id="sources"></table>
 
-  <h2>Your exported lineups</h2>
-  <p class="lead">Lineups you exported from the builder (remembered in this browser) scored with actual points. The percentile is where the actual total landed in the lineup's own simulated distribution.</p>
-  <div class="lu-grid" id="mine"></div>
+  <h2>Lineup scoreboard</h2>
+  <p class="lead">Every lineup recorded before kickoff — Claude's Sunday cash + GPP lineups and anything exported from the builder — scored with actual points. <b>sim</b> = where the actual landed in the lineup's own simulated distribution; <b>field</b> = share of real contest entries it would have beaten (needs a contest standings file in <code>data/ownership/</code>).</p>
+  <div id="mine"></div>
+
+  <h2>Lineup record — season to date</h2>
+  <div id="luSeason"></div>
 
   <h2>Players</h2>
   <p class="lead">Proj = projection live at kickoff. PIT = where the actual landed in the sim distribution (0.5 = dead on; near 0 or 1 = a bust or a boom the sim gave little weight to). Own = actual ownership if a contest file was imported, else the heuristic.</p>

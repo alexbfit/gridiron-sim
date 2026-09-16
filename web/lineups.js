@@ -390,6 +390,11 @@ function exportCSV() {
     const add = lineups.map(L => ({ ids: L.ids, proj: +L.proj.toFixed(1), exported_at: now }));
     localStorage.setItem(key, JSON.stringify(prev.concat(add).slice(-300)));
   } catch (e) { /* storage unavailable */ }
+  // also record them in the DB (source = web) so Monday's scoring grades them on the Results page
+  const payload = lineups.map(L => ({ ids: L.ids, proj: +L.proj.toFixed(1), own: Math.round(L.own),
+    p10: L.sim ? +L.sim.p10.toFixed(1) : null, p50: L.sim ? +L.sim.p50.toFixed(1) : null, p90: L.sim ? +L.sim.p90.toFixed(1) : null }));
+  supa.rpc("save_lineups", { p_slate_key: slate.slate_key, p_source: "web", p_contest: $("contest").value, p_lineups: payload, p_replace: false })
+    .then(({ error }) => { if (error) console.warn("save_lineups:", error.message); else setStatus(`Exported ${lineups.length} lineups — saved for scoring on the Results page after the games.`); });
   const blob = new Blob([header + "\n" + lines.join("\n") + "\n"], { type: "text/csv" });
   const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
   a.download = `${slate.slate_key}_lineups.csv`; a.click(); URL.revokeObjectURL(a.href);

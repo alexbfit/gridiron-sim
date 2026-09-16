@@ -4,7 +4,7 @@
   const $ = (id) => document.getElementById(id);
   const f1 = (v) => v == null ? "–" : Number(v).toFixed(1);
   const money = (v) => "$" + Number(v).toLocaleString();
-  let supa, slates = [], slate = null, rows = [], sim = null, sortKey = "actual", sortAsc = false;
+  let supa, slates = [], slate = null, rows = [], sim = null, dbLineups = [], sortKey = "actual", sortAsc = false;
 
   async function fetchAll(query) {
     const page = 1000; let from = 0, out = [];
@@ -37,7 +37,8 @@
     rows = await fetchAll(supa.from("slate_results").select("*").eq("slate_id", slate.slate_id).order("site_player_id"));
     rows.forEach(r => { ["proj_mean", "proj_p10", "proj_p50", "proj_p90", "actual", "pit", "own_actual", "own_heuristic", "salary"].forEach(k => { if (r[k] != null) r[k] = Number(r[k]); }); r.diff = r.proj_mean == null ? null : r.actual - r.proj_mean; });
     await loadSim();
-    renderTiles(); renderSources(); renderMine(); renderTable(); renderTrend();
+    dbLineups = await fetchAll(supa.from("slate_lineups").select("*").eq("slate_id", slate.slate_id).order("source").order("contest").order("idx"));
+    renderTiles(); renderSources(); renderMine(); renderLineupSeason(); renderTable(); renderTrend();
   }
 
   function renderTiles() {
@@ -71,30 +72,70 @@
           <td class="${a && a.mae / a.n === bestS ? "best" : ""}">${a ? (a.mae / a.n).toFixed(2) : "–"}</td><td>${a ? (a.r / a.n).toFixed(3) : "–"}</td><td>${a ? ((a.bias / a.n) > 0 ? "+" : "") + (a.bias / a.n).toFixed(2) : "–"}</td><td>${a ? a.w : "–"}</td></tr>`; }).join("");
   }
 
+  const pct = (v) => v == null ? "–" : Math.round(v * 100) + "%";
+  const SRC = { claude: "Claude (Sunday task)", web: "Builder export" };
+
   function renderMine() {
     const box = $("mine");
-    let mine = [];
-    try { mine = JSON.parse(localStorage.getItem("gs_lineups_" + slate.slate_key) || "[]"); } catch (e) {}
-    if (!mine.length) { box.innerHTML = `<p class="lead">No exported lineups remembered for this slate in this browser.</p>`; return; }
     const byId = new Map(rows.map(r => [r.site_player_id, r]));
-    const cards = mine.map((L, i) => {
+    const cm = slate.contest_meta;
+    // DB lineups (Claude's Sunday lineups + builder exports) plus any browser-only exports not in the DB
+    let mine = dbLineups.map(L => ({ source: L.source, contest: L.contest, idx: L.idx, ids: L.player_ids, proj: L.proj, note: L.note,
+      actual: L.actual, sim_pct: L.sim_pct, contest_pct: L.contest_pct }));
+    try {
+      const local = JSON.parse(localStorage.getItem("gs_lineups_" + slate.slate_key) || "[]");
+      const seen = new Set(mine.map(L => L.ids.slice().sort().join("|")));
+      local.forEach((L, i) => { const k = L.ids.slice().sort().join("|"); if (!seen.has(k)) { seen.add(k); mine.push({ source: "browser", contest: "?", idx: i + 1, ids: L.ids, proj: L.proj }); } });
+    } catch (e) {}
+    if (!mine.length) { box.innerHTML = `<p class="lead">No lineups recorded for this slate yet. Claude's Sunday lineups and anything you export from the builder are saved automatically and scored here after the games.</p>`; return; }
+    const cards = mine.map(L => {
       const ps = L.ids.map(id => byId.get(id)).filter(Boolean);
-      const actual = ps.reduce((s, p) => s + (p.actual || 0), 0);
-      let pct = null;
-      if (sim) {
+      const actual = L.actual != null ? Number(L.actual) : ps.reduce((s, p) => s + (p.actual || 0), 0);
+      let sp = L.sim_pct != null ? Number(L.sim_pct) : null;
+      if (sp == null && sim) {
         const tot = new Float32Array(sim.n);
         L.ids.forEach(id => { const a = sim.index.get(id); if (a) for (let k = 0; k < sim.n; k++) tot[k] += a[k]; else { const m = byId.get(id)?.proj_mean || 0; for (let k = 0; k < sim.n; k++) tot[k] += m; } });
         let below = 0; for (let k = 0; k < sim.n; k++) if (tot[k] <= actual) below++;
-        pct = Math.round(100 * below / sim.n);
+        sp = below / sim.n;
       }
-      return { i, L, ps, actual, pct };
-    }).sort((a, b) => b.actual - a.actual);
-    box.innerHTML = cards.map(({ i, L, ps, actual, pct }) => `
+      return { L, ps, actual, sp, cp: L.contest_pct != null ? Number(L.contest_pct) : null };
+    });
+    const groups = new Map();
+    cards.forEach(c => { const k = `${c.L.source}|${c.L.contest}`; if (!groups.has(k)) groups.set(k, []); groups.get(k).push(c); });
+    box.innerHTML = [...groups.entries()].map(([k, cs]) => {
+      const [src, con] = k.split("|");
+      const acts = cs.map(c => c.actual), avg = acts.reduce((a, b) => a + b, 0) / cs.length, best = Math.max(...acts);
+      const cps = cs.filter(c => c.cp != null).map(c => c.cp);
+      const head = `<div class="lu-group"><b>${SRC[src] || src}</b> · ${con.toUpperCase()} · ${cs.length} lineup${cs.length > 1 ? "s" : ""} · avg <b>${f1(avg)}</b>${cs.length > 1 ? ` · best <b>${f1(best)}</b>` : ""}`
+        + (cps.length ? ` · would beat <b>${pct(cps.reduce((a, b) => a + b, 0) / cps.length)}</b> of the field on average${cs.length > 1 ? ` (best ${pct(Math.max(...cps))})` : ""}` : (cm ? "" : ` · <span class="muted">import a contest standings file for real finishes</span>`))
+        + `</div>`;
+      cs.sort((a, b) => b.actual - a.actual);
+      return head + `<div class="lu-grid">` + cs.map(({ L, ps, actual, sp, cp }) => `
       <div class="lineup">
-        <div class="lu-head"><b>#${i + 1}</b> <span>proj ${f1(L.proj)}</span> <span>actual <b>${f1(actual)}</b></span>${pct != null ? ` <span title="percentile of the lineup's simulated distribution">sim pct ${pct}%</span>` : ""}</div>
-        ${pct != null ? `<div class="bar"><i style="width:${pct}%"></i></div>` : ""}
+        <div class="lu-head"><b>#${L.idx}</b> <span>proj ${f1(L.proj)}</span> <span>actual <b>${f1(actual)}</b></span>${sp != null ? ` <span title="percentile of the lineup's own simulated distribution">sim ${pct(sp)}</span>` : ""}${cp != null ? ` <span title="share of real contest entries this total beat">field ${pct(cp)}</span>` : ""}</div>
+        ${sp != null ? `<div class="bar"><i style="width:${Math.round(sp * 100)}%"></i></div>` : ""}
         <table class="lu">${ps.map(p => `<tr><td><span class="pos ${["QB","RB","WR","TE"].includes(p.position) ? p.position : "other"}">${p.position}</span></td><td class="left">${p.player_name}</td><td>${f1(p.proj_mean)}</td><td><b>${f1(p.actual)}</b></td></tr>`).join("")}</table>
-      </div>`).join("");
+        ${L.note ? `<div class="muted" style="font-size:11px;margin-top:4px">${L.note}</div>` : ""}
+      </div>`).join("") + `</div>`;
+    }).join("");
+  }
+
+  function renderLineupSeason() {
+    const box = $("luSeason");
+    const agg = {};
+    slates.forEach(s => Object.entries(s.results_meta?.lineups || {}).forEach(([src, d]) => Object.entries(d).forEach(([con, m]) => {
+      const a = agg[`${src}|${con}`] = agg[`${src}|${con}`] || { weeks: 0, n: 0, proj: 0, actual: 0, best: 0, sp: [], cp: [], bcp: [], above: 0, wk: 0 };
+      a.weeks += 1; a.n += m.n; a.proj += m.proj; a.actual += m.actual; a.best = Math.max(a.best, m.best);
+      if (m.sim_pct != null) a.sp.push(m.sim_pct); if (m.contest_pct != null) { a.cp.push(m.contest_pct); a.wk += 1; if (m.contest_pct >= 0.5) a.above += 1; }
+      if (m.best_contest_pct != null) a.bcp.push(m.best_contest_pct);
+    })));
+    const keys = Object.keys(agg);
+    if (!keys.length) { box.innerHTML = `<p class="lead">Season lineup record appears after the first scored week.</p>`; return; }
+    const mean = (xs) => xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null;
+    box.innerHTML = `<table class="m"><tr><th class="l">Lineups</th><th>weeks</th><th>lineups</th><th>avg proj</th><th>avg actual</th><th>best</th><th>avg sim pct</th><th>avg field beaten</th><th>best finish</th><th>weeks above field median</th></tr>` +
+      keys.map(k => { const [src, con] = k.split("|"), a = agg[k];
+        return `<tr><td class="l"><b>${SRC[src] || src}</b> · ${con.toUpperCase()}</td><td>${a.weeks}</td><td>${a.n}</td><td>${f1(a.proj / a.weeks)}</td><td>${f1(a.actual / a.weeks)}</td><td>${f1(a.best)}</td><td>${pct(mean(a.sp))}</td><td>${pct(mean(a.cp))}</td><td>${pct(a.bcp.length ? Math.max(...a.bcp) : null)}</td><td>${a.wk ? `${a.above} / ${a.wk}` : "–"}</td></tr>`; }).join("") + `</table>
+      <p class="lead" style="margin-top:6px">Reading it: <b>avg sim pct</b> near 50% means the sim's lineup distributions are honest (consistently under 50% = over-projecting). <b>avg field beaten</b> comes from imported contest standings — above 50% on cash lineups is the cash line, and GPP <b>best finish</b> is what matters for tournaments. Give it 4–6 weeks before scaling up real entries.</p>`;
   }
 
   const COLS = [
