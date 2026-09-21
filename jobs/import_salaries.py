@@ -218,7 +218,9 @@ def main():
         "site": site, "season": season, "week": week,
         "slate_type": args.slate_type,
         "slate_name": args.slate_name or f"{site} Week {week} {args.slate_type}",
-        "game_ids": sorted({g for g in game_ids.values()}),
+        # only the games actually on this slate (a main slate excludes TNF / MNF) — this is what
+        # "slate started" / "slate complete" checks look at
+        "game_ids": sorted({p["game_id"] for p in players if p["game_id"]}),
         "n_players": len(players),
         "imported_at": dt.datetime.now(dt.timezone.utc).isoformat(),
     }

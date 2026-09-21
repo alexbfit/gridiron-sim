@@ -52,8 +52,19 @@ begin
   if jsonb_typeof(p_lineups) <> 'array' or jsonb_array_length(p_lineups) > 150 then raise exception 'lineups must be an array of <= 150'; end if;
   select * into s from slates where slate_key = p_slate_key;
   if not found then raise exception 'slate % not found', p_slate_key; end if;
-  if exists (select 1 from games g where g.game_id in (select jsonb_array_elements_text(coalesce(s.game_ids, '[]'::jsonb)))
-             and (g.home_score is not null or g.gameday < current_date)) then
+  -- "started" = the first not-yet-played game on the slate has kicked off (ET). Games earlier than
+  -- that (e.g. a stray Thursday game in game_ids) are ignored; a slate with no unplayed games is over.
+  if not exists (select 1 from games g where g.game_id in (select jsonb_array_elements_text(coalesce(s.game_ids, '[]'::jsonb))) and g.home_score is null) then
+    raise exception 'slate % is complete — lineups can only be saved before kickoff', p_slate_key;
+  end if;
+  if exists (
+    select 1 from games g
+    where g.game_id in (select jsonb_array_elements_text(coalesce(s.game_ids, '[]'::jsonb)))
+      and g.gameday >= (select min(g2.gameday) from games g2
+                        where g2.game_id in (select jsonb_array_elements_text(coalesce(s.game_ids, '[]'::jsonb))) and g2.home_score is null)
+      and (g.home_score is not null
+           or ((g.gameday::text || ' ' || coalesce(nullif(g.gametime, ''), '13:00'))::timestamp at time zone 'America/New_York') <= now())
+  ) then
     raise exception 'slate % has started — lineups can only be saved before kickoff', p_slate_key;
   end if;
   cap := case when s.site = 'FD' then 60000 else 50000 end;

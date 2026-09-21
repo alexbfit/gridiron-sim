@@ -87,11 +87,23 @@ def chunked(seq, n=500):
 
 
 def slate_started(client, slate) -> bool:
-    """True once any game on the slate has a score (or its kickoff date has passed)."""
+    """True once the first not-yet-played game on the slate has kicked off (ET), or all games are final.
+    Games earlier than the first unplayed one (a stray TNF in game_ids) are ignored."""
     import datetime as _dt
+    from zoneinfo import ZoneInfo
     ids = slate.get("game_ids") or []
     if not ids:
         return False
-    games = fetch_all(client.table("games").select("game_id,gameday,home_score").in_("game_id", ids), order="game_id")
-    today = _dt.date.today().isoformat()
-    return any(g["home_score"] is not None or (g["gameday"] and g["gameday"] < today) for g in games)
+    games = fetch_all(client.table("games").select("game_id,gameday,gametime,home_score").in_("game_id", ids), order="game_id")
+    unplayed = [g for g in games if g["home_score"] is None and g["gameday"]]
+    if not unplayed:
+        return True
+    first = min(g["gameday"] for g in unplayed)
+    now = _dt.datetime.now(ZoneInfo("America/New_York"))
+    today, hhmm = now.date().isoformat(), now.strftime("%H:%M")
+    for g in games:
+        if not g["gameday"] or g["gameday"] < first:
+            continue
+        if g["home_score"] is not None or g["gameday"] < today or (g["gameday"] == today and (g["gametime"] or "13:00") <= hhmm):
+            return True
+    return False
