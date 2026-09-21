@@ -14,6 +14,13 @@ Objective / rules mirror web/lineups.js:
   DK: 1 QB, 2-3 RB, 3-4 WR, 1-2 TE, 1 DST, 9 total, <= $50k, players from >= 2 games, max N per team
   GPP stacks: QB + n same-team WR/TE, optional bring-back (opponent RB/WR/TE)
   uniqueness across lineups, exposure cap, "candidates x" over-generate then keep best by sim p50 (cash) / p90 (gpp)
+
+Contest-aware GPP selection (--objective ev): over-generate candidates with varied fade/jitter, sample a
+field of opponents from projected ownership, and keep the lineups with the best expected payout against
+that field across the stored sims (see contest_sim.py). Structural knobs the winners use:
+  --max-own 120        cap the lineup's summed ownership %
+  --stack-rb           let the QB's RB count toward --stack (QB + RB + TE is a stack)
+  --objective ev --entries 200000 --payout milly --fee 20 --field 4000
 """
 from __future__ import annotations
 
@@ -93,8 +100,33 @@ def eff_status(r):
     return (r.get("status") or "").upper() or INJ_MAP.get(r.get("injury_report") or "", "")
 
 
+def read_own_file(path, byname):
+    """{site_player_id: own%} from a CSV with a player-name column and an ownership column.
+    Handles DK contest-standings exports (Player / %Drafted per roster slot -> summed per player)."""
+    with open(path, encoding="utf-8-sig", newline="") as f:
+        rows = list(csv.reader(f))
+    hdr = [h.strip().lower() for h in rows[0]]
+    pi = next((i for i, h in enumerate(hdr) if h in ("player", "player name", "name")), None)
+    oi = next((i for i, h in enumerate(hdr) if h in ("%drafted", "% drafted", "ownership", "own", "own%", "proj own", "projected ownership")), None)
+    if pi is None or oi is None:
+        raise SystemExit(f"--own-file: need player + ownership columns, got {rows[0]}")
+    out = {}
+    for r in rows[1:]:
+        if len(r) <= max(pi, oi) or not r[pi] or not r[oi]:
+            continue
+        c = byname.get(norm_name(r[pi]))
+        if not c:
+            continue
+        try:
+            v = float(r[oi].replace("%", ""))
+        except ValueError:
+            continue
+        out[c[0]["site_player_id"]] = out.get(c[0]["site_player_id"], 0.0) + v
+    return out
+
+
 # ------------------------------------------------------------------ optimizer
-def solve(pool, score, site, opts, prior, blocked, locks):
+def solve(pool, score, site, opts, prior, blocked, locks, own_map=None):
     prob = pulp.LpProblem("lineup", pulp.LpMaximize)
     x = {p["site_player_id"]: pulp.LpVariable("x_" + p["site_player_id"].replace("-", "_"), cat="Binary") for p in pool}
     by = lambda f: [x[p["site_player_id"]] for p in pool if f(p)]
@@ -117,11 +149,14 @@ def solve(pool, score, site, opts, prior, blocked, locks):
     for g in {p["game_id"] for p in pool if p.get("game_id")}:
         prob += pulp.lpSum(by(lambda p, g=g: p.get("game_id") == g)) <= 8
     if opts.contest == "gpp":
+        stack_pos = ("RB", "WR", "TE") if getattr(opts, "stack_rb", False) else ("WR", "TE")
         for qb in [p for p in pool if p["position"] == "QB"]:
             if opts.stack > 0:
-                prob += pulp.lpSum(by(lambda p, qb=qb: p["team"] == qb["team"] and p["position"] in ("WR", "TE"))) >= opts.stack * x[qb["site_player_id"]]
+                prob += pulp.lpSum(by(lambda p, qb=qb: p["team"] == qb["team"] and p["position"] in stack_pos)) >= opts.stack * x[qb["site_player_id"]]
             if opts.bringback:
                 prob += pulp.lpSum(by(lambda p, qb=qb: p["team"] == qb["opponent"] and p["position"] in ("RB", "WR", "TE"))) >= x[qb["site_player_id"]]
+    if getattr(opts, "max_own", 0) and own_map:
+        prob += pulp.lpSum(own_map.get(p["site_player_id"], 0.0) * x[p["site_player_id"]] for p in pool) <= opts.max_own
     for L in prior:
         prob += pulp.lpSum(x[i] for i in L if i in x) <= 9 - opts.min_uniq
     for i in locks:
@@ -178,12 +213,27 @@ def main():
     ap.add_argument("--rand", type=float, default=0.15)
     ap.add_argument("--fade", type=float, default=0.4)
     ap.add_argument("--min-salary", type=int, default=0)
+    ap.add_argument("--max-own", type=float, default=0, help="cap on a lineup's summed ownership %% (gpp)")
+    ap.add_argument("--stack-rb", action="store_true", help="QB's RB counts toward --stack")
+    ap.add_argument("--objective", choices=["default", "ev"], default="default",
+                    help="ev: rank candidates by expected payout vs a simulated field (gpp only)")
+    ap.add_argument("--entries", type=int, default=200000, help="contest size for --objective ev")
+    ap.add_argument("--fee", type=float, default=20.0, help="entry fee for --objective ev")
+    ap.add_argument("--payout", choices=["milly", "gpp", "se"], default="milly", help="payout curve for --objective ev")
+    ap.add_argument("--field", type=int, default=4000, help="sampled opponent lineups for --objective ev")
     ap.add_argument("--exclude-q", action="store_true")
     ap.add_argument("--blend", type=float, default=0.0, help="weight on external projections if imported")
+    ap.add_argument("--market", type=float, default=0.0,
+                    help="pull RB/WR projections this far (0-1) toward the salary-implied line; sims are rescaled to match. "
+                         "Early season (few games) 0.5 beat the raw sim on 2026 wk2.")
+    ap.add_argument("--market-pos", default="RB,WR", help="positions the --market blend applies to")
     ap.add_argument("--lock", action="append", default=[], help="player name (repeatable)")
     ap.add_argument("--exclude", action="append", default=[])
     ap.add_argument("--set", action="append", default=[], help='"Name=proj" projection override')
     ap.add_argument("--set-own", action="append", default=[], help='"Name=own%%" ownership override')
+    ap.add_argument("--own-file", help="CSV of projected (or, for backtests, actual) ownership: any file with a player-name "
+                                       "column and a %%-drafted/ownership column, incl. a DK contest-standings export "
+                                       "(slot rows are summed). Replaces the heuristic for players it covers.")
     ap.add_argument("--seed", type=int, default=None)
     ap.add_argument("--out", help="DK/FD upload CSV path")
     ap.add_argument("--json", help="lineup details JSON path")
@@ -210,7 +260,31 @@ def main():
         return c[0]
 
     overrides = {find(s.split("=")[0])["site_player_id"]: float(s.split("=")[1]) for s in args.set}
-    own_over = {find(s.split("=")[0])["site_player_id"]: float(s.split("=")[1]) for s in args.set_own}
+    if args.market > 0:
+        # salary-implied "market" line per position from the sim's own mean ~ salary fit, then pull
+        # each player's mean toward it and rescale his sim draws by the same factor (keeps correlation)
+        for pos in [p.strip().upper() for p in args.market_pos.split(",") if p.strip()]:
+            ps = [r for r in rows if r["position"] == pos and (r["mean"] or 0) >= 3 and eff_status(r) not in OUT_STATUSES]
+            if len(ps) < 8:
+                continue
+            b = np.polyfit([r["salary"] for r in ps], [r["mean"] for r in ps], 1)
+            for r in ps:
+                if r["site_player_id"] in overrides:
+                    continue
+                mkt = max(0.0, float(np.polyval(b, r["salary"])))
+                new = (1 - args.market) * r["mean"] + args.market * mkt
+                f = new / r["mean"] if r["mean"] else 1.0
+                for k in ("mean", "median", "p15", "p85", "p95", "floor", "ceiling"):
+                    if r.get(k) is not None:
+                        r[k] = r[k] * f
+                if matrix is not None and r["site_player_id"] in matrix:
+                    matrix[r["site_player_id"]] = matrix[r["site_player_id"]] * np.float32(f)
+        print(f"market blend {args.market:g} on {args.market_pos}", file=sys.stderr)
+    own_over = {}
+    if args.own_file:
+        own_over.update(read_own_file(args.own_file, byname))
+        print(f"ownership from {args.own_file}: {len(own_over)} players", file=sys.stderr)
+    own_over.update({find(s.split("=")[0])["site_player_id"]: float(s.split("=")[1]) for s in args.set_own})
     locks = {find(n)["site_player_id"] for n in args.lock}
     excludes = {find(n)["site_player_id"] for n in args.exclude}
 
@@ -239,16 +313,24 @@ def main():
     print(f"{slate['slate_key']} · {len(pool)} eligible players · sim matrix {'loaded' if matrix else 'MISSING'} · "
           f"ownership {'fitted' if own_model['b'] != 1.4 else 'heuristic'}{' · external blend ' + str(args.blend) if ext else ''}", file=sys.stderr)
 
-    n_cand = int(min(300, max(args.n, round(args.n * (args.candidates if matrix else 1)))))
+    use_ev = args.objective == "ev" and args.contest == "gpp" and matrix is not None
+    if args.objective == "ev" and not use_ev:
+        print("--objective ev needs --contest gpp and a sim matrix; falling back to default ranking", file=sys.stderr)
+    # EV mode wants a wide, varied candidate set: the field sim does the choosing, not the MIP score
+    cand_mult = max(args.candidates, 6.0) if use_ev else args.candidates
+    n_cand = int(min(300, max(args.n, round(args.n * (cand_mult if matrix else 1)))))
     lineups, usage, blocked = [], {}, set()
     for k in range(n_cand):
         score = {}
+        # in EV mode sweep fade (0 .. 2x) and use heavier jitter so candidates span chalk -> contrarian
+        fade_k = args.fade * (2.0 * k / max(n_cand - 1, 1)) if use_ev else args.fade
+        rand_k = args.rand * (1.6 if use_ev else 1.0)
         for p in pool:
             m = proj(p)
             base = 0.8 * m + 0.2 * (p["floor"] or 0) if args.contest == "cash" else 0.6 * m + 0.4 * ((p["p85"] or m) * (m / max(p["mean"] or 0.1, 0.1)))
-            jit = 1 + (args.rand * random.gauss(0, 1) * ((p["stdev"] or 5) / max(m, 1)) if args.contest == "gpp" else 0)
-            score[p["site_player_id"]] = base * jit - (args.fade * 0.06 * own_map[p["site_player_id"]] if args.contest == "gpp" else 0)
-        ids = solve(pool, score, site, args, [L["ids"] for L in lineups], blocked, locks)
+            jit = 1 + (rand_k * random.gauss(0, 1) * ((p["stdev"] or 5) / max(m, 1)) if args.contest == "gpp" else 0)
+            score[p["site_player_id"]] = base * jit - (fade_k * 0.06 * own_map[p["site_player_id"]] if args.contest == "gpp" else 0)
+        ids = solve(pool, score, site, args, [L["ids"] for L in lineups], blocked, locks, own_map)
         if not ids:
             print(f"stopped at {k} candidates — no feasible lineup left", file=sys.stderr)
             break
@@ -258,7 +340,20 @@ def main():
             if i not in locks and usage[i] >= max(1, round(args.max_exp * n_cand)):
                 blocked.add(i)
     key = "p50" if args.contest == "cash" else "p90"
-    if matrix:
+    if use_ev:
+        from contest_sim import evaluate, sample_field
+        rng = np.random.default_rng(args.seed)
+        field_pool = [p for p in pool if own_map.get(p["site_player_id"], 0) > 0 or proj(p) >= 3]
+        field = sample_field(field_pool, own_map, site["cap"], args.field, rng, max_team=site["max_team"])
+        proj_by_id = lambda i: proj(byid[i])
+        ev = evaluate([tuple(L["ids"]) for L in lineups], field, matrix, proj_by_id, args.entries, args.fee, args.payout, own=own_map)
+        for L, e in zip(lineups, ev):
+            L.update(e)
+        key = "ev"
+        print(f"contest sim: {len(field)} field lineups · {args.entries:,} entries · {args.payout} payouts · ${args.fee:g} fee · "
+              f"{len(lineups)} candidates, best EV ${max(L['ev'] for L in lineups):.2f}", file=sys.stderr)
+        lineups.sort(key=lambda L: -L["ev"])
+    elif matrix:
         lineups.sort(key=lambda L: -L.get(key, L["proj"]))
     cap, used, kept = max(1, int(np.ceil(args.max_exp * args.n))), {}, []
     for L in lineups:
@@ -273,8 +368,9 @@ def main():
     order = {"QB": 0, "RB": 1, "WR": 2, "TE": 3, "DST": 4}
     for n, L in enumerate(lineups, 1):
         sim = f" · sim p10 {L['p10']} p50 {L['p50']} p90 {L['p90']}" if "p50" in L else ""
+        evs = f" · EV ${L['ev']:+.2f} top1% {100 * L['p_top1']:.1f}% top0.1% {100 * L['p_top01']:.2f}% dups {L['dups']}" if "ev" in L else ""
         sal = int(L["salary"])
-        print(f"\n#{n}  ${sal:,}  proj {L['proj']}  own {L['own']}%{sim}")
+        print(f"\n#{n}  ${sal:,}  proj {L['proj']}  own {L['own']}%{sim}{evs}")
         for p in sorted(L["players"], key=lambda p: (order[p["position"]], -p["salary"])):
             st = eff_status(p)
             psal = int(p["salary"])
