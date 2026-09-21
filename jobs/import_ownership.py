@@ -106,18 +106,27 @@ def main():
     for r in sal:
         by_name.setdefault(norm_name(r["player_name"]), []).append(r)
     # DST rows in standings are team nicknames ("Ravens"); salaries store the same nickname
-    rows, how = [], Counter()
+    # DK lists a player once per roster slot they were drafted in (e.g. "Bijan Robinson RB 42.9%" and
+    # "Bijan Robinson FLEX 4.4%") — total ownership is the sum, so merge rows per player.
+    merged, how = {}, Counter()
     for p in players:
         cands = by_name.get(norm_name(p["name"]), [])
-        if len(cands) > 1 and p["pos"]:
-            cands = [c for c in cands if c["position"] == p["pos"].split("/")[0]] or cands
+        pos = p["pos"].split("/")[0] if p["pos"] else ""
+        if len(cands) > 1 and pos and pos != "FLEX":
+            cands = [c for c in cands if c["position"] == pos] or cands
         if not cands:
             how["unmatched"] += 1
             continue
         c = cands[0]
         how["matched"] += 1
-        rows.append({"slate_id": slate["slate_id"], "site_player_id": c["site_player_id"], "player_id": c["player_id"],
-                     "ownership_pct": p["own"], "fpts": p["fpts"], "contest": args.contest or args.csv.split("/")[-1]})
+        m = merged.setdefault(c["site_player_id"], {"slate_id": slate["slate_id"], "site_player_id": c["site_player_id"],
+                                                    "player_id": c["player_id"], "ownership_pct": 0.0, "fpts": None,
+                                                    "contest": args.contest or args.csv.split("/")[-1]})
+        m["ownership_pct"] = round(m["ownership_pct"] + p["own"], 2)
+        if p["fpts"] is not None:
+            m["fpts"] = p["fpts"]
+    rows = list(merged.values())
+    how["players"] = len(rows)
     print(f"  {dict(how)}")
     if args.dry_run:
         for r in sorted(rows, key=lambda r: -r["ownership_pct"])[:10]:

@@ -1,7 +1,8 @@
--- save_lineups: only refuse once an UNPLAYED game in the slate has kicked off.
--- The main slate's game_ids can include the week's Thursday/Monday games; the old check
--- (any game with a score or an earlier gameday) made every Sunday-morning save fail as soon as
--- TNF was final. Games that are already final are irrelevant to whether Sunday's slate has started.
+-- save_lineups: refuse only once the slate has actually kicked off.
+-- "Started" = the first not-yet-played game on the slate has kicked off (ET, gameday + gametime).
+-- Games earlier than that (a stray Thursday game that ended up in game_ids) are ignored, and a slate
+-- with no unplayed games left is complete — no back-dating lineups after the fact.
+-- Supersedes the function body in 007_lineups.sql.
 create or replace function save_lineups(p_slate_key text, p_source text, p_contest text, p_lineups jsonb, p_replace boolean default true)
 returns int
 language plpgsql
@@ -22,11 +23,18 @@ begin
   if jsonb_typeof(p_lineups) <> 'array' or jsonb_array_length(p_lineups) > 150 then raise exception 'lineups must be an array of <= 150'; end if;
   select * into s from slates where slate_key = p_slate_key;
   if not found then raise exception 'slate % not found', p_slate_key; end if;
+  -- "started" = the first not-yet-played game on the slate has kicked off (ET). Games earlier than
+  -- that (e.g. a stray Thursday game in game_ids) are ignored; a slate with no unplayed games is over.
+  if not exists (select 1 from games g where g.game_id in (select jsonb_array_elements_text(coalesce(s.game_ids, '[]'::jsonb))) and g.home_score is null) then
+    raise exception 'slate % is complete — lineups can only be saved before kickoff', p_slate_key;
+  end if;
   if exists (
     select 1 from games g
     where g.game_id in (select jsonb_array_elements_text(coalesce(s.game_ids, '[]'::jsonb)))
-      and g.home_score is null                                  -- still to be played
-      and (g.gameday::timestamp + coalesce(g.gametime, '13:00')::time) at time zone 'America/New_York' <= now()
+      and g.gameday >= (select min(g2.gameday) from games g2
+                        where g2.game_id in (select jsonb_array_elements_text(coalesce(s.game_ids, '[]'::jsonb))) and g2.home_score is null)
+      and (g.home_score is not null
+           or ((g.gameday::text || ' ' || coalesce(nullif(g.gametime, ''), '13:00'))::timestamp at time zone 'America/New_York') <= now())
   ) then
     raise exception 'slate % has started — lineups can only be saved before kickoff', p_slate_key;
   end if;

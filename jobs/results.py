@@ -234,15 +234,7 @@ def score_slate(client, slate, write=True):
             actual[r["player_id"]] = r
 
     # sim matrix for PIT
-    matrix = None
-    url = (slate.get("sim_meta") or {}).get("url")
-    if url:
-        try:
-            raw = urllib.request.urlopen(url, timeout=60).read()
-            data = json.loads(gzip.decompress(raw) if raw[:2] == b"\x1f\x8b" else raw)
-            matrix = {pid: np.array(sc) for pid, sc in zip(data["players"], data["scores"])}
-        except Exception as e:
-            print(f"  (sim matrix unavailable: {e})")
+    matrix = load_matrix(slate)
 
     rows, meta = compute_results(slate, sal, best, own, actual, matrix, dst_fn=lambda team: dst_actual(client, slate, team))
     meta["by_method"] = method_comparison(rows, by_method)
@@ -258,6 +250,38 @@ def score_slate(client, slate, write=True):
     return rows, meta
 
 
+def load_matrix(slate):
+    url = (slate.get("sim_meta") or {}).get("url")
+    if not url:
+        return None
+    try:
+        raw = urllib.request.urlopen(url, timeout=60).read()
+        data = json.loads(gzip.decompress(raw) if raw[:2] == b"\x1f\x8b" else raw)
+        return {pid: np.array(sc) for pid, sc in zip(data["players"], data["scores"])}
+    except Exception as e:
+        print(f"  (sim matrix unavailable: {e})")
+        return None
+
+
+def rescore_lineups(client, slate, write=True):
+    """For an already-scored slate: grade any lineups that were recorded after scoring (scored_at null)
+    and refresh results_meta.lineups. Lets a late lineup insert or a contest-file import catch up."""
+    sid = slate["slate_id"]
+    pending = client.table("slate_lineups").select("idx").eq("slate_id", sid).is_("scored_at", "null").limit(1).execute().data
+    if not pending:
+        return False
+    rows = fetch_all(client.table("slate_results").select("site_player_id,actual,proj_mean").eq("slate_id", sid), order="site_player_id")
+    if not rows:
+        return False
+    summary = score_lineups(client, slate, rows, load_matrix(slate), write=write)
+    if write:
+        meta = dict(slate.get("results_meta") or {})
+        meta["lineups"] = summary
+        client.table("slates").update({"results_meta": meta}).eq("slate_id", sid).execute()
+    print(f"  {slate['slate_key']}: re-graded lineups")
+    return True
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--slate-key")
@@ -271,6 +295,8 @@ def main():
     done = 0
     for s in slates:
         if not args.force and not args.slate_key and s.get("results_meta"):
+            if slate_complete(client, s):
+                rescore_lineups(client, s, write=not args.dry_run)
             continue
         if not slate_complete(client, s):
             if args.slate_key:
