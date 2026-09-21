@@ -100,6 +100,31 @@ def eff_status(r):
     return (r.get("status") or "").upper() or INJ_MAP.get(r.get("injury_report") or "", "")
 
 
+def read_own_file(path, byname):
+    """{site_player_id: own%} from a CSV with a player-name column and an ownership column.
+    Handles DK contest-standings exports (Player / %Drafted per roster slot -> summed per player)."""
+    with open(path, encoding="utf-8-sig", newline="") as f:
+        rows = list(csv.reader(f))
+    hdr = [h.strip().lower() for h in rows[0]]
+    pi = next((i for i, h in enumerate(hdr) if h in ("player", "player name", "name")), None)
+    oi = next((i for i, h in enumerate(hdr) if h in ("%drafted", "% drafted", "ownership", "own", "own%", "proj own", "projected ownership")), None)
+    if pi is None or oi is None:
+        raise SystemExit(f"--own-file: need player + ownership columns, got {rows[0]}")
+    out = {}
+    for r in rows[1:]:
+        if len(r) <= max(pi, oi) or not r[pi] or not r[oi]:
+            continue
+        c = byname.get(norm_name(r[pi]))
+        if not c:
+            continue
+        try:
+            v = float(r[oi].replace("%", ""))
+        except ValueError:
+            continue
+        out[c[0]["site_player_id"]] = out.get(c[0]["site_player_id"], 0.0) + v
+    return out
+
+
 # ------------------------------------------------------------------ optimizer
 def solve(pool, score, site, opts, prior, blocked, locks, own_map=None):
     prob = pulp.LpProblem("lineup", pulp.LpMaximize)
@@ -206,6 +231,9 @@ def main():
     ap.add_argument("--exclude", action="append", default=[])
     ap.add_argument("--set", action="append", default=[], help='"Name=proj" projection override')
     ap.add_argument("--set-own", action="append", default=[], help='"Name=own%%" ownership override')
+    ap.add_argument("--own-file", help="CSV of projected (or, for backtests, actual) ownership: any file with a player-name "
+                                       "column and a %%-drafted/ownership column, incl. a DK contest-standings export "
+                                       "(slot rows are summed). Replaces the heuristic for players it covers.")
     ap.add_argument("--seed", type=int, default=None)
     ap.add_argument("--out", help="DK/FD upload CSV path")
     ap.add_argument("--json", help="lineup details JSON path")
@@ -252,7 +280,11 @@ def main():
                 if matrix is not None and r["site_player_id"] in matrix:
                     matrix[r["site_player_id"]] = matrix[r["site_player_id"]] * np.float32(f)
         print(f"market blend {args.market:g} on {args.market_pos}", file=sys.stderr)
-    own_over = {find(s.split("=")[0])["site_player_id"]: float(s.split("=")[1]) for s in args.set_own}
+    own_over = {}
+    if args.own_file:
+        own_over.update(read_own_file(args.own_file, byname))
+        print(f"ownership from {args.own_file}: {len(own_over)} players", file=sys.stderr)
+    own_over.update({find(s.split("=")[0])["site_player_id"]: float(s.split("=")[1]) for s in args.set_own})
     locks = {find(n)["site_player_id"] for n in args.lock}
     excludes = {find(n)["site_player_id"] for n in args.exclude}
 
