@@ -53,7 +53,8 @@ OTHER_CAR = (0.03, 0.12)
 YDS_BASE, YDS_PER_PT, YDS_SD = 140.0, 8.5, 45.0   # team yards ~ N(base + per_pt * points, sd)
 OTHER_YPT = 0.65 * 9.0             # yards per target for the "other" receiving bucket
 RB_TD_PRIOR, QB_TD_PRIOR = 0.03, 0.045
-SHARE_CV_MIN = 0.15                # floor on per-sim usage-share noise (coefficient of variation)
+SHARE_CV_MIN = 0.20                # floor on per-sim usage-share noise (CV); 0.15->0.20 with TAIL_STRETCH: r .455->.468, p90 cov .88->.91 (2025 backtest)
+TAIL_STRETCH = 0.15                # stretch draws above the mean by this fraction; fixes the thin upper tail (actuals beat p90 12% of the time)
 SNAP_ALPHA = {"QB": 0.0, "RB": 0.0, "WR": 0.0, "TE": 1.0}    # damping exponent on the snap-share change, per position
                                    # (backtest 2025: helps TE, hurts RB/WR where snaps don't track touches)
 SNAP_RECENT_W = (0.6, 0.4)         # weights on the last two games' snap share
@@ -518,6 +519,11 @@ def simulate(slate, salaries, ctx, n_sims):
             scores_dk[dst["site_player_id"]] = dk
             scores_fd[dst["site_player_id"]] = dk        # FD DST scoring is the same tiers/values
 
+    if TAIL_STRETCH > 0:                 # widen the upper tail only (backtest: actuals beat p90 ~12% of the time)
+        for sc in (scores_dk, scores_fd):
+            for pid, x in sc.items():
+                m = x.mean()
+                sc[pid] = np.where(x > m, m + (x - m) * (1.0 + TAIL_STRETCH), x)
     return (scores_dk if site == "DK" else scores_fd), scores_dk, scores_fd
 
 

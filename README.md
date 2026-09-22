@@ -166,6 +166,19 @@ contest's score quantiles). The Results page shows the lineup scoreboard for the
 season record per source/contest. No real entries needed to grade the model; enter small until
 the record earns more.
 
+### Week-2 lessons (2026-09-21)
+* The Milly Maker winner (232 pts) projected 119 by every model — 5 of 9 players beat their p90. Nobody builds
+  that on purpose; it is bought with entry volume and variance. What we changed after grading it:
+  * sim tails were too thin (actuals beat p90 12% of the time) → `SHARE_CV_MIN 0.20`, `TAIL_STRETCH 0.15`
+    (2025 backtest: r .455→.468, p90 coverage .88→.91, PIT top bin 221→180).
+  * Sunday GPP build now uses `--objective ev` (contest-aware: rank candidates by expected payout against a
+    simulated field). Week-2 head-to-head with the real field: avg field-beaten 52%→55%, best lineup 93%→97%,
+    top-10% lineups 1.0→2.3 of 20. `jobs/h2h_modes.py <slate>` re-runs the comparison on any scored slate.
+  * Real ownership instead of the heuristic did NOT help selection in week 2 — the chalk RBs (Bijan 47%,
+    Henry 38%) were the field's mistake as much as ours. Projection quality is still the lever.
+  * Review rule: a backup QB is not a reason to cut his receivers (JSN was cut to 15, scored 45.5).
+* The web builder still ranks GPP lineups by p90 (glpk.js has no field sim); the CLI/Sunday task has EV mode.
+
 ### Optimizer
 Mixed-integer program solved in the browser (glpk.js). Cash: 0.8·proj + 0.2·floor.
 GPP: 0.6·proj + 0.4·p85 with per-lineup jitter, QB stacks, bring-back, exposure caps,
