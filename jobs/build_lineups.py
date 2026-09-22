@@ -318,7 +318,7 @@ def main():
         print("--objective ev needs --contest gpp and a sim matrix; falling back to default ranking", file=sys.stderr)
     # EV mode wants a wide, varied candidate set: the field sim does the choosing, not the MIP score
     cand_mult = max(args.candidates, 6.0) if use_ev else args.candidates
-    n_cand = int(min(300, max(args.n, round(args.n * (cand_mult if matrix else 1)))))
+    n_cand = int(min(600, max(args.n, round(args.n * (cand_mult if matrix else 1)))))
     lineups, usage, blocked = [], {}, set()
     for k in range(n_cand):
         score = {}
