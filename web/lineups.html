@@ -56,7 +56,8 @@
         <label>Exclude Q / D <select id="exclQ"><option value="0">no</option><option value="1">yes</option></select></label>
         <label title="GPP only: penalises highly-owned players (0 = ignore ownership, 100 = strong fade). Ownership is a heuristic — overwrite the Own% column with real numbers if you have them.">Ownership fade (GPP) % <input id="fade" type="number" min="0" max="100" value="40"></label>
         <label id="blendWrap" style="display:none" title="Weight on the imported third-party projections (data/projections/). 0 = sim only, 100 = external only. External ownership replaces the heuristic when present.">Blend external proj % (<span id="blendSrc"></span>) <input id="blend" type="number" min="0" max="100" value="50"></label>
-        <label title="Build this many × lineups, keep the best by simulated median (cash) or 90th percentile (GPP)">Candidates × (needs sim) <input id="poolMult" type="number" min="1" max="5" value="2"></label>
+        <label title="GPP only: a lineup's summed projected ownership may not exceed this (0 = no limit). 120 is a moderate anti-chalk rule for large fields.">Max lineup own% (GPP) <input id="maxOwn" type="number" min="0" max="400" step="10" value="0"></label>
+        <label title="Build this many × lineups into a pool, then select the best by simulated median (cash) or 90th percentile (GPP). Min%/Max% changes re-select from this pool instantly without rebuilding.">Candidates × (needs sim) <input id="poolMult" type="number" min="1" max="5" value="2"></label>
       </div>
       <p class="hint" id="objHint"></p>
     </details>

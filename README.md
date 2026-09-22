@@ -181,6 +181,9 @@ the record earns more.
 * Web builder (09-22): per-player **Min% / Max%** exposure columns (Min% = a stand, forced into that share of lineups),
   **Exp / Lev** columns after a build (leverage = exposure − projected own%), sim percentiles 25th–99th per player,
   and a **Team stacks** view (QB + top pass catchers, stack proj/own, bring-back, stack exposure).
+  Generate builds a candidate pool (Candidates ×) and selects from it; editing Min%/Max% afterwards re-selects from the
+  pool instantly (no rebuild). **Pool%** = how often a player appears in the whole pool (the sims' own preference).
+  **Max lineup own%** rule caps a lineup's summed ownership (GPP).
 
 ### Optimizer
 Mixed-integer program solved in the browser (glpk.js). Cash: 0.8·proj + 0.2·floor.

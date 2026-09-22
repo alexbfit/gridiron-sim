@@ -23,6 +23,9 @@ const SLOTS_PER_POS = { QB: 1.0, RB: 2.4, WR: 3.4, TE: 1.2, DST: 1.0 };
 let lineups = [];
 let minExp = new Map(), maxExpP = new Map();   // per-player exposure bounds (fraction), from the Min/Max columns
 let lastExposure = new Map();                 // site_player_id -> fraction of the last build
+let candPool = [];                            // every candidate lineup from the last build (the "pool"); re-select picks from it
+let poolExposure = new Map();                 // site_player_id -> fraction of the candidate pool (the sims' own preference)
+let candOpts = null;                          // options the pool was built with (contest, n, maxExp)
 let view = "players";                         // "players" | "stacks"
 let sim = null;                  // { n, index: Map(site_player_id -> Float32Array) }
 let sortKey = "mean", sortAsc = false;
@@ -162,6 +165,7 @@ const COLS = [
   { key: "maxExp", label: "Max%", edit: true, title: "Maximum share of lineups for this player. Blank = the global Max exposure rule." },
   { key: "exp", label: "Exp", title: "Exposure in the last build" },
   { key: "lev", label: "Lev", title: "Leverage = exposure − projected ownership. Positive = a stand, negative = a fade." },
+  { key: "pool", label: "Pool%", title: "How often the player appears in the whole candidate pool — the higher, the more the sims like him regardless of your exposure settings." },
   { key: "q25", label: "25th", sim: true }, { key: "q50", label: "50th", sim: true }, { key: "q75", label: "75th", sim: true },
   { key: "q85", label: "85th", sim: true }, { key: "q95", label: "95th", sim: true }, { key: "q99", label: "99th", sim: true },
   { key: "games_used", label: "G" },
@@ -189,9 +193,10 @@ function render() {
 
   const rows = visiblePlayers().map(p => ({ p, mean: proj(p), value: p.salary ? proj(p) / (p.salary / 1000) : 0, own: own(p),
     exp: 100 * (lastExposure.get(p.site_player_id) || 0), lev: 100 * (lastExposure.get(p.site_player_id) || 0) - own(p),
+    pool: 100 * (poolExposure.get(p.site_player_id) || 0),
     minExp: minExp.get(p.site_player_id), maxExp: maxExpP.get(p.site_player_id) }));
   const kv = (r) => sortKey === "mean" ? r.mean : sortKey === "value" ? r.value : sortKey === "own" ? r.own
-    : sortKey === "exp" ? r.exp : sortKey === "lev" ? r.lev : sortKey === "minExp" ? r.minExp : sortKey === "maxExp" ? r.maxExp
+    : sortKey === "exp" ? r.exp : sortKey === "lev" ? r.lev : sortKey === "pool" ? r.pool : sortKey === "minExp" ? r.minExp : sortKey === "maxExp" ? r.maxExp
     : sortKey.startsWith("q") ? r.p.q?.[sortKey] : r.p[sortKey];
   rows.sort((a, b) => {
     const ka = kv(a), kb = kv(b);
@@ -199,7 +204,7 @@ function render() {
     return sortAsc ? c : -c;
   });
   const frag = document.createDocumentFragment();
-  rows.forEach(({ p, mean, value, exp, lev }) => {
+  rows.forEach(({ p, mean, value, exp, lev, pool: poolPct }) => {
     const r = document.createElement("tr");
     const id = p.site_player_id;
     if (locks.has(id)) r.classList.add("locked");
@@ -231,13 +236,15 @@ function render() {
         const m = c.key === "minExp" ? minExp : maxExpP;
         const inp = document.createElement("input"); inp.type = "number"; inp.step = "5"; inp.min = "0"; inp.max = "100"; inp.className = "projedit"; inp.placeholder = "–";
         if (m.has(id)) { inp.value = Math.round(100 * m.get(id)); inp.classList.add("overridden"); }
-        inp.addEventListener("change", () => { const v = parseFloat(inp.value); if (Number.isNaN(v)) m.delete(id); else m.set(id, Math.max(0, Math.min(100, v)) / 100); setTimeout(render, 0); });
+        inp.addEventListener("change", () => { const v = parseFloat(inp.value); if (Number.isNaN(v)) m.delete(id); else m.set(id, Math.max(0, Math.min(100, v)) / 100); setTimeout(candPool.length ? selectFromPool : render, 0); });
         td.appendChild(inp);
       } else if (c.key === "exp") {
         td.textContent = lastExposure.size ? Math.round(exp) + "%" : "–";
       } else if (c.key === "lev") {
         td.textContent = lastExposure.size ? (lev > 0 ? "+" : "") + Math.round(lev) : "–";
         if (lastExposure.size && Math.abs(lev) >= 10) td.classList.add(lev > 0 ? "pos-diff" : "neg-diff");
+      } else if (c.key === "pool") {
+        td.textContent = poolExposure.size ? Math.round(poolPct) + "%" : "–";
       } else if (c.key.startsWith("q")) {
         td.textContent = p.q ? f1(p.q[c.key]) : "–";
       } else if (c.key === "position") {
@@ -332,6 +339,7 @@ function buildLP(pool, opts, prior, exposureBlocked, forced = null) {
   // uniqueness vs prior lineups
   prior.forEach((L, i) => st.push({ name: "uniq_" + i, vars: L.map(id => ({ name: "x" + id, coef: 1 })), bnds: { type: glpk.GLP_UP, lb: 0, ub: 9 - opts.minUniq } }));
   if (forced && byId.has(forced)) st.push({ name: "stand", vars: [{ name: "x" + forced, coef: 1 }], bnds: { type: glpk.GLP_FX, lb: 1, ub: 1 } });
+  if (opts.maxOwn > 0) st.push({ name: "maxown", vars: pool.map(p => ({ name: "x" + p.site_player_id, coef: own(p) })), bnds: { type: glpk.GLP_UP, lb: 0, ub: opts.maxOwn } });
 
   // locks / exposure blocks as rows (GLPK resets column bounds to [0,1] for binaries)
   pool.forEach(p => {
@@ -352,6 +360,7 @@ async function generate() {
     maxExp: (+$("maxExp").value || 100) / 100, minUniq: +$("minUniq").value || 1,
     rand: contest === "gpp" ? (+$("rand").value || 0) / 100 : 0, exclQ: $("exclQ").value === "1",
     fade: contest === "gpp" ? (+$("fade").value || 0) / 100 : 0,
+    maxOwn: contest === "gpp" ? (+$("maxOwn").value || 0) : 0,
     poolMult: sim ? Math.max(1, Math.min(5, +$("poolMult").value || 1)) : 1,
   };
   const nCand = Math.min(300, n * opts.poolMult);
@@ -392,29 +401,42 @@ async function generate() {
       if (k % 5 === 4 || k === nCand - 1) renderResults();
       await new Promise(r => setTimeout(r));
     }
-    // rank by the sim metric that matters for the contest, keep the best n
+    // rank by the sim metric that matters for the contest
     if (sim && lineups.length > 1) {
       const key = contest === "cash" ? "p50" : "p90";
       lineups.sort((a, b) => (b.sim?.[key] ?? b.proj) - (a.sim?.[key] ?? a.proj));
     }
-    // keep the best n while honouring the exposure caps (global or per-player) and the Min% stands on the final set
-    const used = new Map(), kept = [];
-    const capN = (id) => Math.max(1, Math.ceil((maxExpP.has(id) ? maxExpP.get(id) : opts.maxExp) * n));
-    const fits = (L, need) => L.ids.every(id => locks.has(id) || id === need || (used.get(id) || 0) < capN(id));
-    const take = (L) => { kept.push(L); L.ids.forEach(id => used.set(id, (used.get(id) || 0) + 1)); };
-    for (const [id, f] of stands) {
-      const want = Math.ceil(f * n);
-      for (const L of lineups) { if ((used.get(id) || 0) >= want || kept.length >= n) break; if (!kept.includes(L) && L.ids.includes(id) && fits(L, id)) take(L); }
-    }
-    for (const L of lineups) { if (kept.length >= n) break; if (!kept.includes(L) && fits(L)) take(L); }
-    lineups = kept;
-    lastExposure = new Map();
-    lineups.forEach(L => L.ids.forEach(id => lastExposure.set(id, (lastExposure.get(id) || 0) + 1 / lineups.length)));
-    renderResults(); render();
+    candPool = lineups.slice(); candOpts = { contest, n, maxExp: opts.maxExp };
+    poolExposure = new Map();
+    candPool.forEach(L => L.ids.forEach(id => poolExposure.set(id, (poolExposure.get(id) || 0) + 1 / candPool.length)));
+    selectFromPool();
   } catch (e) { setStatus("Optimizer error: " + (e.message || e), true); console.error(e); }
   $("generate").disabled = false; $("exportBtn").disabled = !lineups.length;
-  if (lineups.length) setStatus(`${lineups.length} lineup${lineups.length > 1 ? "s" : ""} built · avg proj ${f1(lineups.reduce((s, L) => s + L.proj, 0) / lineups.length)}`
-    + (sim ? ` · ranked by sim ${contest === "cash" ? "median" : "90th pct"}` : ""));
+}
+
+// pick the final set from the candidate pool: Min% stands first, then best-ranked, honouring Max% caps.
+// Changing Min%/Max% re-runs this instantly (no rebuild) — like SaberSim's portfolio sim re-selecting from the pool.
+function selectFromPool() {
+  if (!candPool.length || !candOpts) return;
+  const n = candOpts.n, pool = candPool;
+  const stands = [...minExp.entries()].filter(([id, f]) => f > 0 && pool.some(L => L.ids.includes(id))).sort((a, b) => b[1] - a[1]);
+  const used = new Map(), kept = [], short = [];
+  const capN = (id) => Math.max(1, Math.ceil((maxExpP.has(id) ? maxExpP.get(id) : candOpts.maxExp) * n));
+  const fits = (L, need) => L.ids.every(id => locks.has(id) || id === need || (used.get(id) || 0) < capN(id)) && !L.ids.some(id => excludes.has(id));
+  const take = (L) => { kept.push(L); L.ids.forEach(id => used.set(id, (used.get(id) || 0) + 1)); };
+  for (const [id, f] of stands) {
+    const want = Math.ceil(f * n);
+    for (const L of pool) { if ((used.get(id) || 0) >= want || kept.length >= n) break; if (!kept.includes(L) && L.ids.includes(id) && fits(L, id)) take(L); }
+    if ((used.get(id) || 0) < want) short.push(`${byId.get(id).player_name} ${used.get(id) || 0}/${want}`);
+  }
+  for (const L of pool) { if (kept.length >= n) break; if (!kept.includes(L) && fits(L)) take(L); }
+  lineups = kept;
+  lastExposure = new Map();
+  lineups.forEach(L => L.ids.forEach(id => lastExposure.set(id, (lastExposure.get(id) || 0) + 1 / lineups.length)));
+  renderResults(); render();
+  $("exportBtn").disabled = !lineups.length;
+  setStatus(`${lineups.length} of ${n} lineups selected from a pool of ${pool.length}` + (sim ? ` · ranked by sim ${candOpts.contest === "cash" ? "median" : "90th pct"}` : "")
+    + (short.length ? ` · could not reach: ${short.join(", ")} — raise Candidates × and Generate again` : ""), short.length > 0);
 }
 
 function summarize(ids) {
