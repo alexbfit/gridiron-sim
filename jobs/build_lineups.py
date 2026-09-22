@@ -7,6 +7,8 @@ built (and reviewed) without a browser. Reads the slate board + sim matrix with 
   python jobs/build_lineups.py --contest gpp --n 20 --lock "Bijan Robinson" --exclude "Zay Flowers" \
       --set "George Kittle=9.5" --set-own "Kalif Raymond=25" --out lineups.csv --json lineups.json
   python jobs/build_lineups.py --contest gpp --n 20 ... --save --note "faded X (DNP Fri)"   # record for Monday scoring
+  python jobs/build_lineups.py --contest gpp --n 50 --objective ev --exposure "Trey McBride=10" --exposure "Bijan Robinson=0"
+      (a stand: force >= 10% of lineups to hold McBride; 0 = fade. Prints a leverage table = exposure - projected ownership.)
 
 Env: SUPABASE_URL + SUPABASE_ANON_KEY (read-only is enough; --save goes through the save_lineups RPC).
 Objective / rules mirror web/lineups.js:
@@ -234,6 +236,10 @@ def main():
     ap.add_argument("--own-file", help="CSV of projected (or, for backtests, actual) ownership: any file with a player-name "
                                        "column and a %%-drafted/ownership column, incl. a DK contest-standings export "
                                        "(slot rows are summed). Replaces the heuristic for players it covers.")
+    ap.add_argument("--exposure", action="append", default=[],
+                    help='"Name=pct" target exposure across the final set, e.g. "Trey McBride=10" (repeatable). '
+                         'A stand: the player is forced into at least that share of lineups. Use 0 to fade entirely.')
+    ap.add_argument("--leverage", type=int, default=12, help="rows to show in the leverage table (exposure - projected ownership)")
     ap.add_argument("--seed", type=int, default=None)
     ap.add_argument("--out", help="DK/FD upload CSV path")
     ap.add_argument("--json", help="lineup details JSON path")
@@ -287,6 +293,15 @@ def main():
     own_over.update({find(s.split("=")[0])["site_player_id"]: float(s.split("=")[1]) for s in args.set_own})
     locks = {find(n)["site_player_id"] for n in args.lock}
     excludes = {find(n)["site_player_id"] for n in args.exclude}
+    exp_targets = {}
+    for spec in args.exposure:
+        name, pct = spec.rsplit("=", 1)
+        pid = find(name)["site_player_id"]
+        pct = float(pct)
+        if pct <= 0:
+            excludes.add(pid)
+        else:
+            exp_targets[pid] = min(pct, 100.0) / 100.0
 
     def proj(r):
         i = r["site_player_id"]
@@ -356,13 +371,28 @@ def main():
     elif matrix:
         lineups.sort(key=lambda L: -L.get(key, L["proj"]))
     cap, used, kept = max(1, int(np.ceil(args.max_exp * args.n))), {}, []
+    def take(L):
+        kept.append(L)
+        for i in L["ids"]:
+            used[i] = used.get(i, 0) + 1
+    def fits(L, need=None):
+        return all(i in locks or i == need or used.get(i, 0) < cap for i in L["ids"])
+    # exposure stands first: for each target, pull the best-ranked candidates containing the player until the share is met
+    for pid, share in sorted(exp_targets.items(), key=lambda kv: -kv[1]):
+        want = int(np.ceil(share * args.n))
+        for L in lineups:
+            if used.get(pid, 0) >= want or len(kept) >= args.n:
+                break
+            if L not in kept and pid in L["ids"] and fits(L, need=pid):
+                take(L)
+        if used.get(pid, 0) < want:
+            print(f"exposure target {byid[pid]['player_name']} {share:.0%}: only {used.get(pid, 0)}/{want} lineups available in the candidate pool "
+                  f"(raise --candidates or lower --min-uniq)", file=sys.stderr)
     for L in lineups:
         if len(kept) >= args.n:
             break
-        if all(i in locks or used.get(i, 0) < cap for i in L["ids"]):
-            kept.append(L)
-            for i in L["ids"]:
-                used[i] = used.get(i, 0) + 1
+        if L not in kept and fits(L):
+            take(L)
     lineups = kept
 
     order = {"QB": 0, "RB": 1, "WR": 2, "TE": 3, "DST": 4}
@@ -381,6 +411,27 @@ def main():
             exp[i] = exp.get(i, 0) + 1
     if len(lineups) > 1:
         print("\nexposure: " + " · ".join(f"{byid[i]['player_name']} {round(100 * c / len(lineups))}%" for i, c in sorted(exp.items(), key=lambda kv: -kv[1])[:12]))
+        # leverage = your exposure - projected field ownership. Positive = a stand, negative = a fade.
+        lev = []
+        for r in pool:
+            i = r["site_player_id"]
+            e = 100.0 * exp.get(i, 0) / len(lineups)
+            o = own_map.get(i, 0.0)
+            if e > 0 or o >= 5:
+                lev.append((e - o, e, o, r))
+        lev.sort(key=lambda t: -t[0])
+        k = max(1, args.leverage // 2)
+        print(f"\nleverage (exposure - projected own%):")
+        print("  STANDS")
+        for d, e, o, r in lev[:k]:
+            print(f"    {r['position']:3} {r['player_name']:<24} {r['team']:<4} exp {e:4.0f}%  own {o:4.0f}%  {d:+5.0f}")
+        print("  FADES")
+        for d, e, o, r in lev[-k:][::-1]:
+            print(f"    {r['position']:3} {r['player_name']:<24} {r['team']:<4} exp {e:4.0f}%  own {o:4.0f}%  {d:+5.0f}")
+        leverage_rows = [{"name": r["player_name"], "pos": r["position"], "team": r["team"], "exposure": round(e, 1),
+                          "own": round(o, 1), "leverage": round(d, 1)} for d, e, o, r in lev]
+    else:
+        leverage_rows = []
 
     if args.out:
         keys = ["QB", "RB1", "RB2", "WR1", "WR2", "WR3", "TE", "FLEX", site["def"]]
@@ -392,10 +443,12 @@ def main():
                 w.writerow([s[k]["site_player_id"] for k in keys])
         print(f"\nwrote {args.out} ({len(lineups)} lineups)", file=sys.stderr)
     if args.json:
-        json.dump([{**{k: v for k, v in L.items() if k != "players"},
+        json.dump({"lineups": [{**{k: v for k, v in L.items() if k != "players"},
                     "players": [{"name": p["player_name"], "pos": p["position"], "team": p["team"], "opp": p["opponent"],
                                  "salary": p["salary"], "proj": round(proj(p), 1), "own": round(own_map[p["site_player_id"]]),
                                  "status": eff_status(p) or None, "id": p["site_player_id"]} for p in L["players"]]} for L in lineups],
+                   "leverage": leverage_rows,
+                   "exposure": {byid[i]["player_name"]: round(100 * c / max(1, len(lineups)), 1) for i, c in sorted(exp.items(), key=lambda kv: -kv[1])}},
                   open(args.json, "w"), indent=1)
     if args.save:
         payload = [{"ids": L["ids"], "proj": L["proj"], "own": L["own"], "p10": L.get("p10"), "p50": L.get("p50"), "p90": L.get("p90"),

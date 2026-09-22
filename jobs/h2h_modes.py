@@ -38,7 +38,7 @@ for name, args in MODES.items():
         out = f"/tmp/h2h_{name[0]}_{seed}.json"
         r = subprocess.run([sys.executable, "build_lineups.py", "--slate-key", SLATE, "--contest", "gpp", "--n", "20", "--seed", str(seed), "--json", out, *args, *OV], capture_output=True, text=True)
         if r.returncode: print(name, seed, "FAILED", r.stderr[-300:]); continue
-        L = json.load(open(out))
+        L = json.load(open(out)); L = L["lineups"] if isinstance(L, dict) else L
         g = [grade(x["ids"]) for x in L]
         acts = [a for a, _, _ in g]; cps = [cpp for _, cpp, _ in g]; prizes = [p for _, _, p in g]
         rows.append((np.mean(acts), max(acts), np.mean(cps), max(cps), sum(1 for x in cps if x >= 0.99), sum(1 for x in cps if x >= 0.9), sum(prizes) - 20 * len(L), np.mean([x["proj"] for x in L])))
