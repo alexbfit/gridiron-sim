@@ -178,6 +178,9 @@ the record earns more.
     Henry 38%) were the field's mistake as much as ours. Projection quality is still the lever.
   * Review rule: a backup QB is not a reason to cut his receivers (JSN was cut to 15, scored 45.5).
 * The web builder still ranks GPP lineups by p90 (glpk.js has no field sim); the CLI/Sunday task has EV mode.
+* Web builder (09-22): per-player **Min% / Max%** exposure columns (Min% = a stand, forced into that share of lineups),
+  **Exp / Lev** columns after a build (leverage = exposure − projected own%), sim percentiles 25th–99th per player,
+  and a **Team stacks** view (QB + top pass catchers, stack proj/own, bring-back, stack exposure).
 
 ### Optimizer
 Mixed-integer program solved in the browser (glpk.js). Cash: 0.8·proj + 0.2·floor.

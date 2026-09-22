@@ -21,6 +21,9 @@ let external = new Map();        // site_player_id -> { mean, own } from an impo
 let blend = 0;                   // 0..1 weight on external projections   // replaced by model_params.ownership_model once fitted to real ownership
 const SLOTS_PER_POS = { QB: 1.0, RB: 2.4, WR: 3.4, TE: 1.2, DST: 1.0 };
 let lineups = [];
+let minExp = new Map(), maxExpP = new Map();   // per-player exposure bounds (fraction), from the Min/Max columns
+let lastExposure = new Map();                 // site_player_id -> fraction of the last build
+let view = "players";                         // "players" | "stacks"
 let sim = null;                  // { n, index: Map(site_player_id -> Float32Array) }
 let sortKey = "mean", sortAsc = false;
 
@@ -91,6 +94,14 @@ async function loadSim() {
   const index = new Map();
   data.players.forEach((id, i) => index.set(id, Float32Array.from(data.scores[i])));
   sim = { n: data.n, index, generated_at: data.generated_at };
+  // per-player percentiles straight from the stored draws (what SaberSim shows as 25th..99th)
+  const qs = [0.25, 0.5, 0.75, 0.85, 0.95, 0.99];
+  players.forEach(p => {
+    const a = index.get(p.site_player_id);
+    if (!a) return;
+    const sorted = Float32Array.from(a).sort();
+    p.q = Object.fromEntries(qs.map(q => ["q" + Math.round(q * 100), sorted[Math.min(sorted.length - 1, Math.floor(q * sorted.length))]]));
+  });
   render();
 }
 
@@ -147,8 +158,15 @@ const COLS = [
   { key: "floor", label: "Floor", fmt: f1 }, { key: "ceiling", label: "Ceil", fmt: f1 },
   { key: "boom_prob", label: "Boom", fmt: pct }, { key: "bust_prob", label: "Bust", fmt: pct },
   { key: "own", label: "Own%", edit: true },
+  { key: "minExp", label: "Min%", edit: true, title: "Minimum share of lineups this player must be in (a stand). Blank = none." },
+  { key: "maxExp", label: "Max%", edit: true, title: "Maximum share of lineups for this player. Blank = the global Max exposure rule." },
+  { key: "exp", label: "Exp", title: "Exposure in the last build" },
+  { key: "lev", label: "Lev", title: "Leverage = exposure − projected ownership. Positive = a stand, negative = a fade." },
+  { key: "q25", label: "25th", sim: true }, { key: "q50", label: "50th", sim: true }, { key: "q75", label: "75th", sim: true },
+  { key: "q85", label: "85th", sim: true }, { key: "q95", label: "95th", sim: true }, { key: "q99", label: "99th", sim: true },
   { key: "games_used", label: "G" },
 ];
+const activeCols = () => COLS.filter(c => !c.sim || sim);
 
 function visiblePlayers() {
   const pos = $("posFilter").value, q = $("search").value.trim().toLowerCase();
@@ -158,9 +176,10 @@ function visiblePlayers() {
 
 function render() {
   const thead = document.querySelector("#pool thead"), tbody = document.querySelector("#pool tbody");
+  if (view === "stacks") { renderStacks(); return; }
   const tr = document.createElement("tr");
-  COLS.forEach(c => {
-    const th = document.createElement("th"); th.textContent = c.label;
+  activeCols().forEach(c => {
+    const th = document.createElement("th"); th.textContent = c.label; if (c.title) th.title = c.title;
     if (c.left) th.classList.add("left");
     if (c.key === sortKey) th.classList.add("sorted", sortAsc ? "asc" : "x");
     th.addEventListener("click", () => { if (sortKey === c.key) sortAsc = !sortAsc; else { sortKey = c.key; sortAsc = !!c.left; } render(); });
@@ -168,20 +187,24 @@ function render() {
   });
   thead.replaceChildren(tr);
 
-  const rows = visiblePlayers().map(p => ({ p, mean: proj(p), value: p.salary ? proj(p) / (p.salary / 1000) : 0, own: own(p) }));
+  const rows = visiblePlayers().map(p => ({ p, mean: proj(p), value: p.salary ? proj(p) / (p.salary / 1000) : 0, own: own(p),
+    exp: 100 * (lastExposure.get(p.site_player_id) || 0), lev: 100 * (lastExposure.get(p.site_player_id) || 0) - own(p),
+    minExp: minExp.get(p.site_player_id), maxExp: maxExpP.get(p.site_player_id) }));
+  const kv = (r) => sortKey === "mean" ? r.mean : sortKey === "value" ? r.value : sortKey === "own" ? r.own
+    : sortKey === "exp" ? r.exp : sortKey === "lev" ? r.lev : sortKey === "minExp" ? r.minExp : sortKey === "maxExp" ? r.maxExp
+    : sortKey.startsWith("q") ? r.p.q?.[sortKey] : r.p[sortKey];
   rows.sort((a, b) => {
-    const ka = sortKey === "mean" ? a.mean : sortKey === "value" ? a.value : sortKey === "own" ? a.own : a.p[sortKey];
-    const kb = sortKey === "mean" ? b.mean : sortKey === "value" ? b.value : sortKey === "own" ? b.own : b.p[sortKey];
+    const ka = kv(a), kb = kv(b);
     let c = (ka == null) - (kb == null) || (typeof ka === "number" ? ka - kb : String(ka ?? "").localeCompare(String(kb ?? "")));
     return sortAsc ? c : -c;
   });
   const frag = document.createDocumentFragment();
-  rows.forEach(({ p, mean, value }) => {
+  rows.forEach(({ p, mean, value, exp, lev }) => {
     const r = document.createElement("tr");
     const id = p.site_player_id;
     if (locks.has(id)) r.classList.add("locked");
     if (excludes.has(id)) r.classList.add("excluded");
-    COLS.forEach(c => {
+    activeCols().forEach(c => {
       const td = document.createElement("td");
       if (c.left) td.classList.add("left");
       if (c.key === "lock" || c.key === "excl") {
@@ -204,6 +227,19 @@ function render() {
         td.appendChild(inp);
       } else if (c.key === "value") {
         td.textContent = f2(value);
+      } else if (c.key === "minExp" || c.key === "maxExp") {
+        const m = c.key === "minExp" ? minExp : maxExpP;
+        const inp = document.createElement("input"); inp.type = "number"; inp.step = "5"; inp.min = "0"; inp.max = "100"; inp.className = "projedit"; inp.placeholder = "–";
+        if (m.has(id)) { inp.value = Math.round(100 * m.get(id)); inp.classList.add("overridden"); }
+        inp.addEventListener("change", () => { const v = parseFloat(inp.value); if (Number.isNaN(v)) m.delete(id); else m.set(id, Math.max(0, Math.min(100, v)) / 100); setTimeout(render, 0); });
+        td.appendChild(inp);
+      } else if (c.key === "exp") {
+        td.textContent = lastExposure.size ? Math.round(exp) + "%" : "–";
+      } else if (c.key === "lev") {
+        td.textContent = lastExposure.size ? (lev > 0 ? "+" : "") + Math.round(lev) : "–";
+        if (lastExposure.size && Math.abs(lev) >= 10) td.classList.add(lev > 0 ? "pos-diff" : "neg-diff");
+      } else if (c.key.startsWith("q")) {
+        td.textContent = p.q ? f1(p.q[c.key]) : "–";
       } else if (c.key === "position") {
         const s = document.createElement("span"); s.className = "pos " + (["QB","RB","WR","TE"].includes(p.position) ? p.position : "other"); s.textContent = p.position; td.appendChild(s);
       } else if (c.key === "status") {
@@ -227,8 +263,40 @@ function render() {
     : "GPP: maximizes ceiling-tilted score (0.6·proj + 0.4·p85) minus an ownership fade, random jitter for diversity, stacks enforced.");
 }
 
+// ---------------------------------------------------------------- team stacks view
+function renderStacks() {
+  const thead = document.querySelector("#pool thead"), tbody = document.querySelector("#pool tbody");
+  const q = $("search").value.trim().toLowerCase();
+  const hdr = ["QB", "Team", "Opp", "QB proj", "QB own", "Top pass catchers (proj · own)", "QB+2 proj", "QB+2 own", "Bring-back", "QB exp", "Stack exp"];
+  const tr = document.createElement("tr");
+  hdr.forEach((h, i) => { const th = document.createElement("th"); th.textContent = h; if (i <= 2 || i === 5 || i === 8) th.classList.add("left"); tr.appendChild(th); });
+  thead.replaceChildren(tr);
+  const qbs = players.filter(p => p.position === "QB" && (p.mean || 0) > 0 && !excludes.has(p.site_player_id));
+  const rows = qbs.map(qb => {
+    const mates = players.filter(p => p.team === qb.team && ["WR","TE"].includes(p.position) && (p.mean || 0) > 0 && !excludes.has(p.site_player_id)).sort((a, b) => proj(b) - proj(a));
+    const opp = players.filter(p => p.team === qb.opponent && ["RB","WR","TE"].includes(p.position) && (p.mean || 0) > 0).sort((a, b) => proj(b) - proj(a)).slice(0, 2);
+    const two = mates.slice(0, 2);
+    const stackExp = lineups.length ? lineups.filter(L => L.ids.includes(qb.site_player_id) && two.some(m => L.ids.includes(m.site_player_id))).length / lineups.length : null;
+    return { qb, mates, opp, two, proj: proj(qb) + two.reduce((s, m) => s + proj(m), 0), own: own(qb) + two.reduce((s, m) => s + own(m), 0),
+      qbExp: lastExposure.get(qb.site_player_id) || 0, stackExp };
+  }).filter(r => !q || r.qb.player_name.toLowerCase().includes(q) || (r.qb.team || "").toLowerCase().includes(q)).sort((a, b) => b.proj - a.proj);
+  const frag = document.createDocumentFragment();
+  rows.forEach(r => {
+    const tr = document.createElement("tr");
+    const cells = [r.qb.player_name, r.qb.team, r.qb.opponent, f1(proj(r.qb)), Math.round(own(r.qb)) + "%",
+      r.mates.slice(0, 3).map(m => `${m.player_name} ${f1(proj(m))} · ${Math.round(own(m))}%`).join("  |  "),
+      f1(r.proj), Math.round(r.own) + "%",
+      r.opp.map(m => `${m.player_name} ${f1(proj(m))}`).join("  |  "),
+      lastExposure.size ? Math.round(100 * r.qbExp) + "%" : "–", r.stackExp == null ? "–" : Math.round(100 * r.stackExp) + "%"];
+    cells.forEach((v, i) => { const td = document.createElement("td"); td.textContent = v; if (i <= 2 || i === 5 || i === 8) td.classList.add("left"); tr.appendChild(td); });
+    frag.appendChild(tr);
+  });
+  tbody.replaceChildren(frag);
+  setStatus(`${rows.length} QB stacks · QB+2 = QB plus his two highest-projected WR/TE · exposures fill in after a build`);
+}
+
 // ---------------------------------------------------------------- optimizer
-function buildLP(pool, opts, prior, exposureBlocked) {
+function buildLP(pool, opts, prior, exposureBlocked, forced = null) {
   const site = SITES[slate.site];
   const vars = pool.map(p => ({ name: "x" + p.site_player_id, coef: opts.score(p) }));
   const st = [];
@@ -263,6 +331,7 @@ function buildLP(pool, opts, prior, exposureBlocked) {
   });
   // uniqueness vs prior lineups
   prior.forEach((L, i) => st.push({ name: "uniq_" + i, vars: L.map(id => ({ name: "x" + id, coef: 1 })), bnds: { type: glpk.GLP_UP, lb: 0, ub: 9 - opts.minUniq } }));
+  if (forced && byId.has(forced)) st.push({ name: "stand", vars: [{ name: "x" + forced, coef: 1 }], bnds: { type: glpk.GLP_FX, lb: 1, ub: 1 } });
 
   // locks / exposure blocks as rows (GLPK resets column bounds to [0,1] for binaries)
   pool.forEach(p => {
@@ -294,9 +363,16 @@ async function generate() {
 
   lineups = []; $("generate").disabled = true;
   const usage = new Map(); const blocked = new Set();
+  const capFor = (id) => Math.ceil((maxExpP.has(id) ? maxExpP.get(id) : opts.maxExp) * nCand);
+  // stands: players with a Min% get forced into that share of the candidates first, then the pool fills normally
+  const stands = [...minExp.entries()].filter(([id, f]) => f > 0 && pool.some(p => p.site_player_id === id)).sort((a, b) => b[1] - a[1]);
+  const plan = [];
+  stands.forEach(([id, f]) => { for (let i = 0; i < Math.ceil(f * nCand); i++) plan.push(id); });
+  while (plan.length < nCand) plan.push(null);
   try {
     for (let k = 0; k < nCand; k++) {
       setStatus(`Solving lineup ${k + 1} of ${nCand}…`);
+      const forced = plan[k];
       const jitter = new Map(pool.map(p => [p.site_player_id, opts.rand ? 1 + opts.rand * gauss() * (p.stdev / Math.max(p.mean, 1)) : 1]));
       opts.score = (p) => {
         const m = proj(p);
@@ -304,7 +380,7 @@ async function generate() {
         // ownership fade: at 100% fade a 30%-owned player gives up ~1.8 pts of score
         return base * jitter.get(p.site_player_id) - opts.fade * 0.06 * own(p);
       };
-      const lp = buildLP(pool, opts, lineups.map(L => L.ids), blocked);
+      const lp = buildLP(pool, opts, lineups.map(L => L.ids), blocked, forced);
       const res = await glpk.solve(lp, { msglev: glpk.GLP_MSG_OFF, tmlim: 20 });
       if (![glpk.GLP_OPT, glpk.GLP_FEAS].includes(res.result.status)) {
         setStatus(`Stopped at ${k} lineups — no feasible lineup left under these rules (uniqueness/exposure/stack).`, true);
@@ -312,7 +388,7 @@ async function generate() {
       }
       const ids = Object.entries(res.result.vars).filter(([, v]) => v > 0.5).map(([name]) => name.slice(1));
       const L = summarize(ids); lineups.push(L);
-      ids.forEach(id => { const u = (usage.get(id) || 0) + 1; usage.set(id, u); if (!locks.has(id) && u >= Math.ceil(opts.maxExp * nCand)) blocked.add(id); });
+      ids.forEach(id => { const u = (usage.get(id) || 0) + 1; usage.set(id, u); if (!locks.has(id) && u >= capFor(id)) blocked.add(id); });
       if (k % 5 === 4 || k === nCand - 1) renderResults();
       await new Promise(r => setTimeout(r));
     }
@@ -321,16 +397,20 @@ async function generate() {
       const key = contest === "cash" ? "p50" : "p90";
       lineups.sort((a, b) => (b.sim?.[key] ?? b.proj) - (a.sim?.[key] ?? a.proj));
     }
-    // keep the best n while still honouring the exposure cap on the final set
-    const cap = Math.max(1, Math.ceil(opts.maxExp * n)), used = new Map(), kept = [];
-    for (const L of lineups) {
-      if (kept.length >= n) break;
-      if (L.ids.every(id => locks.has(id) || (used.get(id) || 0) < cap)) {
-        kept.push(L); L.ids.forEach(id => used.set(id, (used.get(id) || 0) + 1));
-      }
+    // keep the best n while honouring the exposure caps (global or per-player) and the Min% stands on the final set
+    const used = new Map(), kept = [];
+    const capN = (id) => Math.max(1, Math.ceil((maxExpP.has(id) ? maxExpP.get(id) : opts.maxExp) * n));
+    const fits = (L, need) => L.ids.every(id => locks.has(id) || id === need || (used.get(id) || 0) < capN(id));
+    const take = (L) => { kept.push(L); L.ids.forEach(id => used.set(id, (used.get(id) || 0) + 1)); };
+    for (const [id, f] of stands) {
+      const want = Math.ceil(f * n);
+      for (const L of lineups) { if ((used.get(id) || 0) >= want || kept.length >= n) break; if (!kept.includes(L) && L.ids.includes(id) && fits(L, id)) take(L); }
     }
+    for (const L of lineups) { if (kept.length >= n) break; if (!kept.includes(L) && fits(L)) take(L); }
     lineups = kept;
-    renderResults();
+    lastExposure = new Map();
+    lineups.forEach(L => L.ids.forEach(id => lastExposure.set(id, (lastExposure.get(id) || 0) + 1 / lineups.length)));
+    renderResults(); render();
   } catch (e) { setStatus("Optimizer error: " + (e.message || e), true); console.error(e); }
   $("generate").disabled = false; $("exportBtn").disabled = !lineups.length;
   if (lineups.length) setStatus(`${lineups.length} lineup${lineups.length > 1 ? "s" : ""} built · avg proj ${f1(lineups.reduce((s, L) => s + L.proj, 0) / lineups.length)}`
@@ -409,6 +489,8 @@ async function init() {
     await loadBoard();
   } catch (e) { setStatus("Error: " + (e.message || e), true); console.error(e); return; }
   $("slate").addEventListener("change", loadBoard);
+  document.querySelectorAll("#viewTabs button").forEach(b => b.addEventListener("click", () => {
+    view = b.dataset.view; document.querySelectorAll("#viewTabs button").forEach(x => x.classList.toggle("active", x === b)); render(); }));
   ["posFilter", "search"].forEach(id => $(id).addEventListener("input", render));
   $("contest").addEventListener("change", render);
   $("blend").addEventListener("input", () => { blend = (+$("blend").value || 0) / 100; estimateOwnership(); render(); });

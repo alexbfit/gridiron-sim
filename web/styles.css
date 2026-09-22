@@ -92,3 +92,10 @@ button:disabled { opacity: .5; cursor: default; }
 table.lu { width: 100%; }
 table.lu td { padding: 3px 6px; font-size: 12px; border-bottom: 1px solid #202634; }
 table.lu tr:last-child td { border-bottom: 0; }
+
+.viewbar { display: flex; align-items: center; gap: 14px; padding: 6px 0 4px; }
+#viewTabs { display: flex; gap: 4px; }
+#viewTabs button { background: var(--panel-2); color: var(--muted); border: 1px solid var(--border); padding: 4px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; }
+#viewTabs button.active { color: var(--text); background: var(--panel); border-color: var(--accent); }
+.pool td.pos-diff { color: var(--accent); } .pool td.neg-diff { color: #ff6b6b; }
+.pool input.projedit::placeholder { color: #4a5262; }
