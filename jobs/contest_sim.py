@@ -44,26 +44,35 @@ RAKE = 0.15          # DK keeps ~15% of a large GPP's entry fees; the rest is th
 def payout_fn(kind: str, entries: int, fee: float | None = None):
     """Returns f(rank_array) -> prize_array for a contest of `entries` entries.
 
-    With `fee`, the prizes below the top 10 are rescaled so the whole curve pays out (1 - RAKE) * fee * entries —
-    the tables above are approximate and, unscaled, imply a ~35% rake (far too thin in the middle)."""
+    The tables above give the SHAPE of a payout curve. The top 20 ranks keep their table ranks (1st is always 1st —
+    the old rank * scale mapping pushed rank 1 into the 2nd tier for contests smaller than the table); lower tiers
+    scale with the field (upper rank = share of table field * N). With `fee` the curve is made to pay out exactly
+    (1 - RAKE) * fee * N: a big contest keeps the headline prizes and rescales the middle, a small one (where the
+    headline prizes alone would exceed the pool) shrinks the whole curve. Without `fee` the table's dollars are used."""
     spec = PAYOUTS[kind]
-    scale = spec["entries"] / max(entries, 1)
-    uppers = np.array([u for u, _ in spec["table"]], dtype=np.float64)
+    tab_upper = np.array([u for u, _ in spec["table"]], dtype=np.float64)
     prizes = np.array([p for _, p in spec["table"]], dtype=np.float64)
+    uppers = np.zeros(len(tab_upper))
+    prev = 0.0
+    for i, u in enumerate(tab_upper):
+        # the top of the curve is fixed ranks (1st, 2nd, ... top 20); below that, tiers scale with the field
+        uppers[i] = u if u <= 20 else max(prev + 1.0, np.floor(u / spec["entries"] * entries + 0.5))
+        prev = uppers[i]
     if fee:
-        lo = np.concatenate([[0], uppers[:-1]]) / scale
-        hi = uppers / scale
-        counts = np.maximum(0, np.minimum(hi, entries) - np.minimum(lo, entries))    # entries per prize tier
-        top = counts[:6] @ prizes[:6]
-        rest = counts[6:] @ prizes[6:]
-        target = (1 - RAKE) * fee * entries - top
-        if rest > 0 and target > 0:
-            prizes = prizes.copy(); prizes[6:] *= target / rest
+        lo = np.concatenate([[0.0], uppers[:-1]])
+        counts = np.maximum(0.0, np.minimum(uppers, entries) - np.minimum(lo, entries))    # entries per tier
+        target = (1 - RAKE) * fee * entries
+        top_n = int((tab_upper <= 20).sum())
+        top, rest = counts[:top_n] @ prizes[:top_n], counts[top_n:] @ prizes[top_n:]
+        prizes = prizes.copy()
+        if top <= 0.6 * target and rest > 0:
+            prizes[top_n:] *= (target - top) / rest        # big contest: keep the headline prizes, fill the middle
+        elif top + rest > 0:
+            prizes *= target / (top + rest)                # small contest: the whole curve shrinks
     def f(rank):
-        r = np.asarray(rank, dtype=np.float64) * scale
+        r = np.asarray(rank, dtype=np.float64)
         idx = np.searchsorted(uppers, np.maximum(r, 1.0), side="left")
-        out = np.where(idx < len(prizes), prizes[np.minimum(idx, len(prizes) - 1)], 0.0)
-        return out
+        return np.where(idx < len(prizes), prizes[np.minimum(idx, len(prizes) - 1)], 0.0)
     return f
 
 

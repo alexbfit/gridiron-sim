@@ -33,7 +33,7 @@ def main():
     ap.add_argument("--slate-type", default="main")
     args = ap.parse_args()
 
-    keys, own_keys = [], []
+    keys, own_keys, standings = [], [], {}
     for csv in args.csvs:
         path = Path(csv).resolve()
         stem = path.stem.lower()
@@ -45,6 +45,7 @@ def main():
             for line in out.splitlines():
                 if line.startswith("done — ") and " for " in line:
                     own_keys.append(line.rsplit(" for ", 1)[1].strip())
+                    standings[own_keys[-1]] = str(path)
             continue
         slate_type = args.slate_type
         for t in ("showdown", "primetime", "early", "afternoon", "sunday", "main"):
@@ -62,6 +63,13 @@ def main():
         run("simulate.py", "--slate-key", k)
     for k in own_keys:
         run("results.py", "--slate-key", k, "--force")
+        # Contest Flashback: our recorded lineups vs the real field across the sims (needs the Lineup column; DK
+        # standings exports have it). Milly-style curve at $20 by default — rerun by hand with --fee/--payout
+        # for a different contest. Non-fatal: a file without lineups just skips it.
+        for contest in ("gpp", "cash"):
+            res = subprocess.run([sys.executable, "flashback.py", "--slate-key", k, "--standings", standings[k], "--contest", contest, "--save"],
+                                 cwd=HERE, capture_output=True, text=True)
+            print(res.stderr if res.returncode == 0 else f"flashback {contest} skipped: {res.stderr.strip().splitlines()[-1] if res.stderr.strip() else res.returncode}")
     if own_keys:
         run("fit_ownership.py")
     if not keys and not own_keys:

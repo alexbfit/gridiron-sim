@@ -137,6 +137,30 @@ def read_own_file(path, byname):
 
 
 # ------------------------------------------------------------------ optimizer
+def apply_props(rows, matrix, weight, overrides=()):
+    """Pull each player's board mean toward his props projection (weight 0..1) and rescale his quantiles and sim
+    draws by the same factor, so correlations survive. Shared by the builder, late_swap and flashback."""
+    n_p = 0
+    if not weight or weight <= 0:
+        return 0
+    for r in rows:
+        pv = r.get("props")
+        if pv is None or r["site_player_id"] in overrides or r["mean"] is None or eff_status(r) in OUT_STATUSES:
+            continue
+        new = (1 - weight) * r["mean"] + weight * pv
+        f = new / r["mean"] if r["mean"] > 0.5 else 1.0
+        f = min(max(f, 0.25), 4.0)
+        for k in ("mean", "median", "p15", "p85", "p95", "floor", "ceiling"):
+            if r.get(k) is not None:
+                r[k] = r[k] * f
+        if r["mean"] == 0 and pv > 0:
+            r["mean"] = new
+        if matrix is not None and r["site_player_id"] in matrix:
+            matrix[r["site_player_id"]] = matrix[r["site_player_id"]] * np.float32(f)
+        n_p += 1
+    return n_p
+
+
 def solve(pool, score, site, opts, prior, blocked, locks, own_map=None):
     prob = pulp.LpProblem("lineup", pulp.LpMaximize)
     x = {p["site_player_id"]: pulp.LpVariable("x_" + p["site_player_id"].replace("-", "_"), cat="Binary") for p in pool}
@@ -302,23 +326,8 @@ def build(args, slate, rows, ext, own_model, matrix, quiet=False):
                 if matrix is not None and r["site_player_id"] in matrix:
                     matrix[r["site_player_id"]] = matrix[r["site_player_id"]] * np.float32(f)
         log(f"market blend {args.market:g} on {args.market_pos}")
-    if args.props > 0 and any(r.get("props") is not None for r in rows):
-        n_p = 0
-        for r in rows:
-            pv = r.get("props")
-            if pv is None or r["site_player_id"] in overrides or r["mean"] is None or eff_status(r) in OUT_STATUSES:
-                continue
-            new = (1 - args.props) * r["mean"] + args.props * pv
-            f = new / r["mean"] if r["mean"] > 0.5 else 1.0
-            f = min(max(f, 0.25), 4.0)
-            for k in ("mean", "median", "p15", "p85", "p95", "floor", "ceiling"):
-                if r.get(k) is not None:
-                    r[k] = r[k] * f
-            if r["mean"] == 0 and pv > 0:
-                r["mean"] = new
-            if matrix is not None and r["site_player_id"] in matrix:
-                matrix[r["site_player_id"]] = matrix[r["site_player_id"]] * np.float32(f)
-            n_p += 1
+    n_p = apply_props(rows, matrix, args.props, overrides)
+    if n_p:
         log(f"props blend {args.props:g}: {n_p} players pulled toward the sportsbook projection")
     own_over = {}
     if args.own_file:

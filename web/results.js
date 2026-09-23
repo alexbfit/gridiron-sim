@@ -42,7 +42,7 @@
     try { newsNotes = await fetchAll(supa.from("news_notes").select("*").eq("slate_id", slate.slate_id).order("id")); } catch (e) { newsNotes = []; }
     try { newsAll = await fetchAll(supa.from("news_notes").select("slate_id,run,adjustment,helped,graded_at,confidence").not("graded_at", "is", null).order("id")); } catch (e) { newsAll = []; }
     try { upsets = await fetchAll(supa.from("upset_picks").select("*").order("id")); } catch (e) { upsets = []; }
-    renderTiles(); renderSources(); renderMine(); renderLineupSeason(); renderNews(); renderUpsets(); renderTable(); renderTrend();
+    renderTiles(); renderSources(); renderMine(); renderLineupSeason(); renderFlashback(); renderNews(); renderUpsets(); renderTable(); renderTrend();
   }
 
   function renderTiles() {
@@ -78,6 +78,38 @@
 
   const pct = (v) => v == null ? "–" : Math.round(v * 100) + "%";
   const SRC = { claude: "Claude (Sunday task)", web: "Builder export" };
+  const roi = (v) => v == null ? "–" : (v >= 0 ? "+" : "−") + Math.round(Math.abs(v) * 100) + "%";
+
+  function renderFlashback() {
+    const tiles = $("fbTiles"), box = $("fbSeason");
+    const fb = slate.flashback || {};
+    const keys = Object.keys(fb);
+    if (!keys.length) {
+      tiles.innerHTML = "";
+      box.innerHTML = `<p class="lead">No flashback for this slate yet — it runs when a DraftKings contest standings export (the one with the <b>Lineup</b> column) is pushed to <code>data/ownership/</code>.</p>`;
+    } else {
+      tiles.innerHTML = keys.map(k => { const [src, con] = k.split("/"), f = fb[k], c = f.consensus || {}, m = f.model || {};
+        return `<div class="tile" style="grid-column:1/-1"><div class="k">${SRC[src] || src} · ${con.toUpperCase()} · ${f.n} lineups vs ${Number(f.entries).toLocaleString()} real entries · ${f.payout} curve, $${f.fee}</div></div>
+        <div class="tile"><div class="k">Flashback ROI (consensus)</div><div class="v">${roi(c.roi)}</div><div class="s">field mean ${roi(c.bench_mean)} · beats ${pct(c.beats_pct)} of real entries</div></div>
+        <div class="tile"><div class="k">Cash / top-1% (consensus)</div><div class="v">${pct(c.cash)} / ${c.top1 != null ? (c.top1 * 100).toFixed(1) + "%" : "–"}</div><div class="s">per lineup, on average</div></div>
+        <div class="tile"><div class="k">Flashback ROI (model view)</div><div class="v">${roi(m.roi)}</div><div class="s">cash ${pct(m.cash)} · top-1% ${m.top1 != null ? (m.top1 * 100).toFixed(1) + "%" : "–"} · beats ${pct(m.beats_pct)}</div></div>
+        <div class="tile"><div class="k">Realized</div><div class="v">${roi(f.real_roi)}</div><div class="s">cash ${pct(f.real_cash)} · best rank ${Number(f.real_best_rank).toLocaleString()} · avg ${f1(f.real_points)} vs field median ${f1(f.field_median_points)}</div></div>`; }).join("");
+    }
+    // season table across slates
+    const agg = {};
+    slates.forEach(s => Object.entries(s.flashback || {}).forEach(([k, f]) => {
+      const a = agg[k] = agg[k] || { weeks: 0, cons: [], model: [], real: [], beats: [], cash: [], above: 0, best: Infinity };
+      a.weeks += 1; a.cons.push(f.consensus?.roi); a.model.push(f.model?.roi); a.real.push(f.real_roi); a.beats.push(f.consensus?.beats_pct); a.cash.push(f.consensus?.cash);
+      if (f.consensus && f.consensus.roi > f.consensus.bench_median) a.above += 1; a.best = Math.min(a.best, f.real_best_rank ?? Infinity);
+    }));
+    const ks = Object.keys(agg);
+    if (!ks.length) return;
+    const mean = (xs) => { const v = xs.filter(x => x != null); return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null; };
+    box.innerHTML = `<table class="m"><tr><th class="l">Lineups</th><th>weeks</th><th>flashback ROI (consensus)</th><th>beats field</th><th>cash rate</th><th>model-view ROI</th><th>realized ROI</th><th>weeks above field median</th><th>best real finish</th></tr>` +
+      ks.map(k => { const [src, con] = k.split("/"), a = agg[k];
+        return `<tr><td class="l"><b>${SRC[src] || src}</b> · ${con.toUpperCase()}</td><td>${a.weeks}</td><td><b>${roi(mean(a.cons))}</b></td><td>${pct(mean(a.beats))}</td><td>${pct(mean(a.cash))}</td><td>${roi(mean(a.model))}</td><td>${roi(mean(a.real))}</td><td>${a.above} / ${a.weeks}</td><td>${a.best === Infinity ? "–" : a.best.toLocaleString()}</td></tr>`; }).join("") + `</table>
+      <p class="lead" style="margin-top:6px">Reading it: the <b>consensus</b> column is the number to watch — it is the expected return of our construction against the real field with nobody's opinions in it, and the field averages about −15%. If it sits above the field's median week after week, the lineups are built better than the average entry. <b>Model-view</b> minus <b>realized</b>, over many weeks, is how over-confident our projections are.</p>`;
+  }
 
   function renderMine() {
     const box = $("mine");
@@ -85,7 +117,7 @@
     const cm = slate.contest_meta;
     // DB lineups (Claude's Sunday lineups + builder exports) plus any browser-only exports not in the DB
     let mine = dbLineups.map(L => ({ source: L.source, contest: L.contest, idx: L.idx, ids: L.player_ids, proj: L.proj, note: L.note,
-      actual: L.actual, sim_pct: L.sim_pct, contest_pct: L.contest_pct }));
+      actual: L.actual, sim_pct: L.sim_pct, contest_pct: L.contest_pct, fb: L.fb_roi_cons != null ? { cons: Number(L.fb_roi_cons), model: L.fb_roi != null ? Number(L.fb_roi) : null, cash: L.fb_cash_cons != null ? Number(L.fb_cash_cons) : null, rank: L.real_rank, prize: L.real_prize != null ? Number(L.real_prize) : null } : null }));
     try {
       const local = JSON.parse(localStorage.getItem("gs_lineups_" + slate.slate_key) || "[]");
       const seen = new Set(mine.map(L => L.ids.slice().sort().join("|")));
@@ -117,6 +149,7 @@
       return head + `<div class="lu-grid">` + cs.map(({ L, ps, actual, sp, cp }) => `
       <div class="lineup">
         <div class="lu-head"><b>#${L.idx}</b> <span>proj ${f1(L.proj)}</span> <span>actual <b>${f1(actual)}</b></span>${sp != null ? ` <span title="percentile of the lineup's own simulated distribution">sim ${pct(sp)}</span>` : ""}${cp != null ? ` <span title="share of real contest entries this total beat">field ${pct(cp)}</span>` : ""}</div>
+        ${L.fb ? `<div class="lu-head" style="margin-top:2px"><span title="expected ROI vs the real field on market projections (construction only)">flashback <b>${roi(L.fb.cons)}</b></span>${L.fb.model != null ? ` <span title="expected ROI on our own projections">model ${roi(L.fb.model)}</span>` : ""}${L.fb.cash != null ? ` <span>cash ${pct(L.fb.cash)}</span>` : ""}${L.fb.rank ? ` <span title="real finish among all entries">rank ${Number(L.fb.rank).toLocaleString()}${L.fb.prize ? ` · $${Math.round(L.fb.prize)}` : ""}</span>` : ""}</div>` : ""}
         ${sp != null ? `<div class="bar"><i style="width:${Math.round(sp * 100)}%"></i></div>` : ""}
         <table class="lu">${ps.map(p => `<tr><td><span class="pos ${["QB","RB","WR","TE"].includes(p.position) ? p.position : "other"}">${p.position}</span></td><td class="left">${p.player_name}</td><td>${f1(p.proj_mean)}</td><td><b>${f1(p.actual)}</b></td></tr>`).join("")}</table>
         ${L.note ? `<div class="muted" style="font-size:11px;margin-top:4px">${L.note}</div>` : ""}

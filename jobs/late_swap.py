@@ -57,29 +57,6 @@ def kickoff_et(g):
     return dt.datetime.fromisoformat(f"{g['gameday']} {t}").replace(tzinfo=ET)
 
 
-def blend_props(rows, matrix, weight, overrides):
-    """Same pull toward the props projection as build_lineups.build(): scales the board quantiles and the sim draws."""
-    n = 0
-    if weight <= 0:
-        return 0
-    for r in rows:
-        pv = r.get("props")
-        if pv is None or r["site_player_id"] in overrides or r["mean"] is None or bl.eff_status(r) in bl.OUT_STATUSES:
-            continue
-        new = (1 - weight) * r["mean"] + weight * pv
-        f = new / r["mean"] if r["mean"] > 0.5 else 1.0
-        f = min(max(f, 0.25), 4.0)
-        for k in ("mean", "median", "p15", "p85", "p95", "floor", "ceiling"):
-            if r.get(k) is not None:
-                r[k] = r[k] * f
-        if r["mean"] == 0 and pv > 0:
-            r["mean"] = new
-        if matrix is not None and r["site_player_id"] in matrix:
-            matrix[r["site_player_id"]] = matrix[r["site_player_id"]] * np.float32(f)
-        n += 1
-    return n
-
-
 def lineup_key(ids, matrix, proj, byid, contest):
     """Ranking key: sim p90 for gpp, p50 for cash (projection sum without a matrix)."""
     if not matrix:
@@ -137,7 +114,7 @@ def main():
 
     # blended projection (same as the builder): props pull applied to the board + matrix, then overrides
     overrides = {find(s.split("=")[0])["site_player_id"]: float(s.split("=")[1]) for s in args.set}
-    n_blend = blend_props(rows, matrix, args.props, overrides)
+    n_blend = bl.apply_props(rows, matrix, args.props, overrides)
     def proj(r):
         i = r["site_player_id"]
         if i in overrides:

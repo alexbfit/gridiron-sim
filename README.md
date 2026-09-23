@@ -16,7 +16,9 @@ supabase/migrations/007_lineups.sql  slate_lineups + save_lineups RPC, slates.co
 jobs/odds.py                         live spreads/totals from The Odds API (needs ODDS_API_KEY secret)
 jobs/weather.py                      kickoff forecasts (Open-Meteo, one call) -> games.forecast_*; the sim trims passing in wind
 supabase/migrations/010_news.sql     news_notes + upset_picks tables and the save_news RPC used by the news-sweep task
+supabase/migrations/011_flashback.sql fb_* / real_rank columns on slate_lineups and slates.flashback (Contest Flashback)
 jobs/late_swap.py                    quick swap (ruled-out players) and --full swap (re-solve open slots on the fresh board) of the recorded lineups (11:35 AM / 3:50 PM ET tasks)
+jobs/flashback.py                    Contest Flashback: recorded lineups vs the REAL field (standings export lineups) across the sims -> expected ROI, model and consensus views; runs from the slate-pipeline on a standings push
 jobs/kalshi.py                       Kalshi player ladders (free, no key) -> prop-style lines, merged by props.py; runs every refresh
 jobs/props.py                        sportsbook player props -> slate_projections method 'props' (Sun 7 AM ET; build_lineups --props blends them in)
 jobs/contest_backtest.py             replay past slates vs real contest standings (see data/contests/contest_backtest_2020.md)
