@@ -28,6 +28,9 @@ let poolExposure = new Map();                 // site_player_id -> fraction of t
 let candOpts = null;                          // options the pool was built with (contest, n, maxExp)
 let view = "players";                         // "players" | "stacks"
 let sim = null;                  // { n, index: Map(site_player_id -> Float32Array) }
+let propsMap = new Map();        // site_player_id -> { mean, lines, td, sources } from jobs/props.py (method = 'props')
+let propsBlend = 0.85;           // weight on the props projection when a player has one (CLI default --props 0.85)
+const gameLogCache = new Map();  // player_id -> rows of player_game_stats
 let sortKey = "mean", sortAsc = false;
 
 function setStatus(msg, err) { statusEl.textContent = msg; statusEl.classList.toggle("error", !!err); }
@@ -74,6 +77,13 @@ async function loadBoard() {
     const ext = await fetchAll(supa.from("slate_projections").select("site_player_id,mean,components").eq("slate_id", slate.slate_id).eq("method", "external").order("site_player_id"));
     ext.forEach(r => external.set(r.site_player_id, { mean: Number(r.mean), own: r.components?.ownership == null ? null : Number(r.components.ownership) }));
   } catch (e) { /* none */ }
+  propsMap = new Map();
+  try {
+    const pr = await fetchAll(supa.from("slate_projections").select("site_player_id,mean,components").eq("slate_id", slate.slate_id).eq("method", "props").order("site_player_id"));
+    pr.forEach(r => propsMap.set(r.site_player_id, { mean: Number(r.mean), lines: r.components?.lines || {}, td: r.components?.td_prob, sources: r.components?.sources || [] }));
+  } catch (e) { /* none */ }
+  const pw = $("propsWrap"); pw.style.display = propsMap.size ? "" : "none";
+  if (propsMap.size) { $("propsSrc").textContent = `${propsMap.size} players`; propsBlend = Math.max(0, Math.min(100, +$("propsBlend").value || 0)) / 100; } else propsBlend = 0;
   const bl = $("blendWrap"); bl.style.display = external.size ? "" : "none";
   if (external.size) { $("blendSrc").textContent = `${external.size} players`; blend = (+$("blend").value || 0) / 100; } else blend = 0;
   estimateOwnership();
@@ -112,7 +122,7 @@ function lineupSim(ids) {
   if (!sim) return null;
   const tot = new Float32Array(sim.n);
   let covered = 0;
-  ids.forEach(id => { const a = sim.index.get(id); if (a) { covered++; for (let i = 0; i < sim.n; i++) tot[i] += a[i]; }
+  ids.forEach(id => { const a = sim.index.get(id); if (a) { covered++; const f = simScale(byId.get(id)); for (let i = 0; i < sim.n; i++) tot[i] += a[i] * f; }
     else { const m = proj(byId.get(id)); for (let i = 0; i < sim.n; i++) tot[i] += m; } });
   const sorted = Float32Array.from(tot).sort();
   const q = (p) => sorted[Math.min(sim.n - 1, Math.floor(p * sim.n))];
@@ -122,9 +132,17 @@ function lineupSim(ids) {
 function proj(p) {
   if (overrides.has(p.site_player_id)) return overrides.get(p.site_player_id);
   const ext = external.get(p.site_player_id);
-  const own_ = p.mean ?? 0;
+  let own_ = p.mean ?? 0;
+  const pr = propsMap.get(p.site_player_id);
+  if (pr && propsBlend > 0 && p.mean != null) own_ = (1 - propsBlend) * own_ + propsBlend * pr.mean;   // same blend as build_lineups --props
   if (ext && blend > 0) return p.mean == null ? ext.mean : (1 - blend) * own_ + blend * ext.mean;
   return own_;
+}
+// factor that maps a player's stored sim draws onto his current projection (override or props blend), like the CLI rescales
+function simScale(p) {
+  const base = p.mean;
+  if (base == null || base <= 0.5) return 1;
+  return Math.min(4, Math.max(0.25, proj(p) / base));
 }
 function own(p) {
   if (ownOverrides.has(p.site_player_id)) return ownOverrides.get(p.site_player_id);
@@ -247,6 +265,9 @@ function render() {
         td.textContent = poolExposure.size ? Math.round(poolPct) + "%" : "–";
       } else if (c.key.startsWith("q")) {
         td.textContent = p.q ? f1(p.q[c.key]) : "–";
+      } else if (c.key === "player_name") {
+        td.textContent = p.player_name; td.classList.add("name"); td.title = "Click for the sim distribution and recent games";
+        td.addEventListener("click", () => openCard(id));
       } else if (c.key === "position") {
         const s = document.createElement("span"); s.className = "pos " + (["QB","RB","WR","TE"].includes(p.position) ? p.position : "other"); s.textContent = p.position; td.appendChild(s);
       } else if (c.key === "status") {
@@ -476,9 +497,96 @@ function renderResults() {
         ? ` <span title="lineup total across simulated games">sim p10 ${f1(L.sim.p10)} · <b>p50 ${f1(L.sim.p50)}</b> · p90 ${f1(L.sim.p90)} · p98 ${f1(L.sim.p98)}</span>`
         : ` <span>floor ${f1(L.floor)}</span> <span>p85 ${f1(L.ceil)}</span>`}</div>
       <table class="lu">${L.players.map(p => `<tr><td><span class="pos ${["QB","RB","WR","TE"].includes(p.position) ? p.position : "other"}">${p.position}</span></td>
-        <td class="left">${p.player_name}${p.status ? ` <em class="inj">${p.status}</em>` : ""}</td><td class="left">${p.team} v ${p.opponent}</td><td>${money(p.salary)}</td><td>${f1(proj(p))}</td></tr>`).join("")}</table>
+        <td class="left name" data-id="${p.site_player_id}">${p.player_name}${p.status ? ` <em class="inj">${p.status}</em>` : ""}</td><td class="left">${p.team} v ${p.opponent}</td><td>${money(p.salary)}</td><td>${f1(proj(p))}</td></tr>`).join("")}</table>
     </div>`).join("");
+  box.querySelectorAll("td.name").forEach(td => td.addEventListener("click", () => openCard(td.dataset.id)));
 }
+
+// ---------------------------------------------------------------- player card (SaberSim-style popup)
+function histogramSVG(a, mean) {
+  const sorted = Float32Array.from(a).sort();
+  const n = sorted.length, q = (p) => sorted[Math.min(n - 1, Math.floor(p * n))];
+  const hi = Math.max(q(0.995), mean * 2, 10), lo = 0;
+  const bins = 28, w = (hi - lo) / bins, counts = new Array(bins).fill(0);
+  for (let i = 0; i < n; i++) { const b = Math.min(bins - 1, Math.max(0, Math.floor((sorted[i] - lo) / w))); counts[b]++; }
+  const W = 720, H = 190, padL = 8, padR = 8, padT = 10, padB = 24, plotH = H - padT - padB, plotW = W - padL - padR;
+  const maxC = Math.max(...counts) || 1, bw = plotW / bins;
+  const x = (v) => padL + (v - lo) / (hi - lo) * plotW;
+  const p10 = q(0.1), p50 = q(0.5), p90 = q(0.9);
+  let bars = counts.map((c, i) => {
+    const left = lo + i * w, right = left + w, mid = (left + right) / 2;
+    const cls = mid < p10 ? "b-low" : mid > p90 ? "b-high" : "b-mid";
+    const h = plotH * c / maxC;
+    return `<rect class="${cls}" x="${(padL + i * bw + 1).toFixed(1)}" y="${(padT + plotH - h).toFixed(1)}" width="${Math.max(1, bw - 2).toFixed(1)}" height="${h.toFixed(1)}" rx="1"><title>${left.toFixed(0)}–${right.toFixed(0)} pts: ${(100 * c / n).toFixed(1)}%</title></rect>`;
+  }).join("");
+  const mark = (v, label, color, dy = 0) => `<line x1="${x(v).toFixed(1)}" y1="${padT}" x2="${x(v).toFixed(1)}" y2="${padT + plotH}" stroke="${color}" stroke-width="1.5" stroke-dasharray="3 3"/><text x="${(x(v) + 3).toFixed(1)}" y="${padT + 10 + dy}" fill="${color}" font-size="10">${label} ${v.toFixed(1)}</text>`;
+  const ticks = []; for (let t = 0; t <= hi; t += hi > 40 ? 10 : 5) ticks.push(`<text x="${x(t).toFixed(1)}" y="${H - 8}" fill="#8b95a7" font-size="10" text-anchor="middle">${t}</text>`);
+  return `<svg class="hist" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+    <style>.b-low{fill:#ff6b6b;opacity:.75}.b-mid{fill:#5ea3ff;opacity:.85}.b-high{fill:#3ddc84;opacity:.9}</style>
+    ${bars}${mark(p50, "median", "#e6e9ef")}${mark(mean, "mean", "#ffb020", Math.abs(x(mean) - x(p50)) < 70 ? 12 : 0)}${ticks.join("")}</svg>
+    <div class="hist-legend"><span><b>${n.toLocaleString()}</b> simulated games</span><span style="color:#ff6b6b">■ below p10 (${p10.toFixed(1)})</span><span style="color:#5ea3ff">■ p10–p90</span><span style="color:#3ddc84">■ above p90 (${p90.toFixed(1)})</span></div>`;
+}
+
+async function gameLog(p) {
+  if (!p.player_id || p.position === "DST") return [];
+  if (gameLogCache.has(p.player_id)) return gameLogCache.get(p.player_id);
+  let rows = [];
+  try {
+    const { data } = await supa.from("player_game_stats")
+      .select("season,week,team,opponent_team,dk_points,attempts,passing_yards,passing_tds,interceptions,carries,rushing_yards,rushing_tds,targets,receptions,receiving_yards,receiving_tds")
+      .eq("player_id", p.player_id).eq("season_type", "REG").in("season", [slate.season, slate.season - 1])
+      .order("season", { ascending: false }).order("week", { ascending: false }).limit(8);
+    rows = (data || []).filter(r => !(r.season === slate.season && r.week >= slate.week));
+  } catch (e) { rows = []; }
+  gameLogCache.set(p.player_id, rows);
+  return rows;
+}
+
+async function openCard(id) {
+  const p = byId.get(id); if (!p) return;
+  const modal = $("playerCard"), body = $("cardBody");
+  modal.hidden = false;
+  const a = sim?.index.get(id), m = proj(p);
+  const pr = propsMap.get(id);
+  const posCls = ["QB","RB","WR","TE"].includes(p.position) ? p.position : "other";
+  const inj = [p.status ? `site: ${p.status}` : "", p.injury_report ? `report: ${p.injury_report}` : "", p.practice_status ? p.practice_status : "", p.primary_injury || ""].filter(Boolean).join(" · ");
+  const tiles = [
+    ["Proj", f1(m), overrides.has(id) ? "your override" : (pr && propsBlend > 0 ? `${Math.round(100 * propsBlend)}% props + sim` : (p.method || "sim"))],
+    ["Props", pr ? f1(pr.mean) : "–", pr ? (pr.sources.length ? pr.sources.join(" + ") : "market") : "no market lines"],
+    ["Salary", money(p.salary), `${f2(m / (p.salary / 1000))} pts / $1k`],
+    ["Own%", Math.round(own(p)) + "%", ownOverrides.has(id) ? "your number" : (ownModel.fitted ? "fitted model" : "heuristic")],
+    ["Floor / Ceil", `${f1(p.floor)} / ${f1(p.ceiling)}`, "sim p10 / p90"],
+    ["Boom / Bust", `${pct(p.boom_prob)} / ${pct(p.bust_prob)}`, "sim"],
+  ];
+  if (p.q) tiles.push(["25 / 50 / 75", `${f1(p.q.q25)} / ${f1(p.q.q50)} / ${f1(p.q.q75)}`, "sim percentiles"], ["85 / 95 / 99", `${f1(p.q.q85)} / ${f1(p.q.q95)} / ${f1(p.q.q99)}`, "sim percentiles"]);
+  if (lastExposure.size) tiles.push(["Exposure", Math.round(100 * (lastExposure.get(id) || 0)) + "%", `pool ${Math.round(100 * (poolExposure.get(id) || 0))}% · lev ${(100 * (lastExposure.get(id) || 0) - own(p) > 0 ? "+" : "")}${Math.round(100 * (lastExposure.get(id) || 0) - own(p))}`]);
+  let html = `<h3><span class="pos ${posCls}">${p.position}</span>${p.player_name}</h3>
+    <div class="meta"><b>${p.team}</b> v ${p.opponent} · ${p.game_info || ""}${inj ? ` · <em class="inj">${inj}</em>` : ""}</div>
+    <div class="tiles">${tiles.map(([k, v, s]) => `<div class="tile"><div class="k">${k}</div><div class="v">${v}</div><div class="s">${s}</div></div>`).join("")}</div>`;
+  const scaled = a ? (() => { const f = simScale(p); return f === 1 ? a : Float32Array.from(a, v => v * f); })() : null;
+  html += `<h4>Simulated outcomes${scaled && scaled !== a ? " <span style='font-weight:400;text-transform:none'>(draws rescaled to the current projection)</span>" : ""}</h4>`
+    + (scaled ? histogramSVG(scaled, m) : `<p class="hint">Sim matrix not loaded for this slate — only summary numbers are available.</p>`);
+  if (pr && (Object.keys(pr.lines).length || pr.td != null)) {
+    const lab = { pass_yds: "pass yds", pass_tds: "pass TD", pass_interceptions: "INT", rush_yds: "rush yds", reception_yds: "rec yds", receptions: "rec" };
+    html += `<h4>Market lines</h4><div class="lines">${Object.entries(pr.lines).map(([k, v]) => `<span class="line">${lab[k] || k} <b>${Number(v).toFixed(1)}</b></span>`).join("")}${pr.td != null ? `<span class="line">anytime TD <b>${Math.round(100 * pr.td)}%</b></span>` : ""}</div>`;
+  }
+  html += `<h4>Recent games</h4><div id="cardLog" class="hint">Loading…</div>`;
+  body.innerHTML = html;
+  const rows = await gameLog(p);
+  const logEl = document.getElementById("cardLog"); if (!logEl) return;
+  if (!rows.length) { logEl.textContent = p.position === "DST" ? "Game logs are for skill players." : "No games on record."; return; }
+  const maxPts = Math.max(...rows.map(r => Number(r.dk_points) || 0), 1);
+  const stat = (r) => p.position === "QB" ? `${r.attempts ?? 0} att · ${r.passing_yards ?? 0} yds · ${r.passing_tds ?? 0} TD · ${r.interceptions ?? 0} INT · ${r.carries ?? 0}/${r.rushing_yards ?? 0} rush`
+    : p.position === "RB" ? `${r.carries ?? 0}/${r.rushing_yards ?? 0} rush · ${r.rushing_tds ?? 0} TD · ${r.targets ?? 0} tgt ${r.receptions ?? 0}/${r.receiving_yards ?? 0}`
+    : `${r.targets ?? 0} tgt · ${r.receptions ?? 0} rec · ${r.receiving_yards ?? 0} yds · ${r.receiving_tds ?? 0} TD${(r.carries || 0) ? ` · ${r.carries}/${r.rushing_yards ?? 0} rush` : ""}`;
+  const avg = rows.reduce((s, r) => s + (Number(r.dk_points) || 0), 0) / rows.length;
+  logEl.className = "";
+  logEl.innerHTML = `<table class="log"><thead><tr><th class="left">Game</th><th class="left">DK pts</th><th class="left">Line</th></tr></thead><tbody>`
+    + rows.map(r => `<tr><td class="left">${r.season} wk ${r.week} · ${r.team} v ${r.opponent_team || "?"}</td><td class="left"><span class="bar" style="width:${Math.round(90 * (Number(r.dk_points) || 0) / maxPts)}px"></span>${f1(r.dk_points)}</td><td class="left">${stat(r)}</td></tr>`).join("")
+    + `</tbody></table><p class="hint">Last ${rows.length} games: avg ${f1(avg)} DK pts · projection ${f1(m)}</p>`;
+}
+
+function closeCard() { $("playerCard").hidden = true; }
 
 function exportCSV() {
   const site = SITES[slate.site];
@@ -504,6 +612,10 @@ function exportCSV() {
 
 // ---------------------------------------------------------------- init
 async function init() {
+  $("cardClose").addEventListener("click", closeCard);
+  document.querySelector("#playerCard .modal-back").addEventListener("click", closeCard);
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeCard(); });
+  $("propsBlend").addEventListener("change", () => { propsBlend = propsMap.size ? Math.max(0, Math.min(100, +$("propsBlend").value || 0)) / 100 : 0; estimateOwnership(); render(); });
   if (!cfg.SUPABASE_URL || cfg.SUPABASE_URL.includes("YOUR-PROJECT")) { setStatus("Set SUPABASE_URL and SUPABASE_ANON_KEY in web/config.js", true); return; }
   supa = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY);
   try {

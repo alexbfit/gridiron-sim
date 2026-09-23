@@ -55,6 +55,7 @@
         <label>Randomness (GPP) % <input id="rand" type="number" min="0" max="50" value="15"></label>
         <label>Exclude Q / D <select id="exclQ"><option value="0">no</option><option value="1">yes</option></select></label>
         <label title="GPP only: penalises highly-owned players (0 = ignore ownership, 100 = strong fade). Ownership is a heuristic — overwrite the Own% column with real numbers if you have them.">Ownership fade (GPP) % <input id="fade" type="number" min="0" max="100" value="40"></label>
+        <label id="propsWrap" style="display:none" title="Weight on the sportsbook / Kalshi props projection for players who have one (jobs/props.py). 85 = the Sunday build's default; 0 = pure sim. On 2024 data props predicted points far better than the sim.">Props blend % (<span id="propsSrc"></span>) <input id="propsBlend" type="number" min="0" max="100" value="85"></label>
         <label id="blendWrap" style="display:none" title="Weight on the imported third-party projections (data/projections/). 0 = sim only, 100 = external only. External ownership replaces the heuristic when present.">Blend external proj % (<span id="blendSrc"></span>) <input id="blend" type="number" min="0" max="100" value="50"></label>
         <label title="GPP only: a lineup's summed projected ownership may not exceed this (0 = no limit). 120 is a moderate anti-chalk rule for large fields.">Max lineup own% (GPP) <input id="maxOwn" type="number" min="0" max="400" step="10" value="0"></label>
         <label title="Build this many × lineups into a pool, then select the best by simulated median (cash) or 90th percentile (GPP). Min%/Max% changes re-select from this pool instantly without rebuilding.">Candidates × (needs sim) <input id="poolMult" type="number" min="1" max="5" value="2"></label>
@@ -73,6 +74,14 @@
 <footer class="foot">
   Projections: Monte Carlo game sim (falls back to the baseline model). Lineup p10/p50/p90 are totals across the same simulated games, so stacks and game correlation are priced in. Optimizer runs in your browser (GLPK).
 </footer>
+
+<div id="playerCard" class="modal" hidden>
+  <div class="modal-back"></div>
+  <div class="card" role="dialog" aria-modal="true">
+    <button class="card-close" id="cardClose" aria-label="Close">×</button>
+    <div id="cardBody"></div>
+  </div>
+</div>
 
 <script type="module" src="lineups.js"></script>
 </body>

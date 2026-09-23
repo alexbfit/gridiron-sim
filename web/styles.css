@@ -99,3 +99,33 @@ table.lu tr:last-child td { border-bottom: 0; }
 #viewTabs button.active { color: var(--text); background: var(--panel); border-color: var(--accent); }
 .pool td.pos-diff { color: var(--accent); } .pool td.neg-diff { color: #ff6b6b; }
 .pool input.projedit::placeholder { color: #4a5262; }
+
+/* ---- player card (click a name) ---- */
+.pool td.name { cursor: pointer; }
+.pool td.name:hover, table.lu td.name:hover { color: var(--accent); text-decoration: underline; }
+table.lu td.name { cursor: pointer; }
+.modal[hidden] { display: none; }
+.modal { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; }
+.modal-back { position: absolute; inset: 0; background: rgba(0,0,0,.6); }
+.card { position: relative; width: min(760px, calc(100vw - 32px)); max-height: calc(100vh - 40px); overflow: auto;
+  background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px 20px; box-shadow: 0 20px 60px rgba(0,0,0,.5); }
+.card-close { position: absolute; top: 10px; right: 12px; padding: 2px 9px; font-size: 18px; line-height: 1; }
+.card h3 { margin: 0 0 2px; font-size: 20px; display: flex; align-items: center; gap: 10px; }
+.card .meta { color: var(--muted); font-size: 12px; margin-bottom: 12px; }
+.card .meta b { color: var(--text); }
+.card .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); gap: 8px; margin: 0 0 14px; }
+.card .tile { background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; }
+.card .tile .k { color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: .04em; }
+.card .tile .v { font-size: 18px; font-weight: 700; margin-top: 2px; font-variant-numeric: tabular-nums; }
+.card .tile .s { color: var(--muted); font-size: 11px; }
+.card h4 { margin: 14px 0 6px; font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+.card svg.hist { width: 100%; height: 190px; display: block; background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px; }
+.card .hist-legend { display: flex; flex-wrap: wrap; gap: 14px; color: var(--muted); font-size: 11px; margin-top: 6px; }
+.card .hist-legend b { color: var(--text); }
+.card table.log { width: 100%; }
+.card table.log th { position: static; font-size: 10px; padding: 4px 6px; }
+.card table.log td { padding: 4px 6px; font-size: 12px; }
+.card .bar { display: inline-block; height: 8px; background: var(--accent); border-radius: 2px; vertical-align: middle; margin-right: 6px; }
+.card .lines { display: flex; flex-wrap: wrap; gap: 6px; }
+.card .line { background: var(--panel-2); border: 1px solid var(--border); border-radius: 6px; padding: 3px 8px; font-size: 12px; }
+.card .line b { color: var(--accent-2); }
