@@ -56,6 +56,12 @@ MODES = {
     "p90 rank, fade 0":       COMMON + ["--fade", "0"],
     "ev, fade .4, exp .35":   ["--stack", "1", "--bringback", "--max-exp", "0.35", "--min-uniq", "4", "--candidates", "6",
                                "--fade", "0.4", "--objective", "ev", "--payout", "milly", "--fee", "20"],
+    # round 2: projection blends + structure, on the plain p90 ranking
+    "p90 f0, market .5":      COMMON + ["--fade", "0", "--market", "0.5"],
+    "p90 f0, dkavg blend .5": COMMON + ["--fade", "0", "--blend", "0.5"],       # ext = DK AvgPointsPerGame from the salary file
+    "p90 f0, no bringback":   ["--stack", "1", "--max-exp", "0.5", "--min-uniq", "3", "--candidates", "6", "--fade", "0"],
+    "p90 f0, exp .35 uniq 4": ["--stack", "1", "--bringback", "--max-exp", "0.35", "--min-uniq", "4", "--candidates", "6", "--fade", "0"],
+    "p90 f0, stack 2":        ["--stack", "2", "--bringback", "--max-exp", "0.5", "--min-uniq", "3", "--candidates", "6", "--fade", "0"],
 }
 
 
@@ -155,6 +161,7 @@ def week_board(season, week, games, team, logs, salaries_path, n_sims, store):
         rep = ctx["injuries"].get(src["player_id"])
         r["injury_report"] = (rep or {}).get("status")
         r["dk_name"] = src["dk_name"]
+        r["avg_points"] = src.get("avg_points")
     matrix = {pid: x[:store].astype(np.float32) for pid, x in scores.items()}
     return slate, rows, matrix, how
 
@@ -211,6 +218,10 @@ def main():
         if cache and os.path.exists(cache + ".json"):
             d = json.load(open(cache + ".json")); slate, rows, how = d["slate"], d["rows"], d["how"]
             z = np.load(cache + ".npz"); matrix = {k: z[k] for k in z.files}
+            if rows and "avg_points" not in rows[0]:            # older cache: add DK AvgPointsPerGame from the salary file
+                avg = {r["ID"].strip(): float(r["AvgPointsPerGame"] or 0) for r in csv.DictReader(open(sal, encoding="utf-8-sig", newline=""))}
+                for r in rows:
+                    r["avg_points"] = avg.get(r["site_player_id"])
         else:
             slate, rows, matrix, how = week_board(args.season, week, games, team, logs, sal, args.sims, args.store)
             if cache:
@@ -218,7 +229,7 @@ def main():
                 json.dump({"slate": slate, "rows": rows, "how": dict(how)}, open(cache + ".json", "w"))
                 np.savez_compressed(cache + ".npz", **matrix)
         rows_by_id = {r["site_player_id"]: r for r in rows}
-        pay = payout_fn("milly", entries)
+        pay = payout_fn("milly", entries, args.fee)
         wk = results["weeks"].setdefault(str(week), {"entries": entries, "field": {"top": float(field[0]), "p1": float(field[int(entries * .01)]),
                                                      "p20": float(field[int(entries * .2)]), "median": float(np.median(field))},
                                                      "matched": dict(how), "board": len(rows), "modes": {}})
@@ -232,7 +243,8 @@ def main():
                 t2 = time.time()
                 av = [a.replace("{standings}", st) for a in argv]
                 bargs = bl.parse_args(["--contest", "gpp", "--n", str(args.n), "--seed", str(seed), "--entries", str(entries), *av])
-                lineups, lev, proj, own_map = bl.build(bargs, slate, [dict(r) for r in rows], {}, own_model, dict(matrix), quiet=True)
+                ext = {r["site_player_id"]: {"mean": float(r["avg_points"]), "own": None} for r in rows if r.get("avg_points")} if bargs.blend > 0 else {}
+                lineups, lev, proj, own_map = bl.build(bargs, slate, [dict(r) for r in rows], ext, own_model, dict(matrix), quiet=True)
                 g = grade(lineups, rows_by_id, fpts, field, entries, pay, args.fee)
                 acts = np.array([x["actual"] for x in g]); pcts = np.array([x["field_pct"] for x in g])
                 prizes = np.array([x["prize"] for x in g])

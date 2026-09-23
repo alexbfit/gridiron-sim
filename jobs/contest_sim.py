@@ -38,12 +38,27 @@ SLOT_NEEDS = {"QB": 1, "RB": 2, "WR": 3, "TE": 1, "DST": 1}   # + 1 FLEX from RB
 DUP_K = 0.2                                                    # duplication scale (see evaluate)
 
 
-def payout_fn(kind: str, entries: int):
-    """Returns f(rank_array) -> prize_array for a contest of `entries` entries."""
+RAKE = 0.15          # DK keeps ~15% of a large GPP's entry fees; the rest is the prize pool
+
+
+def payout_fn(kind: str, entries: int, fee: float | None = None):
+    """Returns f(rank_array) -> prize_array for a contest of `entries` entries.
+
+    With `fee`, the prizes below the top 10 are rescaled so the whole curve pays out (1 - RAKE) * fee * entries —
+    the tables above are approximate and, unscaled, imply a ~35% rake (far too thin in the middle)."""
     spec = PAYOUTS[kind]
     scale = spec["entries"] / max(entries, 1)
     uppers = np.array([u for u, _ in spec["table"]], dtype=np.float64)
     prizes = np.array([p for _, p in spec["table"]], dtype=np.float64)
+    if fee:
+        lo = np.concatenate([[0], uppers[:-1]]) / scale
+        hi = uppers / scale
+        counts = np.maximum(0, np.minimum(hi, entries) - np.minimum(lo, entries))    # entries per prize tier
+        top = counts[:6] @ prizes[:6]
+        rest = counts[6:] @ prizes[6:]
+        target = (1 - RAKE) * fee * entries - top
+        if rest > 0 and target > 0:
+            prizes = prizes.copy(); prizes[6:] *= target / rest
     def f(rank):
         r = np.asarray(rank, dtype=np.float64) * scale
         idx = np.searchsorted(uppers, np.maximum(r, 1.0), side="left")
@@ -140,7 +155,7 @@ def evaluate(cand_ids, field_ids, matrix, proj, entries, fee, payout="milly", du
     C = lineup_totals(cand_ids, matrix, proj, n_sims)           # (nc, S)
     nf = F.shape[0]
     Fs = np.sort(F, axis=0)                                     # ascending per sim
-    pay = payout_fn(payout, entries)
+    pay = payout_fn(payout, entries, fee)
     # number of field lineups strictly below each candidate in each sim: (nc, S)
     below = np.empty(C.shape, dtype=np.int32)
     for s in range(n_sims):
