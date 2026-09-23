@@ -37,6 +37,7 @@ jobs:
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
         run: |
           python jobs/odds.py || echo "odds skipped"
+          python jobs/weather.py || echo "weather skipped"
           python jobs/project.py --latest || echo "no slate yet"
           python jobs/simulate.py --latest || echo "no slate yet"
           python jobs/results.py --all || echo "results skipped"

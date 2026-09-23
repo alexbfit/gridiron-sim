@@ -68,10 +68,12 @@ PRACTICE_PROB = {"Full Participation in Practice": 1.0, "Limited Participation i
                  "Did Not Participate In Practice": 0.55}   # play probability for Questionable players by Friday practice
 # weather (outdoor games only): wind cuts passing efficiency and pass rate; cold trims yards slightly
 WIND_PASS_RATE = 0.004             # pass-rate drop per mph above WIND_FLOOR
-WIND_YPT = 0.010                   # yards-per-target / passing-yards drop per mph above WIND_FLOOR
-WIND_FLOOR = 10.0
-COLD_YDS = 0.002                   # total-yards drop per degree F below 40
-WEATHER_STRENGTH = 0.0             # off: with actual conditions it did not beat the Vegas total, which already prices weather
+WIND_YPT = 0.006                   # yards-per-target / passing-yards drop per mph above WIND_FLOOR
+WIND_FLOOR = 8.0
+COLD_YDS = 0.0                     # no cold effect: 665 outdoor games showed nothing the Vegas total does not price
+WEATHER_STRENGTH = 1.0             # on (2026-09-23): forecasts from jobs/weather.py. 2024 windy games (>= 12 mph): QB MAE 4.59 -> 4.44,
+                                   # bias +1.0 -> +0.5, WR/TE MAE slightly better, RB unchanged. The level stays with the Vegas total;
+                                   # this only shifts passing efficiency / pass rate.
 
 # position priors for regression
 POS = {
@@ -127,6 +129,12 @@ def load_context(client, season, week, player_ids):
             ctx["injuries"][r["player_id"]] = {"status": r["report_status"], "practice": r["practice_status"]}
     except Exception as e:
         print(f"  (snaps/injuries unavailable: {e})")
+    ctx["weather"] = {}
+    for g in ctx["games"]:
+        if g.get("forecast_wind") is not None and g["season"] == season and g["week"] == week:
+            ctx["weather"][g["game_id"]] = {"wind": float(g["forecast_wind"]), "temp": float(g["forecast_temp"] or 60),
+                                            "gust": float(g.get("forecast_gust") or 0), "precip": float(g.get("forecast_precip") or 0),
+                                            "roof": g.get("roof")}
     ctx["depth"] = {}
     try:
         for r in fetch_all(client.table("depth_charts").select("player_id,position,pos_rank")

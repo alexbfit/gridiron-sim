@@ -33,6 +33,7 @@ jobs:
         run: |
           python jobs/ingest.py
           python jobs/odds.py || echo "odds skipped"
+          python jobs/weather.py || echo "weather skipped"
           python jobs/project.py --latest || echo "no slate"
           python jobs/simulate.py --latest || echo "no slate"
       - name: Sportsbook player props (Sunday 7 AM ET, or on request)
