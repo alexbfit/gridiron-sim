@@ -15,6 +15,7 @@ supabase/migrations/006_depth_odds.sql  depth_charts, live-odds columns (Phase 8
 supabase/migrations/007_lineups.sql  slate_lineups + save_lineups RPC, slates.contest_meta (Phase 9)
 jobs/odds.py                         live spreads/totals from The Odds API (needs ODDS_API_KEY secret)
 jobs/weather.py                      kickoff forecasts (Open-Meteo, one call) -> games.forecast_*; the sim trims passing in wind
+jobs/kalshi.py                       Kalshi player ladders (free, no key) -> prop-style lines, merged by props.py; runs every refresh
 jobs/props.py                        sportsbook player props -> slate_projections method 'props' (Sun 7 AM ET; build_lineups --props blends them in)
 jobs/contest_backtest.py             replay past slates vs real contest standings (see data/contests/contest_backtest_2020.md)
 jobs/field_stats.py                  field structure stats from a DK standings export

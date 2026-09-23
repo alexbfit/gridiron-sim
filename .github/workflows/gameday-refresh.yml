@@ -34,12 +34,13 @@ jobs:
           python jobs/ingest.py
           python jobs/odds.py || echo "odds skipped"
           python jobs/weather.py || echo "weather skipped"
+          python jobs/props.py --source kalshi || echo "kalshi props skipped"
           python jobs/project.py --latest || echo "no slate"
           python jobs/simulate.py --latest || echo "no slate"
-      - name: Sportsbook player props (Sunday 7 AM ET, or on request)
+      - name: Sportsbook player props merged with Kalshi (Sunday 7 AM ET, or on request)
         if: ${{ github.event.schedule == '0 11 * * 0' || github.event.inputs.props == 'true' }}
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
-        run: python jobs/props.py || echo "props skipped"
+        run: python jobs/props.py --source both --force || echo "props skipped"
