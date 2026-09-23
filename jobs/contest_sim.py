@@ -52,15 +52,15 @@ def payout_fn(kind: str, entries: int):
     return f
 
 
-def sample_field(pool, own, salary_cap, n_field, rng, stack_prob=0.88, bringback_prob=0.40, min_salary_frac=0.94, max_team=8):
+def sample_field(pool, own, salary_cap, n_field, rng, stack_prob=0.85, bringback_prob=0.40, min_salary_frac=0.94, max_team=8):
     """Sample n_field opponent lineups from projected ownership.
 
     own: {site_player_id: ownership %}. Players are drawn per position with probability
     proportional to ownership (a 60%-owned RB shows up in ~60% of field lineups). Most of the
     field stacks the QB with a same-team WR/TE and a share of those add a bring-back from the
-    opponent — rates measured from real DK standings (jobs/field_stats.py): 2026 wk2 Milly
-    Maker field 87% QB-stacked (top 1%: 92%), ~40% of stacks with a bring-back; 2019 Flea
-    Flicker archive 89% / 60%. Lineups that bust the cap, leave too much salary, or violate
+    opponent — rates measured from real DK standings (jobs/field_stats.py): 14 weeks of 2020
+    Milly Maker fields 81% QB-stacked (top 100: 89%), 38% with a bring-back (top 100: 56%);
+    2026 wk2 Milly 87% / ~40%; 2019 Flea Flicker 89% / 60%. See data/contests/field_stats_2020.txt. Lineups that bust the cap, leave too much salary, or violate
     roster rules are rejected and redrawn.
     Returns a list of id-tuples.
     """

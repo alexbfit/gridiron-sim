@@ -1,0 +1,276 @@
+Field structure of real DraftKings contests — jobs/field_stats.py output
+Source files: OneDrive Desktop/DFS DATA (tidyDK archive, not in git). Generated 2026-09-23.
+
+########## 2020 Millionaire Maker (14 weeks)
+
+== DK_2020_tidyDK_Millionaire/NFL2020_w02_fantasy_football_millionaire_91962454.csv
+  entries 254,775  top 248.9  1% 192.4  10% 161.0  20% 148.0  median 123.6
+  top100  n=    100  own-sum mean   93.1  median   95.6  | QB-stack  95%  bring-back  60%  stack size 1.47
+  top1%   n=  2,452  own-sum mean   95.1  median   95.5  | QB-stack  88%  bring-back  51%  stack size 1.32
+  top20%  n= 48,452  own-sum mean   99.7  median   99.0  | QB-stack  80%  bring-back  39%  stack size 1.20
+  rest    n=203,771  own-sum mean   95.4  median   94.7  | QB-stack  75%  bring-back  30%  stack size 1.07
+  chalk: Derrick Henry 35%, Davante Adams 26%, Ezekiel Elliott 26%, Jonathan Taylor 22%, Kyler Murray 19%, Amari Cooper 18%, DeAndre Hopkins 17%, Julio Jones 14%
+  chalk pts: Derrick Henry 8.4, Davante Adams 6.6, Ezekiel Elliott 23.2, Jonathan Taylor 22.0, Kyler Murray 33.1, Amari Cooper 19.0, DeAndre Hopkins 20.8, Julio Jones 4.4
+
+== DK_2020_tidyDK_Millionaire/NFL2020_w03_fantasy_football_millionaire_92556624.csv
+  entries 249,474  top 249.8  1% 192.7  10% 166.2  20% 154.9  median 134.2
+  top100  n=    100  own-sum mean  103.1  median  100.9  | QB-stack  96%  bring-back  70%  stack size 1.42
+  top1%   n=  2,404  own-sum mean  110.6  median  110.8  | QB-stack  94%  bring-back  60%  stack size 1.45
+  top20%  n= 47,494  own-sum mean  114.7  median  114.9  | QB-stack  87%  bring-back  47%  stack size 1.27
+  rest    n=199,476  own-sum mean  108.6  median  108.3  | QB-stack  79%  bring-back  32%  stack size 1.11
+  chalk: Miles Sanders 41%, DeAndre Hopkins 30%, Kenyan Drake 25%, DK Metcalf 23%, Kyler Murray 23%, Jonathan Taylor 21%, CeeDee Lamb 20%, Jerick McKinnon 18%
+  chalk pts: Miles Sanders 14.7, DeAndre Hopkins 26.7, Kenyan Drake 8.9, DK Metcalf 23.0, Kyler Murray 24.7, Jonathan Taylor 13.2, CeeDee Lamb 11.6, Jerick McKinnon 16.7
+
+== DK_2020_tidyDK_Millionaire/NFL2020_w04_fantasy_football_millionaire_93138862.csv
+  entries 236,486  top 254.1  1% 196.8  10% 166.4  20% 154.7  median 134.0
+  top100  n=    100  own-sum mean  102.7  median  100.7  | QB-stack  99%  bring-back  93%  stack size 1.83
+  top1%   n=  2,273  own-sum mean  113.6  median  112.2  | QB-stack  94%  bring-back  73%  stack size 1.54
+  top20%  n= 44,982  own-sum mean  122.9  median  123.7  | QB-stack  85%  bring-back  45%  stack size 1.22
+  rest    n=189,131  own-sum mean  120.3  median  121.8  | QB-stack  82%  bring-back  42%  stack size 1.18
+  chalk: Alvin Kamara 52%, DeVante Parker 24%, Darrell Henderson Jr. 23%, Tyler Lockett 23%, DK Metcalf 19%, Mike Davis 19%, Buccaneers 19%, James Robinson 18%
+  chalk pts: Alvin Kamara 20.9, DeVante Parker 24.0, Darrell Henderson Jr. 4.8, Tyler Lockett 5.9, DK Metcalf 17.6, Mike Davis 22.1, Buccaneers 6.0, James Robinson 14.7
+
+== DK_2020_tidyDK_Millionaire/NFL2020_w05_fantasy_football_millionaire_93673931.csv
+  entries 236,521  top 242.5  1% 189.4  10% 164.9  20% 154.6  median 134.9
+  top100  n=    101  own-sum mean  133.7  median  136.2  | QB-stack  91%  bring-back  41%  stack size 1.48
+  top1%   n=  2,266  own-sum mean  134.3  median  134.0  | QB-stack  91%  bring-back  51%  stack size 1.49
+  top20%  n= 44,947  own-sum mean  136.4  median  136.2  | QB-stack  89%  bring-back  52%  stack size 1.45
+  rest    n=189,207  own-sum mean  122.7  median  122.0  | QB-stack  85%  bring-back  46%  stack size 1.31
+  chalk: Clyde Edwards-Helaire 35%, Mike Davis 34%, Ezekiel Elliott 31%, Robby Anderson 30%, Darius Slayton 30%, Olamide Zaccheaus 21%, Kareem Hunt 20%, James Robinson 19%
+  chalk pts: Clyde Edwards-Helaire 11.0, Mike Davis 29.9, Ezekiel Elliott 23.5, Robby Anderson 22.5, Darius Slayton 23.9, Olamide Zaccheaus 2.3, Kareem Hunt 18.3, James Robinson 11.0
+
+== DK_2020_tidyDK_Millionaire/NFL2020_w06_fantasy_football_millionaire_94210980.csv
+  entries 221,752  top 256.6  1% 204.0  10% 171.0  20% 156.7  median 129.5
+  top100  n=    100  own-sum mean  137.4  median  139.4  | QB-stack  99%  bring-back  93%  stack size 1.55
+  top1%   n=  2,119  own-sum mean  136.1  median  137.0  | QB-stack  93%  bring-back  71%  stack size 1.54
+  top20%  n= 42,135  own-sum mean  133.5  median  133.9  | QB-stack  85%  bring-back  45%  stack size 1.34
+  rest    n=177,398  own-sum mean  116.2  median  115.3  | QB-stack  82%  bring-back  38%  stack size 1.22
+  chalk: Dolphins 33%, Chase Claypool 28%, Adam Thielen 27%, Myles Gaskin 26%, Derrick Henry 26%, Kenny Golladay 25%, David Montgomery 24%, Alexander Mattison 23%
+  chalk pts: Dolphins 15.0, Chase Claypool 18.1, Adam Thielen 14.1, Myles Gaskin 16.6, Derrick Henry 43.4, Kenny Golladay 17.5, David Montgomery 13.7, Alexander Mattison 4.0
+
+== DK_2020_tidyDK_Millionaire/NFL2020_w07_fantasy_football_millionaire_94689362.csv
+  entries 221,853  top 279.0  1% 227.3  10% 195.2  20% 181.1  median 154.4
+  top100  n=    101  own-sum mean  159.2  median  164.4  | QB-stack  78%  bring-back  56%  stack size 0.98
+  top1%   n=  2,120  own-sum mean  158.8  median  161.5  | QB-stack  82%  bring-back  54%  stack size 1.10
+  top20%  n= 42,156  own-sum mean  148.2  median  149.9  | QB-stack  82%  bring-back  43%  stack size 1.21
+  rest    n=177,476  own-sum mean  117.5  median  117.3  | QB-stack  81%  bring-back  40%  stack size 1.21
+  chalk: Alvin Kamara 50%, Jamaal Williams 37%, WAS Football Team 26%, Kareem Hunt 23%, Davante Adams 23%, Terry McLaurin 23%, Giovani Bernard 22%, Kenny Golladay 21%
+  chalk pts: Alvin Kamara 22.8, Jamaal Williams 21.4, WAS Football Team 17.0, Kareem Hunt 19.2, Davante Adams 47.6, Terry McLaurin 22.0, Giovani Bernard 20.6, Kenny Golladay 20.4
+
+== DK_2020_tidyDK_Millionaire/NFL2020_w08_fantasy_football_millionaire_95207246.csv
+  entries 411,113  top 244.0  1% 187.9  10% 157.8  20% 145.5  median 122.9
+  top100  n=    100  own-sum mean  104.7  median  105.5  | QB-stack  94%  bring-back  56%  stack size 1.60
+  top1%   n=  4,011  own-sum mean  109.8  median  110.0  | QB-stack  93%  bring-back  61%  stack size 1.45
+  top20%  n= 78,149  own-sum mean  114.8  median  114.9  | QB-stack  88%  bring-back  50%  stack size 1.35
+  rest    n=328,853  own-sum mean  117.1  median  117.0  | QB-stack  84%  bring-back  44%  stack size 1.24
+  chalk: Kareem Hunt 38%, Jamaal Williams 32%, Derrick Henry 28%, Keenan Allen 26%, Brandon Aiyuk 24%, Davante Adams 23%, A.J. Green 20%, Jonnu Smith 17%
+  chalk pts: Kareem Hunt 9.3, Jamaal Williams 18.2, Derrick Henry 20.2, Keenan Allen 21.7, Brandon Aiyuk 23.1, Davante Adams 30.3, A.J. Green 3.9, Jonnu Smith 4.9
+
+== DK_2020_tidyDK_Millionaire/NFL2020_w09_fantasy_football_millionaire_95683403.csv
+  entries 228,220  top 238.0  1% 190.4  10% 165.4  20% 154.3  median 132.7
+  top100  n=    101  own-sum mean  100.9  median  101.7  | QB-stack  89%  bring-back  41%  stack size 1.31
+  top1%   n=  2,183  own-sum mean  107.3  median  108.3  | QB-stack  87%  bring-back  40%  stack size 1.28
+  top20%  n= 43,388  own-sum mean  112.0  median  113.0  | QB-stack  83%  bring-back  38%  stack size 1.22
+  rest    n=182,548  own-sum mean  106.6  median  106.9  | QB-stack  84%  bring-back  42%  stack size 1.24
+  chalk: Dalvin Cook 39%, Julio Jones 27%, Tyler Lockett 25%, Chase Edmonds 24%, Justin Jackson 23%, Stefon Diggs 21%, James Conner 20%, David Johnson 17%
+  chalk pts: Dalvin Cook 42.2, Julio Jones 16.4, Tyler Lockett 8.0, Chase Edmonds 11.8, Justin Jackson 0.0, Stefon Diggs 23.8, James Conner 4.0, David Johnson 1.6
+
+== DK_2020_tidyDK_Millionaire/NFL2020_w10_fantasy_football_millionaire_96150436.csv
+  entries 207,114  top 218.5  1% 170.3  10% 145.7  20% 135.2  median 115.8
+  top100  n=    115  own-sum mean   98.9  median   97.7  | QB-stack  97%  bring-back  70%  stack size 1.37
+  top1%   n=  1,957  own-sum mean  106.4  median  107.1  | QB-stack  89%  bring-back  59%  stack size 1.31
+  top20%  n= 39,413  own-sum mean  117.9  median  118.3  | QB-stack  83%  bring-back  46%  stack size 1.18
+  rest    n=165,629  own-sum mean  120.3  median  120.0  | QB-stack  80%  bring-back  37%  stack size 1.13
+  chalk: Aaron Jones 43%, Mike Davis 41%, Keenan Allen 24%, Duke Johnson 23%, Saints 22%, Stefon Diggs 21%, Davante Adams 19%, Kyler Murray 19%
+  chalk pts: Aaron Jones 14.5, Mike Davis 8.4, Keenan Allen 12.9, Duke Johnson 5.4, Saints 14.0, Stefon Diggs 25.3, Davante Adams 19.6, Kyler Murray 30.9
+
+== DK_2020_tidyDK_Millionaire/NFL2020_w11_fantasy_football_millionaire_96625286.csv
+  entries 205,711  top 222.0  1% 181.4  10% 160.3  20% 150.7  median 131.8
+  top100  n=    108  own-sum mean  116.0  median  114.8  | QB-stack  77%  bring-back  43%  stack size 1.19
+  top1%   n=  1,957  own-sum mean  121.0  median  120.4  | QB-stack  75%  bring-back  35%  stack size 1.14
+  top20%  n= 39,142  own-sum mean  118.6  median  118.1  | QB-stack  77%  bring-back  33%  stack size 1.13
+  rest    n=164,504  own-sum mean  110.4  median  110.3  | QB-stack  81%  bring-back  35%  stack size 1.17
+  chalk: Dalvin Cook 42%, Keenan Allen 25%, Jakobi Meyers 24%, Dolphins 23%, Justin Jefferson 23%, Alvin Kamara 22%, Terry McLaurin 21%, Logan Thomas 19%
+  chalk pts: Dalvin Cook 29.0, Keenan Allen 38.5, Jakobi Meyers 6.8, Dolphins 5.0, Justin Jefferson 17.6, Alvin Kamara 10.5, Terry McLaurin 13.4, Logan Thomas 2.8
+
+== DK_2020_tidyDK_Millionaire/NFL2020_w12_fantasy_football_millionaire_97091228.csv
+  entries 293,678  top 253.3  1% 204.7  10% 173.8  20% 156.2  median 125.9
+  top100  n=    100  own-sum mean  116.9  median  120.6  | QB-stack  95%  bring-back  47%  stack size 1.23
+  top1%   n=  2,854  own-sum mean  126.3  median  127.1  | QB-stack  95%  bring-back  52%  stack size 1.46
+  top20%  n= 55,865  own-sum mean  127.7  median  129.1  | QB-stack  87%  bring-back  44%  stack size 1.38
+  rest    n=234,859  own-sum mean  120.3  median  121.2  | QB-stack  81%  bring-back  40%  stack size 1.18
+  chalk: Dalvin Cook 42%, Nyheim Hines 29%, Saints 27%, Travis Kelce 24%, Brian Hill 23%, Tyreek Hill 22%, Darren Waller 21%, Justin Jefferson 21%
+  chalk pts: Dalvin Cook 11.2, Nyheim Hines 17.5, Saints 14.0, Travis Kelce 16.2, Brian Hill 5.5, Tyreek Hill 60.9, Darren Waller 6.3, Justin Jefferson 26.0
+
+== DK_2020_tidyDK_Millionaire/NFL2020_w14_fantasy_football_millionaire_98106011.csv
+  entries 205,652  top 222.7  1% 183.7  10% 161.3  20% 151.5  median 132.6
+  top100  n=    100  own-sum mean  100.0  median  102.7  | QB-stack  78%  bring-back  24%  stack size 1.14
+  top1%   n=  1,960  own-sum mean  101.3  median  101.3  | QB-stack  80%  bring-back  31%  stack size 1.16
+  top20%  n= 39,074  own-sum mean  100.2  median  100.4  | QB-stack  82%  bring-back  32%  stack size 1.17
+  rest    n=164,518  own-sum mean   91.6  median   92.1  | QB-stack  84%  bring-back  37%  stack size 1.22
+  chalk: Derrick Henry 26%, Davante Adams 25%, Aaron Jones 24%, David Montgomery 23%, J.D. McKissic 20%, Keenan Allen 18%, Corey Davis 18%, Seahawks 17%
+  chalk pts: Derrick Henry 39.2, Davante Adams 27.5, Aaron Jones 9.5, David Montgomery 27.5, J.D. McKissic 10.6, Keenan Allen 20.2, Corey Davis 5.4, Seahawks 12.0
+
+== DK_2020_tidyDK_Millionaire/NFL2020_w15_fantasy_football_millionaire_98609746.csv
+  entries 351,802  top 237.3  1% 191.0  10% 169.0  20% 159.5  median 141.7
+  top100  n=    100  own-sum mean   98.1  median   94.6  | QB-stack  57%  bring-back  29%  stack size 0.68
+  top1%   n=  3,430  own-sum mean  113.1  median  112.8  | QB-stack  70%  bring-back  32%  stack size 0.88
+  top20%  n= 66,847  own-sum mean  120.0  median  119.8  | QB-stack  68%  bring-back  29%  stack size 0.93
+  rest    n=281,425  own-sum mean  114.4  median  114.6  | QB-stack  76%  bring-back  32%  stack size 1.14
+  chalk: Alvin Kamara 41%, Derrick Henry 34%, Brandon Aiyuk 29%, T.Y. Hilton 26%, Leonard Fournette 23%, Jonathan Taylor 22%, Emmanuel Sanders 20%, Cam Akers 18%
+  chalk pts: Alvin Kamara 18.4, Derrick Henry 28.2, Brandon Aiyuk 22.3, T.Y. Hilton 11.1, Leonard Fournette 21.5, Jonathan Taylor 19.5, Emmanuel Sanders 11.6, Cam Akers 7.2
+
+== DK_2020_tidyDK_Millionaire/NFL2020_w16_fantasy_football_millionaire_99111168.csv
+  entries 176,250  top 217.8  1% 179.2  10% 156.1  20% 146.3  median 128.0
+  top100  n=    102  own-sum mean  128.2  median  128.1  | QB-stack  96%  bring-back  59%  stack size 1.53
+  top1%   n=  1,661  own-sum mean  130.7  median  130.9  | QB-stack  85%  bring-back  49%  stack size 1.29
+  top20%  n= 33,540  own-sum mean  131.5  median  132.8  | QB-stack  78%  bring-back  35%  stack size 1.12
+  rest    n=140,947  own-sum mean  124.8  median  126.4  | QB-stack  81%  bring-back  34%  stack size 1.26
+  chalk: David Montgomery 44%, Travis Kelce 31%, Austin Hooper 24%, Patrick Mahomes 23%, Melvin Gordon III 22%, Jalen Hurts 21%, Giovani Bernard 21%, Le'Veon Bell 20%
+  chalk pts: David Montgomery 20.1, Travis Kelce 22.8, Austin Hooper 14.1, Patrick Mahomes 20.2, Melvin Gordon III 7.9, Jalen Hurts 24.6, Giovani Bernard 20.1, Le'Veon Bell 4.9
+
+########## 2020 $0.05 3-max 'nickel' (15 weeks)
+
+== DK_2020_tidyDK_other_contests/NFL2020_w02_nickel_mxe3_91999281.csv
+  entries 35,606  top 241.3  1% 194.1  10% 163.3  20% 150.0  median 125.5
+  top100  n=    101  own-sum mean  105.9  median  110.1  | QB-stack  93%  bring-back  61%  stack size 1.45
+  top1%   n=    256  own-sum mean  102.8  median  104.1  | QB-stack  82%  bring-back  49%  stack size 1.25
+  top20%  n=  6,770  own-sum mean  108.3  median  107.6  | QB-stack  79%  bring-back  42%  stack size 1.19
+  rest    n= 28,479  own-sum mean  101.0  median   99.8  | QB-stack  75%  bring-back  32%  stack size 1.06
+  chalk: Derrick Henry 36%, Ezekiel Elliott 28%, Jonathan Taylor 27%, Davante Adams 25%, Kyler Murray 21%, Amari Cooper 18%, DeAndre Hopkins 16%, CeeDee Lamb 15%
+  chalk pts: Derrick Henry 8.4, Ezekiel Elliott 23.2, Jonathan Taylor 22.0, Davante Adams 6.6, Kyler Murray 33.1, Amari Cooper 19.0, DeAndre Hopkins 20.8, CeeDee Lamb 20.5
+
+== DK_2020_tidyDK_other_contests/NFL2020_w03_nickel_mxe3_92595274.csv
+  entries 47,500  top 231.2  1% 191.5  10% 165.6  20% 154.4  median 134.0
+  top100  n=    100  own-sum mean  114.9  median  114.5  | QB-stack  95%  bring-back  65%  stack size 1.43
+  top1%   n=    375  own-sum mean  117.0  median  115.9  | QB-stack  91%  bring-back  60%  stack size 1.43
+  top20%  n=  9,035  own-sum mean  121.8  median  121.7  | QB-stack  86%  bring-back  48%  stack size 1.25
+  rest    n= 37,990  own-sum mean  116.5  median  115.8  | QB-stack  77%  bring-back  30%  stack size 1.07
+  chalk: Miles Sanders 43%, DeAndre Hopkins 29%, Kenyan Drake 26%, DK Metcalf 25%, Kyler Murray 24%, CeeDee Lamb 24%, Jonathan Taylor 23%, Tyler Lockett 19%
+  chalk pts: Miles Sanders 14.7, DeAndre Hopkins 26.7, Kenyan Drake 8.9, DK Metcalf 23.0, Kyler Murray 24.7, CeeDee Lamb 11.6, Jonathan Taylor 13.2, Tyler Lockett 40.0
+
+== DK_2020_tidyDK_other_contests/NFL2020_w04_nickel_mxe3_93173764.csv
+  entries 47,429  top 245.8  1% 196.5  10% 165.2  20% 153.5  median 133.1
+  top100  n=    100  own-sum mean  111.1  median  109.6  | QB-stack  98%  bring-back  86%  stack size 1.71
+  top1%   n=    378  own-sum mean  118.9  median  120.2  | QB-stack  90%  bring-back  71%  stack size 1.41
+  top20%  n=  9,007  own-sum mean  125.7  median  126.2  | QB-stack  83%  bring-back  44%  stack size 1.18
+  rest    n= 37,944  own-sum mean  123.5  median  124.2  | QB-stack  79%  bring-back  42%  stack size 1.12
+  chalk: Alvin Kamara 51%, Darrell Henderson Jr. 25%, DeVante Parker 25%, Tyler Lockett 23%, Mike Davis 21%, DK Metcalf 20%, Buccaneers 20%, Ryan Fitzpatrick 19%
+  chalk pts: Alvin Kamara 20.9, Darrell Henderson Jr. 4.8, DeVante Parker 24.0, Tyler Lockett 5.9, Mike Davis 22.1, DK Metcalf 17.6, Buccaneers 6.0, Ryan Fitzpatrick 26.3
+
+== DK_2020_tidyDK_other_contests/NFL2020_w05_nickel_mxe3_93722675.csv
+  entries 47,479  top 226.0  1% 188.3  10% 164.7  20% 154.8  median 135.0
+  top100  n=    100  own-sum mean  137.4  median  136.6  | QB-stack  95%  bring-back  56%  stack size 1.49
+  top1%   n=    374  own-sum mean  145.6  median  145.6  | QB-stack  92%  bring-back  45%  stack size 1.51
+  top20%  n=  9,022  own-sum mean  147.4  median  147.5  | QB-stack  88%  bring-back  52%  stack size 1.43
+  rest    n= 37,983  own-sum mean  129.3  median  128.3  | QB-stack  84%  bring-back  46%  stack size 1.28
+  chalk: Mike Davis 38%, Clyde Edwards-Helaire 37%, Ezekiel Elliott 33%, Darius Slayton 32%, Robby Anderson 31%, Olamide Zaccheaus 23%, James Robinson 20%, Kareem Hunt 19%
+  chalk pts: Mike Davis 29.9, Clyde Edwards-Helaire 11.0, Ezekiel Elliott 23.5, Darius Slayton 23.9, Robby Anderson 22.5, Olamide Zaccheaus 2.3, James Robinson 11.0, Kareem Hunt 18.3
+
+== DK_2020_tidyDK_other_contests/NFL2020_w06_nickel_mxe3_94271405.csv
+  entries 35,615  top 248.7  1% 206.8  10% 172.1  20% 157.7  median 130.7
+  top100  n=    103  own-sum mean  143.5  median  145.3  | QB-stack  93%  bring-back  85%  stack size 1.64
+  top1%   n=    253  own-sum mean  145.6  median  148.3  | QB-stack  94%  bring-back  74%  stack size 1.58
+  top20%  n=  6,772  own-sum mean  142.5  median  143.0  | QB-stack  87%  bring-back  48%  stack size 1.37
+  rest    n= 28,487  own-sum mean  124.9  median  124.2  | QB-stack  82%  bring-back  40%  stack size 1.19
+  chalk: Dolphins 35%, Myles Gaskin 29%, David Montgomery 28%, Adam Thielen 27%, Kenny Golladay 27%, Chase Claypool 27%, A.J. Brown 26%, Derrick Henry 25%
+  chalk pts: Dolphins 15.0, Myles Gaskin 16.6, David Montgomery 13.7, Adam Thielen 14.1, Kenny Golladay 17.5, Chase Claypool 18.1, A.J. Brown 22.6, Derrick Henry 43.4
+
+== DK_2020_tidyDK_other_contests/NFL2020_w07_nickel_mxe3_94751838.csv
+  entries 35,633  top 269.0  1% 230.1  10% 199.4  20% 184.2  median 156.5
+  top100  n=    100  own-sum mean  177.3  median  179.6  | QB-stack  71%  bring-back  53%  stack size 0.87
+  top1%   n=    258  own-sum mean  173.4  median  174.8  | QB-stack  83%  bring-back  59%  stack size 1.10
+  top20%  n=  6,771  own-sum mean  161.4  median  163.8  | QB-stack  79%  bring-back  45%  stack size 1.17
+  rest    n= 28,504  own-sum mean  122.3  median  121.6  | QB-stack  80%  bring-back  42%  stack size 1.21
+  chalk: Alvin Kamara 50%, Jamaal Williams 35%, WAS Football Team 31%, Kareem Hunt 26%, Terry McLaurin 25%, Giovani Bernard 24%, Davante Adams 24%, Kenny Golladay 22%
+  chalk pts: Alvin Kamara 22.8, Jamaal Williams 21.4, WAS Football Team 17.0, Kareem Hunt 19.2, Terry McLaurin 22.0, Giovani Bernard 20.6, Davante Adams 47.6, Kenny Golladay 20.4
+
+== DK_2020_tidyDK_other_contests/NFL2020_w08_nickel_mxe3_95244050.csv
+  entries 35,616  top 236.4  1% 189.6  10% 158.8  20% 146.1  median 123.5
+  top100  n=    101  own-sum mean  118.6  median  119.8  | QB-stack  93%  bring-back  66%  stack size 1.49
+  top1%   n=    258  own-sum mean  119.7  median  120.1  | QB-stack  91%  bring-back  69%  stack size 1.38
+  top20%  n=  6,773  own-sum mean  126.8  median  127.3  | QB-stack  89%  bring-back  55%  stack size 1.36
+  rest    n= 28,484  own-sum mean  129.3  median  129.1  | QB-stack  84%  bring-back  47%  stack size 1.25
+  chalk: Kareem Hunt 41%, Jamaal Williams 37%, Keenan Allen 29%, Derrick Henry 28%, Brandon Aiyuk 27%, A.J. Green 21%, Davante Adams 20%, Denzel Mims 19%
+  chalk pts: Kareem Hunt 9.3, Jamaal Williams 18.2, Keenan Allen 21.7, Derrick Henry 20.2, Brandon Aiyuk 23.1, A.J. Green 3.9, Davante Adams 30.3, Denzel Mims 6.2
+
+== DK_2020_tidyDK_other_contests/NFL2020_w09_nickel_mxe3_95720135.csv
+  entries 35,614  top 217.2  1% 189.9  10% 164.1  20% 153.3  median 131.8
+  top100  n=    100  own-sum mean  105.3  median  107.2  | QB-stack  84%  bring-back  43%  stack size 1.30
+  top1%   n=    256  own-sum mean  110.9  median  112.1  | QB-stack  85%  bring-back  37%  stack size 1.18
+  top20%  n=  6,772  own-sum mean  115.9  median  116.5  | QB-stack  84%  bring-back  44%  stack size 1.22
+  rest    n= 28,486  own-sum mean  113.8  median  113.5  | QB-stack  84%  bring-back  47%  stack size 1.24
+  chalk: Dalvin Cook 36%, Justin Jackson 28%, Tyler Lockett 28%, Julio Jones 28%, Chase Edmonds 27%, Stefon Diggs 22%, James Conner 22%, David Johnson 18%
+  chalk pts: Dalvin Cook 42.2, Justin Jackson 0.0, Tyler Lockett 8.0, Julio Jones 16.4, Chase Edmonds 11.8, Stefon Diggs 23.8, James Conner 4.0, David Johnson 1.6
+
+== DK_2020_tidyDK_other_contests/NFL2020_w10_nickel_mxe3_96185277.csv
+  entries 29,686  top 209.1  1% 170.3  10% 145.2  20% 134.8  median 115.6
+  top100  n=    100  own-sum mean  106.5  median  101.3  | QB-stack  87%  bring-back  66%  stack size 1.13
+  top1%   n=    197  own-sum mean  114.6  median  115.2  | QB-stack  88%  bring-back  54%  stack size 1.30
+  top20%  n=  5,645  own-sum mean  130.6  median  132.2  | QB-stack  83%  bring-back  51%  stack size 1.16
+  rest    n= 23,744  own-sum mean  132.6  median  132.5  | QB-stack  81%  bring-back  42%  stack size 1.13
+  chalk: Mike Davis 47%, Aaron Jones 46%, Keenan Allen 26%, Duke Johnson 24%, Saints 24%, Stefon Diggs 23%, Kyler Murray 20%, Robert Woods 19%
+  chalk pts: Mike Davis 8.4, Aaron Jones 14.5, Keenan Allen 12.9, Duke Johnson 5.4, Saints 14.0, Stefon Diggs 25.3, Kyler Murray 30.9, Robert Woods 8.6
+
+== DK_2020_tidyDK_other_contests/NFL2020_w11_nickel_mxe3_96662200.csv
+  entries 35,632  top 203.3  1% 181.8  10% 160.8  20% 151.2  median 132.5
+  top100  n=    100  own-sum mean  116.5  median  118.2  | QB-stack  78%  bring-back  31%  stack size 1.19
+  top1%   n=    259  own-sum mean  125.3  median  124.8  | QB-stack  72%  bring-back  38%  stack size 1.16
+  top20%  n=  6,777  own-sum mean  121.5  median  120.9  | QB-stack  75%  bring-back  36%  stack size 1.13
+  rest    n= 28,496  own-sum mean  111.5  median  111.1  | QB-stack  80%  bring-back  39%  stack size 1.16
+  chalk: Dalvin Cook 42%, Jakobi Meyers 25%, Keenan Allen 25%, Dolphins 23%, Justin Jefferson 22%, Terry McLaurin 21%, Logan Thomas 21%, Alvin Kamara 20%
+  chalk pts: Dalvin Cook 29.0, Jakobi Meyers 6.8, Keenan Allen 38.5, Dolphins 5.0, Justin Jefferson 17.6, Terry McLaurin 13.4, Logan Thomas 2.8, Alvin Kamara 10.5
+
+== DK_2020_tidyDK_other_contests/NFL2020_w12_nickel_mxe3_97186395.csv
+  entries 35,606  top 238.5  1% 205.4  10% 175.2  20% 157.2  median 126.4
+  top100  n=    100  own-sum mean  127.3  median  127.9  | QB-stack  96%  bring-back  48%  stack size 1.43
+  top1%   n=    258  own-sum mean  132.4  median  134.1  | QB-stack  92%  bring-back  47%  stack size 1.45
+  top20%  n=  6,763  own-sum mean  134.1  median  136.0  | QB-stack  87%  bring-back  48%  stack size 1.39
+  rest    n= 28,485  own-sum mean  125.1  median  125.6  | QB-stack  81%  bring-back  42%  stack size 1.17
+  chalk: Dalvin Cook 41%, Nyheim Hines 32%, Brian Hill 26%, Saints 25%, Travis Kelce 24%, Wayne Gallman Jr. 22%, Darren Waller 22%, Tyreek Hill 22%
+  chalk pts: Dalvin Cook 11.2, Nyheim Hines 17.5, Brian Hill 5.5, Saints 14.0, Travis Kelce 16.2, Wayne Gallman Jr. 18.1, Darren Waller 6.3, Tyreek Hill 60.9
+
+== DK_2020_tidyDK_other_contests/NFL2020_w14_nickel_mxe3_98169720.csv
+  entries 35,619  top 213.3  1% 183.7  10% 161.8  20% 152.0  median 132.8
+  top100  n=    100  own-sum mean  106.4  median  106.6  | QB-stack  84%  bring-back  36%  stack size 1.28
+  top1%   n=    258  own-sum mean  104.7  median  103.6  | QB-stack  84%  bring-back  37%  stack size 1.23
+  top20%  n=  6,767  own-sum mean  105.5  median  105.2  | QB-stack  83%  bring-back  35%  stack size 1.18
+  rest    n= 28,494  own-sum mean   95.3  median   96.1  | QB-stack  84%  bring-back  40%  stack size 1.22
+  chalk: Davante Adams 26%, Derrick Henry 24%, Aaron Jones 24%, David Montgomery 23%, J.D. McKissic 23%, Corey Davis 19%, Breshad Perriman 18%, Keenan Allen 18%
+  chalk pts: Davante Adams 27.5, Derrick Henry 39.2, Aaron Jones 9.5, David Montgomery 27.5, J.D. McKissic 10.6, Corey Davis 5.4, Breshad Perriman 5.6, Keenan Allen 20.2
+
+== DK_2020_tidyDK_other_contests/NFL2020_w15_nickel_mxe3_98646198.csv
+  entries 29,665  top 223.1  1% 191.1  10% 169.7  20% 160.5  median 142.5
+  top100  n=    100  own-sum mean  125.1  median  123.7  | QB-stack  60%  bring-back  33%  stack size 0.78
+  top1%   n=    196  own-sum mean  127.7  median  128.7  | QB-stack  59%  bring-back  26%  stack size 0.76
+  top20%  n=  5,646  own-sum mean  133.4  median  134.3  | QB-stack  66%  bring-back  29%  stack size 0.88
+  rest    n= 23,723  own-sum mean  125.4  median  125.9  | QB-stack  77%  bring-back  37%  stack size 1.14
+  chalk: Alvin Kamara 48%, Derrick Henry 33%, Brandon Aiyuk 32%, T.Y. Hilton 26%, Leonard Fournette 23%, Jonathan Taylor 22%, Emmanuel Sanders 21%, Cam Akers 18%
+  chalk pts: Alvin Kamara 18.4, Derrick Henry 28.2, Brandon Aiyuk 22.3, T.Y. Hilton 11.1, Leonard Fournette 21.5, Jonathan Taylor 19.5, Emmanuel Sanders 11.6, Cam Akers 7.2
+
+== DK_2020_tidyDK_other_contests/NFL2020_w16_nickel_mxe3_99146157.csv
+  entries 29,674  top 211.6  1% 179.4  10% 156.8  20% 146.9  median 128.5
+  top100  n=    100  own-sum mean  132.5  median  133.7  | QB-stack  86%  bring-back  57%  stack size 1.44
+  top1%   n=    197  own-sum mean  134.2  median  135.2  | QB-stack  82%  bring-back  52%  stack size 1.25
+  top20%  n=  5,650  own-sum mean  133.9  median  135.0  | QB-stack  77%  bring-back  39%  stack size 1.09
+  rest    n= 23,727  own-sum mean  126.1  median  127.4  | QB-stack  80%  bring-back  36%  stack size 1.23
+  chalk: David Montgomery 43%, Travis Kelce 31%, Melvin Gordon III 24%, Austin Hooper 23%, Jalen Hurts 23%, Patrick Mahomes 22%, Giovani Bernard 21%, Austin Ekeler 20%
+  chalk pts: David Montgomery 20.1, Travis Kelce 22.8, Melvin Gordon III 7.9, Austin Hooper 14.1, Jalen Hurts 24.6, Patrick Mahomes 20.2, Giovani Bernard 20.1, Austin Ekeler 15.8
+
+== DK_2020_tidyDK_other_contests/NFL2020_w17_nickel_mxe3_99794106.csv
+  entries 23,719  top 258.7  1% 222.6  10% 194.5  20% 180.8  median 155.4
+  top100  n=    100  own-sum mean  124.6  median  124.3  | QB-stack  85%  bring-back  62%  stack size 1.10
+  top1%   n=    137  own-sum mean  126.3  median  127.3  | QB-stack  84%  bring-back  52%  stack size 1.07
+  top20%  n=  4,506  own-sum mean  114.1  median  113.8  | QB-stack  83%  bring-back  45%  stack size 1.20
+  rest    n= 18,976  own-sum mean   91.5  median   90.5  | QB-stack  77%  bring-back  29%  stack size 1.11
+  chalk: Derrick Henry 40%, Browns 28%, Jonathan Taylor 27%, Justin Jefferson 24%, Ty Montgomery 22%, Davante Adams 19%, Kirk Cousins 17%, Ty Johnson 16%
+  chalk pts: Derrick Henry 39.0, Browns 3.0, Jonathan Taylor 41.4, Justin Jefferson 25.3, Ty Montgomery 14.7, Davante Adams 16.6, Kirk Cousins 37.3, Ty Johnson 8.8
+
+########## Averages
+2020 Milly (14 wks):  field QB-stack 81% / bring-back 38% / stack size 1.19;  top 100: 89% / 56% / 1.34;  top 1%: 87% / 51%
+                      own-sum: top100 113.8, top1% 118.9, top20% 121.3, field 113.3  (winners are NOT low-owned: +0.5 / +5.6 vs field)
+                      scores: top 241.8, 1% 192.2, 10% 165.3, 20% 153.5, median 131.6
+2020 nickel 3-max:    field 80% / 39% / 1.17;  top 100: 87% / 57%;  own-sum top100 123.5 vs field 117.9 (+5.7)
+2026 wk2 Milly:       field 87% / 39%;  top 1%: 92% / 39%;  own-sum top100 123.5 vs field 115.2 (+8)
+2026 wk2 20-max:      field 68% / 18%;  top 100: 45% (naked Purdy)
+
