@@ -9,7 +9,7 @@ variance and correlation structure.
 
 Source: The Odds API (same ODDS_API_KEY as jobs/odds.py). Player props are per-event requests and
 cost (markets x regions) credits each: 6 markets x 1 region x ~14 games = ~84 credits per pull on the
-500/month free tier, so this runs ONCE per week (Sunday 7 AM ET in gameday-refresh, before the 9:30 lineup task).
+500/month free tier, so this runs ONCE per week (Sunday 10 AM ET in gameday-refresh).
 
   python jobs/props.py                 # latest slate, live API
   python jobs/props.py --dry-run       # fetch + match, no writes
@@ -56,6 +56,35 @@ NAME_TO_ABBR = {
 def implied(price) -> float:
     p = float(price)
     return 100 / (p + 100) if p > 0 else -p / (-p + 100)
+
+
+YPR = {"RB": 8.0, "WR": 11.5, "TE": 10.5}       # yards per reception used to fill one missing receiving market from the other
+
+
+def complete(pos: str, lines: dict) -> bool:
+    """Books post markets in stages (anytime TD first, receiving lines last). A projection built from a
+    partial set would be badly low, so a player only gets a props projection when his core markets exist:
+    QB pass yds + pass TDs; RB rush yds + one receiving market; WR/TE one receiving market."""
+    has = lambda m: m in lines
+    if pos == "QB":
+        return has("player_pass_yds") and has("player_pass_tds")
+    if pos == "RB":
+        return has("player_rush_yds") and (has("player_reception_yds") or has("player_receptions"))
+    if pos in ("WR", "TE"):
+        return has("player_reception_yds") or has("player_receptions")
+    return False
+
+
+def fill_receiving(pos: str, lines: dict) -> dict:
+    """If only one of receptions / receiving yards is posted, derive the other from position yards-per-catch."""
+    lines = dict(lines)
+    y = YPR.get(pos)
+    if y:
+        if "player_reception_yds" in lines and "player_receptions" not in lines:
+            lines["player_receptions"] = lines["player_reception_yds"] / y
+        elif "player_receptions" in lines and "player_reception_yds" not in lines:
+            lines["player_reception_yds"] = lines["player_receptions"] * y
+    return lines
 
 
 def raw_points(lines: dict, td_prob: float) -> float:
@@ -173,7 +202,7 @@ def main():
     idx = defaultdict(list)
     for s in sal:
         idx[norm_name(s["player_name"])].append(s)
-    out, matched, unmatched = [], 0, []
+    out, matched, unmatched, partial = [], 0, [], 0
     for n, (lines, td) in props.items():
         cands = idx.get(n)
         if not cands:
@@ -182,6 +211,10 @@ def main():
         c = cands[0]
         if c["position"] not in CALIB:
             continue
+        if not complete(c["position"], lines):
+            partial += 1
+            continue
+        lines = fill_receiving(c["position"], lines)
         raw = raw_points(lines, td)
         out.append({"slate_id": slate["slate_id"], "site_player_id": c["site_player_id"], "player_id": c["player_id"],
                     "player_name": c["player_name"], "position": c["position"], "team": c["team"], "salary": c["salary"],
@@ -189,8 +222,10 @@ def main():
                     "components": {"lines": {k.replace("player_", ""): v for k, v in lines.items()}, "td_prob": round(td, 3), "raw": round(raw, 2)},
                     "updated_at": dt.datetime.now(dt.timezone.utc).isoformat()})
         matched += 1
-    print(f"{slate['slate_key']}: {matched} players with props matched, {len(unmatched)} names not on the slate"
-          + (f" (e.g. {', '.join(unmatched[:6])})" if unmatched else ""))
+    print(f"{slate['slate_key']}: {matched} players with complete props, {partial} skipped (core markets not posted yet), "
+          f"{len(unmatched)} names not on the slate" + (f" (e.g. {', '.join(unmatched[:6])})" if unmatched else ""))
+    if matched < 60:
+        print("  WARNING: few complete props — books post receiving lines late in the week; the builder uses the sim for everyone else")
     top = sorted(out, key=lambda r: -r["mean"])[:12]
     for r in top:
         print(f"   {r['position']:3} {r['player_name']:<24} ${r['salary']:<6} props {r['mean']:5.1f}  (raw {r['median']:5.1f}, TD {r['components']['td_prob']:.2f})")
