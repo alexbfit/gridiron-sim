@@ -6,8 +6,8 @@ on:
   schedule:
     - cron: "30 22 * * 4"     # Thu 6:30 PM ET
     - cron: "30 22 * * 6"     # Sat 6:30 PM ET — final injury designations
-    - cron: "0 11 * * 0"      # Sun 7:00 AM ET
-    - cron: "0 14 * * 0"      # Sun 10:00 AM ET  (+ sportsbook player props, once a week: ~84 Odds API credits)
+    - cron: "0 11 * * 0"      # Sun 7:00 AM ET  (+ sportsbook player props, once a week: ~84 Odds API credits; the 9:30 lineup task uses them)
+    - cron: "0 14 * * 0"      # Sun 10:00 AM ET
     - cron: "45 15 * * 0"     # Sun 11:45 AM ET — last look before 1 PM lock
   workflow_dispatch:
     inputs:
@@ -35,8 +35,8 @@ jobs:
           python jobs/odds.py || echo "odds skipped"
           python jobs/project.py --latest || echo "no slate"
           python jobs/simulate.py --latest || echo "no slate"
-      - name: Sportsbook player props (Sunday 10 AM ET, or on request)
-        if: ${{ github.event.schedule == '0 14 * * 0' || github.event.inputs.props == 'true' }}
+      - name: Sportsbook player props (Sunday 7 AM ET, or on request)
+        if: ${{ github.event.schedule == '0 11 * * 0' || github.event.inputs.props == 'true' }}
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}

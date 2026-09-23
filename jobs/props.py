@@ -9,7 +9,7 @@ variance and correlation structure.
 
 Source: The Odds API (same ODDS_API_KEY as jobs/odds.py). Player props are per-event requests and
 cost (markets x regions) credits each: 6 markets x 1 region x ~14 games = ~84 credits per pull on the
-500/month free tier, so this runs ONCE per week (Sunday 10 AM ET in gameday-refresh).
+500/month free tier, so this runs ONCE per week (Sunday 7 AM ET in gameday-refresh, before the 9:30 lineup task).
 
   python jobs/props.py                 # latest slate, live API
   python jobs/props.py --dry-run       # fetch + match, no writes
