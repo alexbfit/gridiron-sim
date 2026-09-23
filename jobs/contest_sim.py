@@ -52,13 +52,16 @@ def payout_fn(kind: str, entries: int):
     return f
 
 
-def sample_field(pool, own, salary_cap, n_field, rng, stack_prob=0.55, min_salary_frac=0.94, max_team=8):
+def sample_field(pool, own, salary_cap, n_field, rng, stack_prob=0.88, bringback_prob=0.40, min_salary_frac=0.94, max_team=8):
     """Sample n_field opponent lineups from projected ownership.
 
     own: {site_player_id: ownership %}. Players are drawn per position with probability
-    proportional to ownership (a 60%-owned RB shows up in ~60% of field lineups). About half
-    the field stacks the QB with a same-team WR/TE, like real GPP fields. Lineups that bust the
-    cap, leave too much salary, or violate roster rules are rejected and redrawn.
+    proportional to ownership (a 60%-owned RB shows up in ~60% of field lineups). Most of the
+    field stacks the QB with a same-team WR/TE and a share of those add a bring-back from the
+    opponent — rates measured from real DK standings (jobs/field_stats.py): 2026 wk2 Milly
+    Maker field 87% QB-stacked (top 1%: 92%), ~40% of stacks with a bring-back; 2019 Flea
+    Flicker archive 89% / 60%. Lineups that bust the cap, leave too much salary, or violate
+    roster rules are rejected and redrawn.
     Returns a list of id-tuples.
     """
     by_pos = {pos: [p for p in pool if p["position"] == pos] for pos in SLOT_NEEDS}
@@ -90,6 +93,18 @@ def sample_field(pool, own, salary_cap, n_field, rng, stack_prob=0.55, min_salar
                 if cands:
                     ids.remove(min(cands, key=lambda i: own.get(i, 0.0)))
                     ids.append(mate["site_player_id"])
+                    if rng.random() < bringback_prob:   # opponent WR/TE against the stack
+                        opp = qb.get("opponent")
+                        backs = [p for p in by_pos["WR"] + by_pos["TE"] if p["team"] == opp and p["site_player_id"] not in ids]
+                        cands = [i for i in ids if i != mate["site_player_id"] and any(p["site_player_id"] == i and p["position"] == "WR" for p in by_pos["WR"])]
+                        if backs and cands:
+                            bw = np.array([max(own.get(p["site_player_id"], 0.0), 0.05) for p in backs]); bw /= bw.sum()
+                            back = backs[rng.choice(len(backs), p=bw)]
+                            if back["position"] == "TE":
+                                cands = [i for i in ids if i != mate["site_player_id"] and any(p["site_player_id"] == i for p in by_pos["TE"])]
+                            if cands:
+                                ids.remove(min(cands, key=lambda i: own.get(i, 0.0)))
+                                ids.append(back["site_player_id"])
         fl = flex_pool[rng.choice(len(flex_pool), p=flex_w)]["site_player_id"]
         if fl in ids:
             continue

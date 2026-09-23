@@ -5,3 +5,6 @@ __pycache__/
 
 # local recordings (never commit)
 Videos/
+
+# archived third-party contest data (large; lives in OneDrive Desktop/DFS DATA, not in git)
+data/archive/
