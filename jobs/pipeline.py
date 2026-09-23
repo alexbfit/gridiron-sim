@@ -8,6 +8,7 @@ Slate-day pipeline: import one or more salary CSVs, then project + simulate each
 from __future__ import annotations
 
 import argparse
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -67,7 +68,8 @@ def main():
         # standings exports have it). Milly-style curve at $20 by default — rerun by hand with --fee/--payout
         # for a different contest. Non-fatal: a file without lineups just skips it.
         for contest in ("gpp", "cash"):
-            res = subprocess.run([sys.executable, "flashback.py", "--slate-key", k, "--standings", standings[k], "--contest", contest, "--save"],
+            res = subprocess.run([sys.executable, "flashback.py", "--slate-key", k, "--standings", standings[k], "--contest", contest, "--save",
+                                  "--me", os.environ.get("DK_USERNAME", "ablakes524")],
                                  cwd=HERE, capture_output=True, text=True)
             print(res.stderr if res.returncode == 0 else f"flashback {contest} skipped: {res.stderr.strip().splitlines()[-1] if res.stderr.strip() else res.returncode}")
     if own_keys:
