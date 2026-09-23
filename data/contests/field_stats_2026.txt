@@ -1,0 +1,33 @@
+Field structure of real 2026 DraftKings contests — jobs/field_stats.py output (see field_stats_2020.txt for the archive)
+
+########## 2026 week 1 — contest 193028206, 831,028 entries (large $3-tier GPP; standings zip lives in DFS DATA, too big for git)
+  entries 831,028  top 274.0  1% 209.0  10% 179.2  20% 166.4  median 141.7
+  top100  n=    100  own-sum mean  126.2  median  130.8  | QB-stack  91%  bring-back  56%  stack size 1.35
+  top1%   n=  8,214  own-sum mean  123.7  median  125.9  | QB-stack  92%  bring-back  63%  stack size 1.55
+  top20%  n=158,065  own-sum mean  118.5  median  119.0  | QB-stack  87%  bring-back  48%  stack size 1.39
+  rest    n=664,649  own-sum mean  110.4  median  108.1  | QB-stack  85%  bring-back  38%  stack size 1.29
+  (teams mapped from player_game_stats, no wk1 DKSalaries file; 25,059 lineups with a no-stat bench player skipped for stack stats)
+  chalk: Jahmyr Gibbs 43% -> 37.6, Ja'Marr Chase 30% -> 3.2, Michael Mayer 27% -> 9.2, Chris Olave 25% -> 31.2, Saquon Barkley 21% -> 9.0,
+         Omarion Hampton 20% -> 9.3, De'Von Achane 18% -> 10.6, Amon-Ra St. Brown 18% -> 28.7, Jaguars 18% -> 13.0, Garrett Wilson 16% -> 13.9
+  winner 274.0: Steelers 11%, D'Andre Swift 10%, Jordan Love 2%, Jahmyr Gibbs 43%, Derrick Henry 9%, Dallas Goedert 10%, Christian Watson 4%, DJ Moore 4%, Jalen Coker 7%
+  score by rank: 1 274.0 | 10 257.8 | 100 244.7 | 1,000 228.2 | 5,000 214.2 | 10,000 207.1 | 50,000 187.0 | 100,000 176.0 | 166,000 (top 20%) 166.4 | 200,000 162.3
+
+########## 2026 week 2 — Milly Maker (DK-2026-02-main_standings.csv), 172,692 entries
+  entries 172,692  top 232.4  1% 179.8  10% 151.0  20% 138.0  median 113.8
+  top100  n=    100  own-sum mean  123.5  median  124.6  | QB-stack  95%  bring-back  32%  stack size 1.44
+  top1%   n=  1,629  own-sum mean  126.4  median  126.5  | QB-stack  92%  bring-back  39%  stack size 1.41
+  top20%  n= 32,866  own-sum mean  125.4  median  126.8  | QB-stack  90%  bring-back  45%  stack size 1.42
+  rest    n=138,097  own-sum mean  115.2  median  115.6  | QB-stack  87%  bring-back  39%  stack size 1.29
+
+########## 2026 week 2 — 20-max (DK-2026-02-main_20max_195661402.csv), 11,181 entries
+  entries 11,181  top 215.4  1% 183.8  10% 164.4  20% 154.8  median 137.2
+  top100  n=    100  own-sum mean  267.8  median  266.3  | QB-stack  45%  bring-back   7%  stack size 0.51
+  top20%  n=  2,131  own-sum mean  316.5  median  334.8  | QB-stack  77%  bring-back  15%  stack size 1.15
+  rest    n=  8,922  own-sum mean  224.0  median  234.2  | QB-stack  68%  bring-back  18%  stack size 0.89
+  (sharp small field: Bijan 73%, Schultz 61%, Dak 36%; winners were naked-Purdy builds)
+
+########## Takeaways (2026 wk1 831k + wk2 Milly, consistent with 14 weeks of 2020)
+  - Field stacks the QB 85-87% of the time, ~38-40% with a bring-back. Top 1%: 92% stacked, 40-63% bring-back, bigger stacks (1.4-1.55 mates).
+  - Winning lineups carry MORE summed ownership than the field (+8 to +16), not less. They ride the chalk that hits (Gibbs 43% -> 37.6) and
+    differentiate with 1-2 pieces (Love 2%, Watson 4%, Moore 4%). Hard chalk fades cost more than they save.
+  - Scoring level moves a lot week to week (median 114 -> 142), so cash/1% lines must come from the slate's own sims, not fixed numbers.
