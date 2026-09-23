@@ -68,6 +68,15 @@ def load_board(client, slate_key=None):
             ext[r["site_player_id"]] = {"mean": float(r["mean"]), "own": (r.get("components") or {}).get("ownership")}
     except Exception:
         pass
+    props = {}
+    try:
+        for r in fetch_all(client.table("slate_projections").select("site_player_id,mean,components")
+                           .eq("slate_id", slate["slate_id"]).eq("method", "props"), order="site_player_id"):
+            props[r["site_player_id"]] = float(r["mean"])
+    except Exception:
+        pass
+    for r in rows:
+        r["props"] = props.get(r["site_player_id"])
     own_model = {"b": 1.4, "c": 0.8, "cap": 60.0}
     try:
         mp = client.table("model_params").select("param_value").eq("param_key", "ownership_model").execute().data
@@ -229,6 +238,9 @@ def parse_args(argv=None):
                     help="pull RB/WR projections this far (0-1) toward the salary-implied line; sims are rescaled to match. "
                          "Early season (few games) 0.5 beat the raw sim on 2026 wk2.")
     ap.add_argument("--market-pos", default="RB,WR", help="positions the --market blend applies to")
+    ap.add_argument("--props", type=float, default=0.85,
+                    help="weight (0-1) on the sportsbook-props projection (jobs/props.py) for players who have one; the sim mean is "
+                         "pulled toward it and his sim draws rescaled. 2024 backtest: props r .48 vs sim .35. 0 disables.")
     ap.add_argument("--lock", action="append", default=[], help="player name (repeatable)")
     ap.add_argument("--exclude", action="append", default=[])
     ap.add_argument("--set", action="append", default=[], help='"Name=proj" projection override')
@@ -290,6 +302,24 @@ def build(args, slate, rows, ext, own_model, matrix, quiet=False):
                 if matrix is not None and r["site_player_id"] in matrix:
                     matrix[r["site_player_id"]] = matrix[r["site_player_id"]] * np.float32(f)
         log(f"market blend {args.market:g} on {args.market_pos}")
+    if args.props > 0 and any(r.get("props") is not None for r in rows):
+        n_p = 0
+        for r in rows:
+            pv = r.get("props")
+            if pv is None or r["site_player_id"] in overrides or r["mean"] is None or eff_status(r) in OUT_STATUSES:
+                continue
+            new = (1 - args.props) * r["mean"] + args.props * pv
+            f = new / r["mean"] if r["mean"] > 0.5 else 1.0
+            f = min(max(f, 0.25), 4.0)
+            for k in ("mean", "median", "p15", "p85", "p95", "floor", "ceiling"):
+                if r.get(k) is not None:
+                    r[k] = r[k] * f
+            if r["mean"] == 0 and pv > 0:
+                r["mean"] = new
+            if matrix is not None and r["site_player_id"] in matrix:
+                matrix[r["site_player_id"]] = matrix[r["site_player_id"]] * np.float32(f)
+            n_p += 1
+        log(f"props blend {args.props:g}: {n_p} players pulled toward the sportsbook projection")
     own_over = {}
     if args.own_file:
         own_over.update(read_own_file(args.own_file, byname))
