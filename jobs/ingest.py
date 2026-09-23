@@ -187,6 +187,9 @@ def pull_extras(seasons: list[int]) -> tuple[pl.DataFrame, pl.DataFrame]:
     inj = nfl.load_injuries(seasons)
     if not isinstance(inj, pl.DataFrame):
         inj = pl.DataFrame(inj)
+    if "season_type" not in inj.columns:      # older seasons carry game_type instead
+        inj = inj.with_columns(pl.col("game_type").map_elements(
+            lambda s: "POST" if s in ("WC", "DIV", "CON", "SB", "POST") else "REG", return_dtype=pl.Utf8).alias("season_type"))
     inj = (inj.filter(pl.col("gsis_id").is_not_null())
            .select([
                pl.col("gsis_id").alias("player_id"), pl.col("season"), pl.col("week"),

@@ -201,7 +201,7 @@ def assign_slots(ps, site):
 
 
 # ------------------------------------------------------------------ main
-def main():
+def parse_args(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--slate-key")
     ap.add_argument("--contest", choices=["cash", "gpp"], default="cash")
@@ -247,12 +247,16 @@ def main():
     ap.add_argument("--source", default="claude", choices=["claude", "web"])
     ap.add_argument("--note", default=None, help="short note stored with saved lineups (what was overridden and why)")
     ap.add_argument("--append", action="store_true", help="with --save: add to existing lineups instead of replacing")
-    args = ap.parse_args()
+    return ap.parse_args(argv)
+
+
+def build(args, slate, rows, ext, own_model, matrix, quiet=False):
+    """The builder proper: candidates -> (contest sim) -> selection. Returns (lineups, leverage, proj, own_map).
+    rows = slate_board rows (mean/stdev/p85/floor/... per player), matrix = {site_player_id: sim draws} or None.
+    Used by main() with the DB board and by jobs/contest_backtest.py with an offline board."""
     if args.seed is not None:
         random.seed(args.seed); np.random.seed(args.seed)
-
-    client = get_client()
-    slate, rows, ext, own_model, matrix = load_board(client, args.slate_key)
+    log = (lambda *a: None) if quiet else (lambda *a: print(*a, file=sys.stderr))
     site = SITES[slate["site"]]
     byid = {r["site_player_id"]: r for r in rows}
     byname = {}
@@ -285,11 +289,11 @@ def main():
                         r[k] = r[k] * f
                 if matrix is not None and r["site_player_id"] in matrix:
                     matrix[r["site_player_id"]] = matrix[r["site_player_id"]] * np.float32(f)
-        print(f"market blend {args.market:g} on {args.market_pos}", file=sys.stderr)
+        log(f"market blend {args.market:g} on {args.market_pos}")
     own_over = {}
     if args.own_file:
         own_over.update(read_own_file(args.own_file, byname))
-        print(f"ownership from {args.own_file}: {len(own_over)} players", file=sys.stderr)
+        log(f"ownership from {args.own_file}: {len(own_over)} players")
     own_over.update({find(s.split("=")[0])["site_player_id"]: float(s.split("=")[1]) for s in args.set_own})
     locks = {find(n)["site_player_id"] for n in args.lock}
     excludes = {find(n)["site_player_id"] for n in args.exclude}
@@ -325,12 +329,12 @@ def main():
 
     pool = [r for r in rows if r["site_player_id"] not in excludes and r["mean"] is not None and proj(r) > 0
             and eff_status(r) not in OUT_STATUSES and not (args.exclude_q and eff_status(r) in ("Q", "D"))]
-    print(f"{slate['slate_key']} · {len(pool)} eligible players · sim matrix {'loaded' if matrix else 'MISSING'} · "
-          f"ownership {'fitted' if own_model['b'] != 1.4 else 'heuristic'}{' · external blend ' + str(args.blend) if ext else ''}", file=sys.stderr)
+    log(f"{slate['slate_key']} · {len(pool)} eligible players · sim matrix {'loaded' if matrix else 'MISSING'} · "
+          f"ownership {'fitted' if own_model['b'] != 1.4 else 'heuristic'}{' · external blend ' + str(args.blend) if ext else ''}")
 
     use_ev = args.objective == "ev" and args.contest == "gpp" and matrix is not None
     if args.objective == "ev" and not use_ev:
-        print("--objective ev needs --contest gpp and a sim matrix; falling back to default ranking", file=sys.stderr)
+        log("--objective ev needs --contest gpp and a sim matrix; falling back to default ranking")
     # EV mode wants a wide, varied candidate set: the field sim does the choosing, not the MIP score
     cand_mult = max(args.candidates, 6.0) if use_ev else args.candidates
     n_cand = int(min(600, max(args.n, round(args.n * (cand_mult if matrix else 1)))))
@@ -347,7 +351,7 @@ def main():
             score[p["site_player_id"]] = base * jit - (fade_k * 0.06 * own_map[p["site_player_id"]] if args.contest == "gpp" else 0)
         ids = solve(pool, score, site, args, [L["ids"] for L in lineups], blocked, locks, own_map)
         if not ids:
-            print(f"stopped at {k} candidates — no feasible lineup left", file=sys.stderr)
+            log(f"stopped at {k} candidates — no feasible lineup left")
             break
         lineups.append(lineup_stats(ids, byid, proj, own_map, matrix))
         for i in ids:
@@ -365,8 +369,8 @@ def main():
         for L, e in zip(lineups, ev):
             L.update(e)
         key = "ev"
-        print(f"contest sim: {len(field)} field lineups · {args.entries:,} entries · {args.payout} payouts · ${args.fee:g} fee · "
-              f"{len(lineups)} candidates, best EV ${max(L['ev'] for L in lineups):.2f}", file=sys.stderr)
+        log(f"contest sim: {len(field)} field lineups · {args.entries:,} entries · {args.payout} payouts · ${args.fee:g} fee · "
+              f"{len(lineups)} candidates, best EV ${max(L['ev'] for L in lineups):.2f}")
         lineups.sort(key=lambda L: -L["ev"])
     elif matrix:
         lineups.sort(key=lambda L: -L.get(key, L["proj"]))
@@ -386,14 +390,38 @@ def main():
             if L not in kept and pid in L["ids"] and fits(L, need=pid):
                 take(L)
         if used.get(pid, 0) < want:
-            print(f"exposure target {byid[pid]['player_name']} {share:.0%}: only {used.get(pid, 0)}/{want} lineups available in the candidate pool "
-                  f"(raise --candidates or lower --min-uniq)", file=sys.stderr)
+            log(f"exposure target {byid[pid]['player_name']} {share:.0%}: only {used.get(pid, 0)}/{want} lineups available in the candidate pool "
+                  f"(raise --candidates or lower --min-uniq)")
     for L in lineups:
         if len(kept) >= args.n:
             break
         if L not in kept and fits(L):
             take(L)
     lineups = kept
+    # leverage = your exposure - projected field ownership. Positive = a stand, negative = a fade.
+    exp = {}
+    for L in lineups:
+        for i in L["ids"]:
+            exp[i] = exp.get(i, 0) + 1
+    lev = []
+    if len(lineups) > 1:
+        for r in pool:
+            i = r["site_player_id"]
+            e = 100.0 * exp.get(i, 0) / len(lineups)
+            o = own_map.get(i, 0.0)
+            if e > 0 or o >= 5:
+                lev.append((e - o, e, o, r))
+        lev.sort(key=lambda t: -t[0])
+    return lineups, lev, proj, own_map
+
+
+def main():
+    args = parse_args()
+    client = get_client()
+    slate, rows, ext, own_model, matrix = load_board(client, args.slate_key)
+    site = SITES[slate["site"]]
+    byid = {r["site_player_id"]: r for r in rows}
+    lineups, lev, proj, own_map = build(args, slate, rows, ext, own_model, matrix)
 
     order = {"QB": 0, "RB": 1, "WR": 2, "TE": 3, "DST": 4}
     for n, L in enumerate(lineups, 1):
@@ -411,15 +439,6 @@ def main():
             exp[i] = exp.get(i, 0) + 1
     if len(lineups) > 1:
         print("\nexposure: " + " · ".join(f"{byid[i]['player_name']} {round(100 * c / len(lineups))}%" for i, c in sorted(exp.items(), key=lambda kv: -kv[1])[:12]))
-        # leverage = your exposure - projected field ownership. Positive = a stand, negative = a fade.
-        lev = []
-        for r in pool:
-            i = r["site_player_id"]
-            e = 100.0 * exp.get(i, 0) / len(lineups)
-            o = own_map.get(i, 0.0)
-            if e > 0 or o >= 5:
-                lev.append((e - o, e, o, r))
-        lev.sort(key=lambda t: -t[0])
         k = max(1, args.leverage // 2)
         print(f"\nleverage (exposure - projected own%):")
         print("  STANDS")
