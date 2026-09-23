@@ -5,6 +5,7 @@
   const f1 = (v) => v == null ? "–" : Number(v).toFixed(1);
   const money = (v) => "$" + Number(v).toLocaleString();
   let supa, slates = [], slate = null, rows = [], sim = null, dbLineups = [], sortKey = "actual", sortAsc = false;
+  let newsNotes = [], newsAll = [], upsets = [];
 
   async function fetchAll(query) {
     const page = 1000; let from = 0, out = [];
@@ -38,7 +39,10 @@
     rows.forEach(r => { ["proj_mean", "proj_p10", "proj_p50", "proj_p90", "actual", "pit", "own_actual", "own_heuristic", "salary"].forEach(k => { if (r[k] != null) r[k] = Number(r[k]); }); r.diff = r.proj_mean == null ? null : r.actual - r.proj_mean; });
     await loadSim();
     dbLineups = await fetchAll(supa.from("slate_lineups").select("*").eq("slate_id", slate.slate_id).order("source").order("contest").order("idx"));
-    renderTiles(); renderSources(); renderMine(); renderLineupSeason(); renderTable(); renderTrend();
+    try { newsNotes = await fetchAll(supa.from("news_notes").select("*").eq("slate_id", slate.slate_id).order("id")); } catch (e) { newsNotes = []; }
+    try { newsAll = await fetchAll(supa.from("news_notes").select("slate_id,run,adjustment,helped,graded_at,confidence").not("graded_at", "is", null).order("id")); } catch (e) { newsAll = []; }
+    try { upsets = await fetchAll(supa.from("upset_picks").select("*").order("id")); } catch (e) { upsets = []; }
+    renderTiles(); renderSources(); renderMine(); renderLineupSeason(); renderNews(); renderUpsets(); renderTable(); renderTrend();
   }
 
   function renderTiles() {
@@ -136,6 +140,47 @@
       keys.map(k => { const [src, con] = k.split("|"), a = agg[k];
         return `<tr><td class="l"><b>${SRC[src] || src}</b> · ${con.toUpperCase()}</td><td>${a.weeks}</td><td>${a.n}</td><td>${f1(a.proj / a.weeks)}</td><td>${f1(a.actual / a.weeks)}</td><td>${f1(a.best)}</td><td>${pct(mean(a.sp))}</td><td>${pct(mean(a.cp))}</td><td>${pct(a.bcp.length ? Math.max(...a.bcp) : null)}</td><td>${a.wk ? `${a.above} / ${a.wk}` : "–"}</td></tr>`; }).join("") + `</table>
       <p class="lead" style="margin-top:6px">Reading it: <b>avg sim pct</b> near 50% means the sim's lineup distributions are honest (consistently under 50% = over-projecting). <b>avg field beaten</b> comes from imported contest standings — above 50% on cash lineups is the cash line, and GPP <b>best finish</b> is what matters for tournaments. Give it 4–6 weeks before scaling up real entries.</p>`;
+  }
+
+  function renderNews() {
+    const el = $("news");
+    const graded = newsNotes.filter(n => n.graded_at && n.helped != null);
+    const seasonG = newsAll.filter(n => n.helped != null);
+    const pct = (a) => a.length ? Math.round(100 * a.filter(n => n.helped).length / a.length) + "%" : "–";
+    const hi = (a) => a.filter(n => Number(n.confidence) >= 0.7);
+    let html = `<div class="tiles"><div class="tile"><div class="k">This slate</div><div class="v">${pct(graded)}</div><div class="s">${graded.length} adjustments graded · conf ≥ .7: ${pct(hi(graded))}</div></div>`
+      + `<div class="tile"><div class="k">Season to date</div><div class="v">${pct(seasonG)}</div><div class="s">${seasonG.length} adjustments · conf ≥ .7: ${pct(hi(seasonG))}</div></div></div>`;
+    if (!newsNotes.length) { el.innerHTML = html + `<p class="lead">No notes filed for this slate.</p>`; return; }
+    const runs = [...new Set(newsNotes.map(n => n.run))];
+    const latest = runs.includes("sun") ? "sun" : runs[runs.length - 1];
+    const list = newsNotes.filter(n => n.run === latest).sort((a, b) => Number(b.confidence) - Number(a.confidence));
+    html += `<div class="table-wrap"><table class="m"><thead><tr><th class="left">Player</th><th>Team</th><th class="left">Change</th><th>Adj</th><th>Conf</th><th>Proj</th><th>Actual</th><th>Helped</th><th class="left">Source</th></tr></thead><tbody>`
+      + list.map(n => `<tr><td class="left">${n.player_name}${n.site_player_id ? "" : " <span class='muted'>(unmatched)</span>"}</td><td>${n.team ?? "–"}</td><td class="left">${n.change}</td>`
+        + `<td>${n.adjustment}${n.value != null ? " " + n.value : ""}</td><td>${Number(n.confidence).toFixed(2)}</td><td>${f1(n.proj_at_note)}</td><td>${f1(n.actual)}</td>`
+        + `<td>${n.helped == null ? "–" : n.helped ? "✓" : "✗"}</td><td class="left">${n.source_url ? `<a href="${n.source_url}" target="_blank" rel="noopener">${n.source_name || "link"}</a>` : (n.source_name || "–")}</td></tr>`).join("")
+      + `</tbody></table></div><p class="lead">Run: ${latest} · ${list.length} notes</p>`;
+    el.innerHTML = html;
+  }
+
+  function renderUpsets() {
+    const el = $("upsets");
+    const mine = upsets.filter(u => u.slate_id === slate.slate_id);
+    const graded = upsets.filter(u => u.graded_at && u.brier_agent != null && u.brier_market != null);
+    const mean = (a, k) => a.length ? (a.reduce((s, u) => s + Number(u[k]), 0) / a.length).toFixed(3) : "–";
+    const corr = (a) => a.length ? `${a.filter(u => u.correct).length}/${a.filter(u => u.correct != null).length}` : "–";
+    const ups = graded.filter(u => u.upset);
+    let html = `<div class="tiles"><div class="tile"><div class="k">Brier — agents vs market</div><div class="v">${mean(graded, "brier_agent")} vs ${mean(graded, "brier_market")}</div><div class="s">${graded.length} games graded, season to date (lower is better)</div></div>`
+      + `<div class="tile"><div class="k">Straight-up picks</div><div class="v">${corr(graded)}</div><div class="s">market favourite would be ${graded.filter(u => u.market_home_prob != null && ((Number(u.market_home_prob) >= 0.5) === (u.winner === u.home_team))).length}/${graded.filter(u => u.winner && u.winner !== "TIE").length}</div></div>`
+      + `<div class="tile"><div class="k">Upset calls</div><div class="v">${ups.length ? ups.filter(u => u.correct).length + "/" + ups.length : "–"}</div><div class="s">times the agents backed the underdog</div></div></div>`;
+    if (!mine.length) { el.innerHTML = html + `<p class="lead">No picks for this slate.</p>`; return; }
+    const runs = [...new Set(mine.map(u => u.run))]; const latest = runs.includes("sun") ? "sun" : runs[runs.length - 1];
+    const list = mine.filter(u => u.run === latest).sort((a, b) => Number(b.upset) - Number(a.upset) || Math.abs(Number(b.agent_home_prob) - Number(b.market_home_prob ?? 0.5)) - Math.abs(Number(a.agent_home_prob) - Number(a.market_home_prob ?? 0.5)));
+    html += `<div class="table-wrap"><table class="m"><thead><tr><th class="left">Game</th><th>Spread</th><th>Market home %</th><th>Agent home %</th><th>Pick</th><th class="left">Why</th><th>Result</th></tr></thead><tbody>`
+      + list.map(u => `<tr${u.upset ? ' style="font-weight:600"' : ""}><td class="left">${u.away_team} @ ${u.home_team}</td><td>${u.spread_line == null ? "–" : (Number(u.spread_line) > 0 ? "-" : "+") + Math.abs(Number(u.spread_line))}</td>`
+        + `<td>${u.market_home_prob == null ? "–" : Math.round(100 * Number(u.market_home_prob)) + "%"}</td><td>${Math.round(100 * Number(u.agent_home_prob))}%</td><td>${u.pick}${u.upset ? " ⚡" : ""}</td>`
+        + `<td class="left">${u.reasoning || ""}</td><td>${u.winner ? (u.correct ? "✓ " : "✗ ") + u.winner : "–"}</td></tr>`).join("")
+      + `</tbody></table></div>`;
+    el.innerHTML = html;
   }
 
   const COLS = [

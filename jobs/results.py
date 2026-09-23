@@ -282,6 +282,69 @@ def rescore_lineups(client, slate, write=True):
     return True
 
 
+# ------------------------------------------------------------------ news agents + upset picks (010_news.sql)
+def grade_news(client, slate, write=True):
+    """Grade the news agents' notes once the slate is scored: was the adjusted projection closer than the sim's?"""
+    try:
+        notes = fetch_all(client.table("news_notes").select("*").eq("slate_id", slate["slate_id"]).is_("graded_at", "null"))
+    except Exception as e:
+        print(f"  (news_notes unavailable: {e})"); return
+    if not notes:
+        return
+    res = {r["site_player_id"]: r for r in fetch_all(client.table("slate_results").select("site_player_id,actual,proj_mean")
+                                                      .eq("slate_id", slate["slate_id"]), order="site_player_id")}
+    now = dt.datetime.now(dt.timezone.utc).isoformat()
+    helped = graded = 0
+    for n in notes:
+        upd = {"graded_at": now}
+        r = res.get(n["site_player_id"]) if n.get("site_player_id") else None
+        if r and r.get("actual") is not None and n["adjustment"] != "note":
+            actual = float(r["actual"])
+            proj = float(n["proj_at_note"]) if n.get("proj_at_note") is not None else float(r.get("proj_mean") or 0)
+            adj = proj
+            if n["adjustment"] == "exclude":
+                adj = 0.0
+            elif n["adjustment"] == "scale" and n.get("value") is not None:
+                adj = proj * float(n["value"])
+            elif n["adjustment"] == "set" and n.get("value") is not None:
+                adj = float(n["value"])
+            upd.update({"actual": actual, "proj_err": round(abs(proj - actual), 2), "adj_err": round(abs(adj - actual), 2),
+                        "helped": abs(adj - actual) < abs(proj - actual)})
+            graded += 1; helped += int(upd["helped"])
+        if write:
+            client.table("news_notes").update(upd).eq("id", n["id"]).execute()
+    print(f"  news notes: {len(notes)} graded, {helped}/{graded} adjustments beat the sim")
+
+
+def grade_upsets(client, write=True):
+    """Grade the agents' win probabilities against the final scores (Brier vs the market's spread-implied probability)."""
+    try:
+        picks = fetch_all(client.table("upset_picks").select("*").is_("graded_at", "null"))
+    except Exception as e:
+        print(f"  (upset_picks unavailable: {e})"); return
+    if not picks:
+        return
+    games = {g["game_id"]: g for g in fetch_all(client.table("games").select("game_id,home_team,away_team,home_score,away_score")
+                                                .in_("game_id", sorted({p["game_id"] for p in picks})), order="game_id")}
+    now = dt.datetime.now(dt.timezone.utc).isoformat()
+    n = right = 0
+    for p in picks:
+        g = games.get(p["game_id"])
+        if not g or g.get("home_score") is None:
+            continue
+        hw = 1.0 if g["home_score"] > g["away_score"] else 0.0 if g["home_score"] < g["away_score"] else 0.5
+        winner = g["home_team"] if hw == 1.0 else g["away_team"] if hw == 0.0 else "TIE"
+        upd = {"winner": winner, "correct": (p["pick"] == winner) if hw != 0.5 else None,
+               "brier_agent": round((float(p["agent_home_prob"]) - hw) ** 2, 4),
+               "brier_market": round((float(p["market_home_prob"]) - hw) ** 2, 4) if p.get("market_home_prob") is not None else None,
+               "graded_at": now}
+        if write:
+            client.table("upset_picks").update(upd).eq("id", p["id"]).execute()
+        n += 1; right += int(bool(upd["correct"]))
+    if n:
+        print(f"  upset picks: {n} graded, {right} correct")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--slate-key")
@@ -297,13 +360,16 @@ def main():
         if not args.force and not args.slate_key and s.get("results_meta"):
             if slate_complete(client, s):
                 rescore_lineups(client, s, write=not args.dry_run)
+                grade_news(client, s, write=not args.dry_run)
             continue
         if not slate_complete(client, s):
             if args.slate_key:
                 print(f"{s['slate_key']}: games not final yet")
             continue
         score_slate(client, s, write=not args.dry_run)
+        grade_news(client, s, write=not args.dry_run)
         done += 1
+    grade_upsets(client, write=not args.dry_run)
     if not done:
         print("nothing to score")
 
