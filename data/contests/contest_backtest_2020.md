@@ -65,3 +65,20 @@ python jobs/contest_backtest.py --season 2020 --weeks 2-16 --sims 3000 --store 2
 The offline pull is `ingest.pull([2019, 2020])` + `pull_extras` + weekly rosters + depth charts dumped to JSON (see
 the session notes); DK points are computed with the same formula as the DB column. ~6 min per week for 12 mode×seed
 runs on 2 cores.
+
+## Addendum 2026-09-24 — "max wins" candidates (seed 7, weeks 2–16, 50 lineups, same harness; payout curve fixed for small fields)
+Question: does ranking candidates by sim p98 instead of p90, or spreading wider (max-exp .25, min-uniq 5), produce more
+tournament-winning finishes? Metric that matters for "max wins" = weeks with a top-250 / top-1000 finish out of ~230k.
+
+| mode | wk×seed | act avg | fld% | top1/wk | top10/wk | cash% | net $/wk | weeks best ≤250 | ≤1000 | median best rank |
+|---|---|---|---|---|---|---|---|---|---|---|
+| p90, exp .35, uniq 4 (current Sunday default) | 28 | 129.6 | 47 | 0.79 | 4.5 | 20.9 | −339 | 3 (11%) | 8 (29%) | 5,265 |
+| p90, exp .25, uniq 5 | 15 | 128.6 | 47 | 0.40 | 4.5 | 19.4 | −537 | 0 | 2 (13%) | 7,242 |
+| p98, exp .35, uniq 4 | 15 | 129.1 | 48 | 0.67 | 4.8 | 20.1 | −462 | 1 (7%) | 3 (20%) | 4,563 |
+| p98, exp .25, uniq 5 | 14 | 129.2 | 47 | 0.50 | 5.4 | 21.5 | −436 | 2 (14%) | 3 (21%) | 4,439 |
+
+Reading: nothing beats the current default. p98 + wide spread is a wash (slightly more consistent top-10% / cash, no more
+top-250 weeks); p90 with the wider spread is worse. The ranking key and the exposure knobs are not where tournament wins come
+from — with projections at consensus level the top finish is a 1-in-8-weeks event for 50 entries whatever the build. What
+moves the "max wins" number: more entries in the contest with the biggest top prize (linear in shots), the projection edge
+(props + news), and late swap. `build_lineups --rank p98` stays available; the Sunday task keeps p90 / .35 / 4.

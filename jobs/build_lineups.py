@@ -250,6 +250,8 @@ def parse_args(argv=None):
     ap.add_argument("--min-salary", type=int, default=0)
     ap.add_argument("--max-own", type=float, default=0, help="cap on a lineup's summed ownership %% (gpp)")
     ap.add_argument("--stack-rb", action="store_true", help="QB's RB counts toward --stack")
+    ap.add_argument("--rank", choices=["p90", "p98", "proj"], default="p90",
+                    help="gpp candidate ranking key from the sim: p90 (default), p98 (fatter tail — tournament-winner hunting), proj")
     ap.add_argument("--objective", choices=["default", "ev"], default="default",
                     help="ev: rank candidates by expected payout vs a simulated field (gpp only)")
     ap.add_argument("--entries", type=int, default=200000, help="contest size for --objective ev")
@@ -397,7 +399,7 @@ def build(args, slate, rows, ext, own_model, matrix, quiet=False):
             usage[i] = usage.get(i, 0) + 1
             if i not in locks and usage[i] >= max(1, round(args.max_exp * n_cand)):
                 blocked.add(i)
-    key = "p50" if args.contest == "cash" else "p90"
+    key = "p50" if args.contest == "cash" else getattr(args, "rank", "p90")
     if use_ev:
         from contest_sim import evaluate, sample_field
         rng = np.random.default_rng(args.seed)

@@ -62,6 +62,11 @@ MODES = {
     "p90 f0, no bringback":   ["--stack", "1", "--max-exp", "0.5", "--min-uniq", "3", "--candidates", "6", "--fade", "0"],
     "p90 f0, exp .35 uniq 4": ["--stack", "1", "--bringback", "--max-exp", "0.35", "--min-uniq", "4", "--candidates", "6", "--fade", "0"],
     "p90 f0, stack 2":        ["--stack", "2", "--bringback", "--max-exp", "0.5", "--min-uniq", "3", "--candidates", "6", "--fade", "0"],
+    # "max wins" candidates (9/24): fatter-tail ranking and wider spread
+    "p90 f0, exp .25 uniq 5": ["--stack", "1", "--bringback", "--max-exp", "0.25", "--min-uniq", "5", "--candidates", "8", "--fade", "0"],
+    "p98 f0, exp .35 uniq 4": ["--stack", "1", "--bringback", "--max-exp", "0.35", "--min-uniq", "4", "--candidates", "8", "--fade", "0", "--rank", "p98"],
+    "p98 f0, exp .25 uniq 5": ["--stack", "1", "--bringback", "--max-exp", "0.25", "--min-uniq", "5", "--candidates", "8", "--fade", "0", "--rank", "p98"],
+    "p98 f0, stack 2, exp .3": ["--stack", "2", "--bringback", "--max-exp", "0.3", "--min-uniq", "4", "--candidates", "8", "--fade", "0", "--rank", "p98"],
 }
 
 
