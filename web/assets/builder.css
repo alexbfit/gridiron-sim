@@ -200,3 +200,23 @@ td.dim { color: var(--faint); }
 table.corr td.pl { text-align: left; }
 table.corr td, table.corr th { padding: 6px 8px; }
 #pool input[data-rule] { border-color: var(--border); background: var(--bg-2); }
+
+/* ------------------------------------------------------------------ contest simulator */
+.cs-panel { margin-top: 14px; }
+.cs-panel .card-head h3 { display: flex; align-items: center; gap: 8px; }
+.cs-panel .card-head h3 .icon { width: 16px; height: 16px; color: var(--accent); }
+.cs-body { padding: 14px 18px 16px; display: flex; flex-direction: column; gap: 12px; }
+.cs-form { display: grid; grid-template-columns: minmax(170px, 1.4fr) repeat(4, minmax(100px, 1fr)) auto auto; gap: 10px; align-items: end; }
+.cs-form .seg { height: 40px; align-items: center; }
+.cs-run { height: 40px; white-space: nowrap; }
+.cs-tiles { margin: 0; }
+.cs-tiles .tile .v { font-size: 22px; }
+.cs-prog { display: flex; flex-direction: column; gap: 8px; }
+.cs-prog .progress { position: relative; height: 6px; border-radius: 99px; background: var(--bg-2); overflow: hidden; }
+.cs-prog .progress i { position: absolute; inset: 0 auto 0 0; background: var(--accent); border-radius: 99px; transition: width .2s; }
+.up { color: var(--accent); }
+.down { color: var(--danger); }
+.lu-card .cs-foot { border-top: 0; padding-top: 0; }
+.lu-card .cs-foot b.up { color: var(--accent); }
+.lu-card .cs-foot b.down { color: var(--danger); }
+@media (max-width: 1100px) { .cs-form { grid-template-columns: repeat(2, minmax(0, 1fr)); } .cs-form .cs-wide { grid-column: 1 / -1; } .cs-run { grid-column: 1 / -1; } }

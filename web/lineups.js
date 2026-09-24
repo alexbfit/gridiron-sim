@@ -3,6 +3,7 @@
    The projection blend, ownership model, LP, candidate pool and selection are unchanged from the
    original builder (same math as jobs/build_lineups.py); this file adds the product UI around them. */
 import GLPK from "https://cdn.jsdelivr.net/npm/glpk.js@4.0.2/dist/index.js";
+import { PRESETS, buildPayouts, buildField, simulate, portfolio } from "./contestsim.js";
 
 const cfg = window.GRIDIRON_CONFIG || {};
 const GS = window.GS;
@@ -50,6 +51,12 @@ let sortKey = "mean", sortAsc = false;
 let building = false;
 let customized = false;          // user changed a preset-controlled setting
 let buildProg = { k: 0, total: 1 };
+// contest simulator (contestsim.js): expected ROI / win / cash for every candidate against a simulated field
+const CS_DEFAULT = { preset: PRESETS[0].key, type: PRESETS[0].type, fee: PRESETS[0].fee, entrants: PRESETS[0].entrants, pool: PRESETS[0].pool, first: PRESETS[0].first, rankBy: "ceil" };
+let csCfg = (() => { try { return { ...CS_DEFAULT, ...JSON.parse(GS.store.get("gs_contest") || "{}") }; } catch { return { ...CS_DEFAULT }; } })();
+let cs = null;                    // { running, progress } while running; then { payouts, cfg, q (market view), qModel, nSims, rows: Map(lineupKey -> row), fieldN }
+const lkey = (L) => [...L.ids].sort().join(",");
+const saveCs = () => GS.store.set("gs_contest", JSON.stringify(csCfg));
 
 function setStatus(msg, err) { statusEl.textContent = msg; statusEl.classList.toggle("error", !!err); }
 const f1 = (v) => v == null || Number.isNaN(+v) ? "–" : Number(v).toFixed(1);
@@ -59,6 +66,7 @@ const money = (v) => "$" + Number(v).toLocaleString();
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const posCls = (pos) => ["QB", "RB", "WR", "TE"].includes(pos) ? pos : "DST";
 const kickoff = (p) => { const m = /(\d{1,2}:\d{2}[AP]M)/.exec(p.game_info || ""); return m ? m[1].replace(/^0/, "").replace(/([AP])M/, " $1M") : ""; };
+const effStatus = (p) => { const SEV = { OUT: 3, IR: 3, O: 3, D: 2, Q: 1 }, a = (p.status || "").toUpperCase(), b = ({ Out: "OUT", Doubtful: "D", Questionable: "Q" }[p.injury_report] || ""); return (SEV[a] || 0) >= (SEV[b] || 0) ? a : b; };
 const injTag = (p) => {
   const rep = p.injury_report ? { Out: "OUT", Doubtful: "D", Questionable: "Q" }[p.injury_report] || "" : "";
   const SEV = { OUT: 3, IR: 3, O: 3, D: 2, Q: 1 }, site = (p.status || "").toUpperCase();
@@ -723,9 +731,11 @@ async function generate() {
     candPool.forEach(L => L.ids.forEach(id => poolExposure.set(id, (poolExposure.get(id) || 0) + 1 / candPool.length)));
     building = false; document.body.classList.remove("building");
     selectFromPool();
+    cs = null;
+    if (sim && candPool.length && csCfg.auto !== false) await runContestSim();
     if (!lineups.length) GS.toast("No valid lineup fits these rules — try unlocking a player or loosening stacking / exposure.", "error");
     else if (lineups.length < n) GS.toast(`Built ${lineups.length} of ${n} lineups — the rules ran out of room${stopped != null ? " (uniqueness / exposure / stacking)" : ""}. Loosen max exposure or min unique players to get more.`, "error");
-    else GS.toast(`${lineups.length} lineup${lineups.length > 1 ? "s" : ""} ready${sim && candPool.length > lineups.length ? `, picked from ${candPool.length} candidates by simulated ${contest === "cash" ? "median" : "ceiling"}` : ""}.`, "ok");
+    else GS.toast(`${lineups.length} lineup${lineups.length > 1 ? "s" : ""} ready${sim && candPool.length > lineups.length ? `, picked from ${candPool.length} candidates by ${rankLabel()}` : ""}.`, "ok");
   } catch (e) { GS.toast("Optimizer error: " + (e.message || e), "error"); console.error(e); }
   building = false; document.body.classList.remove("building");
   setProgress(null);
@@ -836,14 +846,16 @@ function renderResults() {
         <td class="muted">${money(p.salary)}</td><td><b>${f1(proj(p))}</b></td></tr>`; }).join("")}</table>
       ${L.sim ? `<div class="lu-foot"><span>Sim range</span><span>10th <b>${f1(L.sim.p10)}</b></span><span>median <b>${f1(L.sim.p50)}</b></span><span>90th <b>${f1(L.sim.p90)}</b></span></div>
         <div class="sim-range" style="margin-top:10px" title="10th–90th percentile of simulated totals; tick = median"><i style="left:${xp(L.sim.p10)}%;right:${100 - xp(L.sim.p90)}%"></i><u style="left:${xp(L.sim.p50)}%"></u></div>` : ""}
+      ${csFoot(L)}
     </article>`).join("");
   const top = [...exposure.entries()].sort((a, b) => b[1] - a[1]).slice(0, 30);
   const expRows = top.map(([id, c]) => { const p = byId.get(id), e = 100 * c / N, o = own(p); return `<div class="exp-row" title="${esc(p.player_name)}: in ${c} of ${N} lineups (${Math.round(e)}%) · projected ownership ${Math.round(o)}%">
       <span class="nm" data-card="${esc(id)}"><span class="pos ${posCls(p.position)}" style="min-width:26px;height:16px;font-size:9.5px;margin-right:6px">${esc(p.position)}</span>${esc(p.player_name)}</span><span class="pc">${Math.round(e)}%</span>
       <span class="track"><i style="width:${e}%"></i><u style="left:${Math.min(99, o)}%"></u></span></div>`; }).join("");
   box.innerHTML = `
-    <div class="res-head"><div><h2>Your lineups</h2><p class="muted small" style="margin-top:2px">${esc(site.name)} · Week ${slate.week} · ${candOpts?.contest === "cash" ? "ranked by simulated median" : "ranked by simulated ceiling"}${hasSim ? "" : " (projection totals — simulations not loaded)"}</p></div>
+    <div class="res-head"><div><h2>Your lineups</h2><p class="muted small" style="margin-top:2px">${esc(site.name)} · Week ${slate.week} · ranked by ${rankLabel()}${hasSim ? "" : " (projection totals — simulations not loaded)"}</p></div>
       <div class="toolbar"><button class="btn" id="rebuildBtn">${icon("refresh")} Rebuild</button><button class="btn btn-primary" id="exportBtn2">${icon("download")} Download CSV for ${esc(site.name)}</button></div></div>
+    ${contestPanel()}
     <div class="res-tiles tiles">${tiles.map(([k, v, s]) => `<div class="tile"><div class="k">${k}</div><div class="v">${v}</div><div class="s">${s}</div></div>`).join("")}</div>
     <div class="callout upload-help">${icon("info")}<div><b>Upload to ${esc(site.name)}:</b> download the CSV, then in ${esc(site.name)} open your contest → <b>Upload lineups</b> (or <b>Edit lineups → Upload</b> for existing entries) and pick the file. Each row is one lineup, in the order shown here.</div></div>
     <div class="res-grid">
@@ -855,6 +867,135 @@ function renderResults() {
   box.querySelectorAll("[data-card]").forEach(el => el.addEventListener("click", () => openCard(el.dataset.card)));
   $("exportBtn2").addEventListener("click", exportCSV);
   $("rebuildBtn").addEventListener("click", generate);
+  wireContestPanel();
+}
+
+// ---------------------------------------------------------------- contest simulator
+function rankLabel() {
+  if (cs && !cs.running && csCfg.rankBy === "roi") return "expected ROI (market view) in the contest sim";
+  return candOpts?.contest === "cash" ? "simulated median" : "simulated ceiling";
+}
+const fmtMoney = (v) => (v < 0 ? "−$" : "$") + Math.abs(Math.round(v)).toLocaleString();
+const fmtSigned = (v) => (v >= 0 ? "+" : "−") + Math.abs(Math.round(v * 100)) + "%";
+const fmtOdds = (p) => p <= 0 ? "–" : p >= 0.01 ? (100 * p).toFixed(p >= 0.1 ? 0 : 1) + "%" : p < 5e-4 ? "<0.05%" : (100 * p).toFixed(2) + "%";
+
+async function runContestSim() {
+  if (!sim || !candPool.length || cs?.running) return;
+  const site = SITES[slate.site], cfg = { ...csCfg };
+  if (!(cfg.fee > 0 && cfg.entrants > 1 && cfg.pool > 0)) { GS.toast("Enter the contest's entry fee, entrants and prize pool first.", "error"); return; }
+  const payouts = buildPayouts(cfg);
+  // the field: everyone with a projection who isn't ruled out, weighted by projected ownership
+  const out = (p) => ["OUT", "IR", "O"].includes(effStatus(p));
+  const fp = players.filter(p => p.mean != null && proj(p) > 0 && !out(p) && p.position);
+  const have = new Set(fp.map(p => p.site_player_id));
+  candPool.forEach(L => L.ids.forEach(id => { if (!have.has(id)) { fp.push(byId.get(id)); have.add(id); } }));
+  const ix = new Map(fp.map((p, i) => [p.site_player_id, i]));
+  cs = { running: true, progress: 0 }; renderResults();
+  await new Promise(r => setTimeout(r, 30));
+  try {
+    const field = buildField({ players: fp.map(p => ({ pos: p.position, team: p.team, opp: p.opponent, salary: p.salary, own: out(p) ? 0 : own(p) })),
+      slots: site.slots.map(x => x === site.defLabel ? "DST" : x), cap: site.cap, minSalary: Math.round(site.cap * 0.94), size: 3000, seed: 20260927 });
+    const S = sim.n;
+    // market line (as jobs/flashback.py consensus_matrix): props projection where posted, else the salary-implied line for the position
+    const fit = {};
+    ["QB", "RB", "WR", "TE", "DST"].forEach(pos => {
+      const ps = players.filter(p => p.position === pos && (p.mean || 0) >= 3 && !out(p)); if (ps.length < 8) return;
+      const mx = ps.reduce((a, p) => a + p.salary, 0) / ps.length, my = ps.reduce((a, p) => a + p.mean, 0) / ps.length;
+      const b = ps.reduce((a, p) => a + (p.salary - mx) * (p.mean - my), 0) / Math.max(1, ps.reduce((a, p) => a + (p.salary - mx) ** 2, 0));
+      fit[pos] = (sal) => Math.max(0, my + b * (sal - mx));
+    });
+    const marketScale = (p) => { const m = p.mean || 0; if (m <= 0.5 || out(p)) return 1; const pr = propsMap.get(p.site_player_id);
+      const t = pr ? pr.mean : fit[p.position] ? fit[p.position](p.salary) : m; return Math.min(4, Math.max(0.25, t / m)); };
+    const mk = (scale) => fp.map(p => { const a = sim.index.get(p.site_player_id), o = new Float32Array(S);
+      if (a) { const f = scale(p); for (let i = 0; i < S; i++) o[i] = a[i] * f; } else o.fill(proj(p)); return o; });
+    const Ls = candPool.map(L => Int32Array.from(L.ids.map(id => ix.get(id))));
+    const prog = (base) => (f) => { const v = base + f / 2; cs.progress = v; const el = $("csProg"); if (el) { el.firstElementChild.firstElementChild.style.width = Math.round(100 * v) + "%"; el.lastElementChild.textContent = `Simulating the contest… ${Math.round(100 * v)}%`; } };
+    const common = { field, lineups: Ls, entrants: cfg.entrants, payouts, fee: cfg.fee, nSims: S };
+    const market = await simulate({ ...common, scores: mk(marketScale), onProgress: prog(0) });
+    const model = await simulate({ ...common, scores: mk(simScale), onProgress: prog(0.5) });
+    candPool.forEach((L, i) => { L.cs = { ...market.stats[i], modelRoi: model.stats[i].roi }; });
+    cs = { running: false, payouts, cfg, q: market.q, qModel: model.q, nSims: S, rows: new Map(candPool.map((L, i) => [lkey(L), i])), fieldN: field.size };
+    applyRankBy();
+  } catch (e) { cs = null; console.error(e); GS.toast("Contest sim failed: " + (e.message || e), "error"); renderResults(); }
+}
+
+function applyRankBy() {
+  if (!candPool.length || !candOpts) return;
+  const key = candOpts.contest === "cash" ? "p50" : "p90";
+  if (cs && !cs.running && csCfg.rankBy === "roi") candPool.sort((a, b) => (b.cs?.ev ?? -1) - (a.cs?.ev ?? -1));
+  else candPool.sort((a, b) => (b.sim?.[key] ?? b.proj) - (a.sim?.[key] ?? a.proj));
+  selectFromPool();
+}
+
+function csPortfolio() {
+  if (!cs || cs.running || !lineups.length) return null;
+  const rows = lineups.map(L => cs.rows.get(lkey(L)));
+  if (rows.some(r => r == null)) return null;
+  const a = { rows, nSims: cs.nSims, entrants: cs.cfg.entrants, payouts: cs.payouts, fee: cs.cfg.fee };
+  return { ...portfolio({ ...a, q: cs.q }), model: portfolio({ ...a, q: cs.qModel }) };
+}
+
+function csFoot(L) {
+  if (!L.cs || !cs || cs.running) return "";
+  const c = L.cs;
+  return `<div class="lu-foot cs-foot" title="Contest sim: this lineup against ${cs.fieldN.toLocaleString()} simulated opponent lineups in ${cs.nSims.toLocaleString()} simulated slates">
+    <span title="Market view: players at the betting-market line">ROI <b class="${c.roi >= 0 ? "up" : "down"}">${fmtSigned(c.roi)}</b></span><span>Cash <b>${fmtOdds(c.cash)}</b></span><span>Top 1% <b>${fmtOdds(c.top1)}</b></span><span>Top 0.1% <b>${fmtOdds(c.top01)}</b></span><span title="Model view: our projections taken as the truth (optimistic)">model <b>${fmtSigned(c.modelRoi)}</b></span></div>`;
+}
+
+function contestPanel() {
+  const c = csCfg, isCash = c.type === "cash";
+  const opts = PRESETS.map(p => `<option value="${p.key}"${c.preset === p.key ? " selected" : ""}>${esc(p.label)}</option>`).join("") + `<option value="custom"${c.preset === "custom" ? " selected" : ""}>Custom</option>`;
+  let body;
+  if (!sim) body = `<p class="muted small">The contest sim needs this slate's simulations, which aren't loaded yet.</p>`;
+  else if (cs?.running) body = `<div class="cs-prog" id="csProg"><div class="progress"><i style="width:${Math.round(100 * (cs.progress || 0))}%"></i></div><span class="muted small">Simulating the contest… ${Math.round(100 * (cs.progress || 0))}%</span></div>`;
+  else if (!cs) body = `<p class="muted small">Set the contest details and press <b>Run contest sim</b> to see each lineup's expected ROI, win and cash rates.</p>`;
+  else {
+    const pf = csPortfolio(), P = cs.payouts;
+    const t = pf ? [
+      ["Expected profit", `<span class="${pf.profit >= 0 ? "up" : "down"}">${fmtMoney(pf.profit)}</span>`, `${fmtSigned(pf.roi)} ROI on ${fmtMoney(pf.cost)} · model view ${fmtSigned(pf.model.roi)}`],
+      ["Top-0.1% finish", fmtOdds(pf.anyTop01), `any of your ${lineups.length} · where the big prizes are`],
+      ["Top-1% finish", fmtOdds(pf.anyTop1), "at least one lineup"],
+      ["Cash", fmtOdds(pf.anyCash), "at least one lineup in the money"],
+      ["Profitable slate", fmtOdds(pf.profitable), `median result ${fmtMoney(pf.median)}`],
+    ] : [];
+    body = `<div class="cs-tiles tiles">${t.map(([k, v, s]) => `<div class="tile"><div class="k">${k}</div><div class="v">${v}</div><div class="s">${s}</div></div>`).join("")}</div>
+      <p class="hint">Pays the top ${(100 * P.cashLine / cs.cfg.entrants).toFixed(P.cashLine / cs.cfg.entrants < 0.1 ? 1 : 0)}% (${P.cashLine.toLocaleString()} places) · min cash ${fmtMoney(P.minCash)} · 1st ${fmtMoney(P.first)} · site rake ${(100 * P.rake).toFixed(1)}%.
+      Field of ${cs.fieldN.toLocaleString()} opponent lineups built from projected ownership (85% QB-stacked, 40% with a bring-back, like real DK fields), ${cs.nSims.toLocaleString()} simulated slates.
+      <b>Market view</b> (the headline) puts every player at the betting-market line, so it measures how your lineups are built against the field. <b>Model view</b> takes our projections as the truth, so it is optimistic: in week 2 it said +1,178% while the lineups really returned −85%.
+      Payouts follow a typical DraftKings curve; for exact numbers copy the prize pool and 1st-place prize from the contest page.</p>`;
+  }
+  return `<section class="card cs-panel">
+    <div class="card-head"><h3>${icon("trophy")} Contest simulator</h3><span class="muted small">Expected ROI against a simulated field</span></div>
+    <div class="cs-body">
+      <div class="cs-form">
+        <label class="field cs-wide"><span>Contest</span><select id="csPreset" class="input">${opts}</select></label>
+        <label class="field"><span>Entry fee $</span><input id="csFee" class="input" type="number" min="0.25" step="0.25" value="${c.fee}"></label>
+        <label class="field"><span>Entrants</span><input id="csEntrants" class="input" type="number" min="2" step="1" value="${c.entrants}"></label>
+        <label class="field"><span>Prize pool $</span><input id="csPool" class="input" type="number" min="1" step="1" value="${c.pool}"></label>
+        <label class="field"><span>${isCash ? "Prize per winner $" : "1st place $"}</span><input id="csFirst" class="input" type="number" min="1" step="1" value="${c.first}"></label>
+        <div class="field"><span>Pick lineups by <span class="help" tabindex="0" data-tip="Ceiling (or median for cash) is the default: in our 2020 backtest against real Millionaire Maker fields, ranking by contest-sim expected value did worse than ranking by simulated ceiling. Expected ROI here is experimental.">?</span></span><div class="seg seg-compact" id="csRank"><button type="button" data-v="ceil" aria-pressed="${c.rankBy !== "roi"}">${candOpts?.contest === "cash" ? "Median" : "Ceiling"}</button><button type="button" data-v="roi" aria-pressed="${c.rankBy === "roi"}">Expected ROI</button></div></div>
+        <button class="btn btn-primary cs-run" id="csRun" ${!sim || cs?.running ? "disabled" : ""}>${icon("zap")} ${cs && !cs.running ? "Re-run" : "Run contest sim"}</button>
+      </div>
+      ${body}
+    </div></section>`;
+}
+
+function wireContestPanel() {
+  const sel = $("csPreset"); if (!sel) return;
+  sel.addEventListener("change", () => {
+    const p = PRESETS.find(x => x.key === sel.value);
+    csCfg = p ? { ...csCfg, preset: p.key, type: p.type, fee: p.fee, entrants: p.entrants, pool: p.pool, first: p.first } : { ...csCfg, preset: "custom" };
+    saveCs(); renderResults();
+  });
+  [["csFee", "fee"], ["csEntrants", "entrants"], ["csPool", "pool"], ["csFirst", "first"]].forEach(([id, k]) => $(id).addEventListener("change", () => {
+    const v = parseFloat($(id).value); if (!(v > 0)) return;
+    csCfg = { ...csCfg, [k]: v, preset: "custom" }; $("csPreset").value = "custom"; saveCs();
+  }));
+  document.querySelectorAll("#csRank button").forEach(b => b.addEventListener("click", () => {
+    csCfg = { ...csCfg, rankBy: b.dataset.v }; saveCs();
+    if (cs && !cs.running) applyRankBy(); else renderResults();
+  }));
+  $("csRun").addEventListener("click", () => { cs = null; runContestSim(); });
 }
 
 // ---------------------------------------------------------------- player card
