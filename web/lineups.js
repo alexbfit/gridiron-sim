@@ -27,11 +27,19 @@ let blend = 0;                   // 0..1 weight on external projections
 const SLOTS_PER_POS = { QB: 1.0, RB: 2.4, WR: 3.4, TE: 1.2, DST: 1.0 };
 let lineups = [];
 let minExp = new Map(), maxExpP = new Map();   // per-player exposure bounds (fraction), from the Min/Max columns
+let stackRules = new Map();                   // "T:<team>" | "G:<game_id>" -> { min, max } share of lineups whose QB stack comes from there
+let stackMode = "teams";                      // Team stacks view: "teams" | "games"
 let lastExposure = new Map();                 // site_player_id -> fraction of the last build
 let candPool = [];                            // every candidate lineup from the last build (the "pool"); re-select picks from it
 let poolExposure = new Map();                 // site_player_id -> fraction of the candidate pool (the sims' own preference)
 let candOpts = null;                          // options the pool was built with (contest, n, maxExp)
 let view = "players";                         // "players" | "stacks" | "lineups"
+const qbOf = (L) => L.ids.map(id => byId.get(id)).find(p => p && p.position === "QB");
+const ruleKeys = (qb) => qb ? ["T:" + qb.team, "G:" + qb.game_id] : [];
+const ruleMax = (k) => { const r = stackRules.get(k); return r && r.max != null && r.max < 1 ? r.max : null; };
+const qbIdsFor = (key) => players.filter(p => p.position === "QB" && ("T:" + p.team === key || "G:" + p.game_id === key)).map(p => p.site_player_id);
+const gameLabel = (gid) => { const p = players.find(x => x.game_id === gid); const m = /^(\S+)/.exec(p?.game_info || ""); return m ? m[1].replace("@", " @ ") : gid; };
+const ruleLabel = (k) => k.startsWith("T:") ? `${k.slice(2)} stacks` : `${gameLabel(k.slice(2))} stacks`;
 let colSet = "core";                          // "core" | "range" | "port"
 let onlyMine = false;
 let sim = null;                  // { n, index: Map(site_player_id -> Float32Array) }
@@ -53,7 +61,8 @@ const posCls = (pos) => ["QB", "RB", "WR", "TE"].includes(pos) ? pos : "DST";
 const kickoff = (p) => { const m = /(\d{1,2}:\d{2}[AP]M)/.exec(p.game_info || ""); return m ? m[1].replace(/^0/, "").replace(/([AP])M/, " $1M") : ""; };
 const injTag = (p) => {
   const rep = p.injury_report ? { Out: "OUT", Doubtful: "D", Questionable: "Q" }[p.injury_report] || "" : "";
-  const s = (p.status || "").toUpperCase() || rep;
+  const SEV = { OUT: 3, IR: 3, O: 3, D: 2, Q: 1 }, site = (p.status || "").toUpperCase();
+  const s = (SEV[site] || 0) >= (SEV[rep] || 0) ? site : rep;   // most severe of the site tag and the official report
   if (s) return { t: s, out: ["OUT", "O", "IR"].includes(s), title: [p.injury_report ? `Official report: ${p.injury_report}` : "", p.primary_injury || "", p.practice_status || ""].filter(Boolean).join(" · ") };
   if (p.practice_status && /Did Not|Limited/.test(p.practice_status)) return { t: p.practice_status.startsWith("Did") ? "DNP" : "LP", out: false, title: `Practice: ${p.practice_status}${p.primary_injury ? ` (${p.primary_injury})` : ""} — no game designation yet` };
   return null;
@@ -75,7 +84,7 @@ const saveKey = () => slate ? "gs_picks_" + slate.slate_key : null;
 let saveTimer = null, pendingSave = null;
 function savePicks() {
   const k = saveKey(); if (!k) return;
-  pendingSave = { k, v: JSON.stringify({ locks: [...locks], excludes: [...excludes], overrides: [...overrides], ownOverrides: [...ownOverrides], minExp: [...minExp], maxExp: [...maxExpP] }) };
+  pendingSave = { k, v: JSON.stringify({ locks: [...locks], excludes: [...excludes], overrides: [...overrides], ownOverrides: [...ownOverrides], minExp: [...minExp], maxExp: [...maxExpP], stackRules: [...stackRules] }) };
   clearTimeout(saveTimer);
   saveTimer = setTimeout(flushPicks, 250);
 }
@@ -91,6 +100,7 @@ function restorePicks() {
     (s.ownOverrides || []).filter(([id]) => ok(id)).forEach(([id, v]) => ownOverrides.set(id, v));
     (s.minExp || []).filter(([id]) => ok(id)).forEach(([id, v]) => minExp.set(id, v));
     (s.maxExp || []).filter(([id]) => ok(id)).forEach(([id, v]) => maxExpP.set(id, v));
+    (Array.isArray(s.stackRules) ? s.stackRules : []).forEach(e => { if (Array.isArray(e) && typeof e[0] === "string" && e[1] && typeof e[1] === "object") stackRules.set(e[0], { min: +e[1].min || 0, max: e[1].max == null ? null : +e[1].max }); });
   } catch (e) { /* ignore */ }
 }
 const SETTING_IDS = ["contest", "nLineups", "stack", "bringback", "maxExp", "exclQ", "minSalary", "maxTeam", "minUniq", "rand", "fade", "maxOwn", "poolMult", "propsBlend", "blend"];
@@ -134,7 +144,7 @@ async function loadBoard() {
     p85: Number(r.p85), p15: Number(r.p15), floor: Number(r.floor), ceiling: Number(r.ceiling), stdev: Number(r.stdev),
     salary: Number(r.salary), boom_prob: Number(r.boom_prob), bust_prob: Number(r.bust_prob) }));
   byId = new Map(players.map(p => [p.site_player_id, p]));
-  locks.clear(); excludes.clear(); overrides.clear(); ownOverrides.clear(); minExp.clear(); maxExpP.clear();
+  locks.clear(); excludes.clear(); overrides.clear(); ownOverrides.clear(); minExp.clear(); maxExpP.clear(); stackRules.clear();
   lineups = []; candPool = []; lastExposure = new Map(); poolExposure = new Map(); sim = null;
   restorePicks();
   external = new Map();
@@ -279,6 +289,9 @@ const COLS = [
   { key: "q25", label: "25th", sim: true, set: "range", cls: "col-opt" }, { key: "q50", label: "Median", sim: true, set: "range", cls: "col-opt" },
   { key: "q75", label: "75th", sim: true, set: "range", cls: "col-opt" }, { key: "q85", label: "85th", sim: true, set: "range", cls: "col-opt" },
   { key: "q95", label: "95th", sim: true, set: "range", cls: "col-opt" }, { key: "q99", label: "99th", sim: true, set: "range", cls: "col-opt" },
+  ...[["attempts", "Pass att"], ["passing_yards", "Pass yds"], ["passing_tds", "Pass TD"], ["interceptions", "INT"], ["carries", "Rush att"],
+      ["rushing_yards", "Rush yds"], ["rushing_tds", "Rush TD"], ["targets", "Tgt"], ["receptions", "Rec"], ["receiving_yards", "Rec yds"], ["receiving_tds", "Rec TD"]]
+    .map(([k, l]) => ({ key: "st_" + k, stat: k, label: l, set: "stats", cls: "col-opt", title: "Average in the simulations" })),
   { key: "minExp", label: "Min %", set: "port", title: "Force this player into at least this share of lineups. Blank = none.", cls: "col-opt" },
   { key: "maxExp", label: "Max %", set: "port", title: "Cap this player's share of lineups. Blank = the global max exposure.", cls: "col-opt" },
   { key: "exp", label: "Exposure", set: "port", title: "Share of your last build", cls: "col-opt" },
@@ -302,6 +315,9 @@ function renderSkeleton() {
 
 function render() {
   renderPicks();
+  const smb = $("stackModeBar"); if (smb) smb.hidden = view !== "stacks";
+  const cs = $("colSeg"); if (cs) cs.hidden = view === "stacks";
+  const pc = $("posChips"); if (pc) pc.hidden = view === "stacks";
   if (view === "stacks") { renderStacks(); return; }
   if (view !== "players") return;
   const thead = document.querySelector("#pool thead"), tbody = document.querySelector("#pool tbody");
@@ -326,7 +342,8 @@ function render() {
     minExp: minExp.get(p.site_player_id), maxExp: maxExpP.get(p.site_player_id) }));
   const kv = (r) => sortKey === "mean" ? r.mean : sortKey === "value" ? r.value : sortKey === "own" ? r.own
     : sortKey === "exp" ? r.exp : sortKey === "lev" ? r.lev : sortKey === "pool" ? r.pool : sortKey === "minExp" ? r.minExp : sortKey === "maxExp" ? r.maxExp
-    : sortKey.startsWith("q") ? (r.p.q ? r.p.q[sortKey] * simScale(r.p) : null) : r.p[sortKey];
+    : sortKey.startsWith("q") ? (r.p.q ? r.p.q[sortKey] * simScale(r.p) : null)
+    : sortKey.startsWith("st_") ? (r.p.components?.stats?.[sortKey.slice(3)] ?? null) : r.p[sortKey];
   rows.sort((a, b) => {
     const ka = kv(a), kb = kv(b);
     let c = (ka == null) - (kb == null) || (typeof ka === "number" ? ka - kb : String(ka ?? "").localeCompare(String(kb ?? "")));
@@ -381,6 +398,10 @@ function render() {
         if (!lastExposure.size) td.classList.add("dim");
       } else if (c.key === "pool") {
         td.textContent = poolExposure.size ? Math.round(poolPct) + "%" : "–"; if (!poolExposure.size) td.classList.add("dim");
+      } else if (c.stat) {
+        const v = p.components?.stats?.[c.stat];
+        td.textContent = v == null ? "–" : (/_tds$|interceptions/.test(c.stat) ? Number(v).toFixed(2) : Number(v).toFixed(1));
+        if (v == null) td.classList.add("dim");
       } else if (c.key.startsWith("q")) {
         td.textContent = p.q ? f1(p.q[c.key] * simScale(p)) : "–";
       } else {
@@ -398,7 +419,8 @@ function render() {
   tbody.replaceChildren(frag);
   const nSim = players.filter(p => p.method === "sim").length;
   setStatus(`${rows.length} of ${players.length} players` + (nSim ? "" : " · baseline projections") + (colSet === "range" && !sim ? " · simulated ranges appear once the simulations load" : "")
-    + (colSet === "port" && !lastExposure.size ? " · build lineups to fill exposure and leverage" : ""));
+    + (colSet === "port" && !lastExposure.size ? " · build lineups to fill exposure and leverage" : "")
+    + (colSet === "stats" && !players.some(p => p.components?.stats) ? " · stat lines appear after the next simulation run" : ""));
   renderObjHint();
 }
 
@@ -418,59 +440,107 @@ function picksChanged() { estimateOwnership(); savePicks(); render(); }
 
 function renderPicks() {
   const bar = $("picksBar");
-  const n = locks.size + excludes.size + overrides.size;
+  const n = locks.size + excludes.size + overrides.size + stackRules.size;
   $("mineCount").textContent = n + ownOverrides.size + minExp.size + maxExpP.size;
   if (!n) { bar.hidden = true; return; }
   bar.hidden = false;
   const tag = (cls, id, label, what) => `<span class="pick-tag ${cls}">${label}<button data-rm="${what}" data-id="${esc(id)}" aria-label="Remove">${icon("x")}</button></span>`;
   bar.innerHTML = [...locks].map(id => tag("lock", id, `${icon("lock")} ${esc(byId.get(id)?.player_name)}`, "lock"))
     .concat([...excludes].map(id => tag("excl", id, `${icon("ban")} ${esc(byId.get(id)?.player_name)}`, "excl")))
-    .concat([...overrides].map(([id, v]) => tag("", id, `${esc(byId.get(id)?.player_name)} → ${f1(v)}`, "ovr"))).join("")
+    .concat([...overrides].map(([id, v]) => tag("", id, `${esc(byId.get(id)?.player_name)} → ${f1(v)}`, "ovr")))
+    .concat([...stackRules].map(([k, r]) => tag("", k, `${esc(ruleLabel(k))} ${r.min ? Math.round(100 * r.min) + "%" : "0"}–${r.max != null ? Math.round(100 * r.max) + "%" : "100%"}`, "rule"))).join("")
     + `<button class="btn btn-ghost btn-sm" id="clearPicks">Clear all</button>`;
   bar.querySelectorAll("[data-rm]").forEach(b => b.addEventListener("click", () => {
-    const id = b.dataset.id; ({ lock: locks, excl: excludes, ovr: overrides })[b.dataset.rm].delete(id); picksChanged();
+    const id = b.dataset.id; ({ lock: locks, excl: excludes, ovr: overrides, rule: stackRules })[b.dataset.rm].delete(id); picksChanged();
+    if (b.dataset.rm === "rule" && candPool.length) selectFromPool();
   }));
-  $("clearPicks").addEventListener("click", () => { locks.clear(); excludes.clear(); overrides.clear(); ownOverrides.clear(); minExp.clear(); maxExpP.clear(); picksChanged(); GS.toast("Cleared your locks, excludes and edits."); });
+  $("clearPicks").addEventListener("click", () => { locks.clear(); excludes.clear(); overrides.clear(); ownOverrides.clear(); minExp.clear(); maxExpP.clear(); stackRules.clear(); picksChanged(); GS.toast("Cleared your locks, excludes and edits."); });
 }
 
-// ---------------------------------------------------------------- team stacks view
+// ---------------------------------------------------------------- team stacks view (teams / games, with exposure rules)
+function stackExposure(key) {
+  if (!lineups.length) return null;
+  return lineups.filter(L => ruleKeys(qbOf(L)).includes(key)).length / lineups.length;
+}
+function ruleInputs(key) {
+  const r = stackRules.get(key) || {};
+  const v = (x) => x == null ? "" : Math.round(100 * x);
+  return [`<input class="edit${r.min ? " overridden" : ""}" type="number" min="0" max="100" step="5" placeholder="–" data-rule="${esc(key)}" data-which="min" value="${r.min ? v(r.min) : ""}" aria-label="Minimum % for ${esc(ruleLabel(key))}">`,
+          `<input class="edit${r.max != null ? " overridden" : ""}" type="number" min="0" max="100" step="5" placeholder="–" data-rule="${esc(key)}" data-which="max" value="${r.max != null ? v(r.max) : ""}" aria-label="Maximum % for ${esc(ruleLabel(key))}">`];
+}
+function wireRuleInputs(tbody) {
+  tbody.querySelectorAll("[data-rule]").forEach(inp => inp.addEventListener("change", () => {
+    const k = inp.dataset.rule, r = { ...(stackRules.get(k) || { min: 0, max: null }) };
+    const v = parseFloat(inp.value);
+    if (inp.dataset.which === "min") r.min = Number.isNaN(v) ? 0 : Math.max(0, Math.min(100, v)) / 100;
+    else r.max = Number.isNaN(v) ? null : Math.max(0, Math.min(100, v)) / 100;
+    if (r.max != null && r.min > r.max) r.min = r.max;
+    if (!r.min && r.max == null) stackRules.delete(k); else stackRules.set(k, r);
+    savePicks(); syncControls();
+    if (candPool.length) selectFromPool(); else render();
+  }));
+}
+
 function renderStacks() {
   const thead = document.querySelector("#pool thead"), tbody = document.querySelector("#pool tbody");
   const q = $("search").value.trim().toLowerCase();
-  const hdr = [["Quarterback", "left"], ["QB proj", ""], ["QB own", "col-opt"], ["Top pass catchers", "left"], ["QB + 2 proj", ""], ["QB + 2 own", "col-opt"], ["Bring-back options", "left col-opt"], ["QB exp", "col-opt"], ["Stack exp", "col-opt"], ["", ""]];
-  thead.innerHTML = `<tr>${hdr.map(([h, c]) => `<th class="${c}">${h}</th>`).join("")}</tr>`;
-  const qbs = players.filter(p => p.position === "QB" && (p.mean || 0) > 0 && !excludes.has(p.site_player_id));
-  const rows = qbs.map(qb => {
-    const mates = players.filter(p => p.team === qb.team && ["WR","TE"].includes(p.position) && (p.mean || 0) > 0 && !excludes.has(p.site_player_id)).sort((a, b) => proj(b) - proj(a));
-    const opp = players.filter(p => p.team === qb.opponent && ["RB","WR","TE"].includes(p.position) && (p.mean || 0) > 0).sort((a, b) => proj(b) - proj(a)).slice(0, 2);
-    const two = mates.slice(0, 2);
-    const stackExp = lineups.length ? lineups.filter(L => L.ids.includes(qb.site_player_id) && two.some(m => L.ids.includes(m.site_player_id))).length / lineups.length : null;
-    return { qb, mates, opp, two, proj: proj(qb) + two.reduce((s, m) => s + proj(m), 0), own: own(qb) + two.reduce((s, m) => s + own(m), 0),
-      qbExp: lastExposure.get(qb.site_player_id) || 0, stackExp };
-  }).filter(r => !q || r.qb.player_name.toLowerCase().includes(q) || (r.qb.team || "").toLowerCase().includes(q)).sort((a, b) => b.proj - a.proj);
+  const modeBar = `<div class="seg seg-compact stack-mode" role="group" aria-label="Group stacks by"><button type="button" data-sm="teams" aria-pressed="${stackMode === "teams"}">By team</button><button type="button" data-sm="games" aria-pressed="${stackMode === "games"}">By game</button></div>`;
   const chip = (m) => `<span class="stack-p"><span class="pos ${posCls(m.position)}" style="min-width:24px;height:16px;font-size:9.5px;margin-right:4px">${esc(m.position)}</span><b>${esc(m.player_name)}</b> ${f1(proj(m))}</span>`;
-  tbody.innerHTML = rows.map(r => {
-    const locked = locks.has(r.qb.site_player_id) && r.two.every(m => locks.has(m.site_player_id));
-    return `<tr>
-      <td class="left"><div class="pcell"><span class="pname" data-card="${esc(r.qb.site_player_id)}">${esc(r.qb.player_name)}</span><span class="psub"><b>${esc(r.qb.team)}</b> vs ${esc(r.qb.opponent)}${kickoff(r.qb) ? " · " + kickoff(r.qb) : ""}</span></div></td>
-      <td>${f1(proj(r.qb))}</td><td class="col-opt">${Math.round(own(r.qb))}%</td>
-      <td class="left"><div class="stack-players">${r.mates.slice(0, 3).map(chip).join("")}</div></td>
-      <td><b>${f1(r.proj)}</b></td><td class="col-opt">${Math.round(r.own)}%</td>
-      <td class="left col-opt"><div class="stack-players">${r.opp.map(chip).join("")}</div></td>
-      <td class="col-opt ${lastExposure.size ? "" : "dim"}">${lastExposure.size ? Math.round(100 * r.qbExp) + "%" : "–"}</td>
-      <td class="col-opt ${r.stackExp == null ? "dim" : ""}">${r.stackExp == null ? "–" : Math.round(100 * r.stackExp) + "%"}</td>
-      <td><button class="btn btn-sm ${locked ? "btn-primary" : ""}" data-stack="${esc(r.qb.site_player_id)}" title="Lock this QB and his top two pass catchers into every lineup">${icon("lock")} ${locked ? "Locked" : "Lock stack"}</button></td></tr>`;
-  }).join("") || `<tr><td colspan="10"><div class="empty"><h3>No quarterbacks match</h3></div></td></tr>`;
-  tbody.querySelectorAll("[data-card]").forEach(el => el.addEventListener("click", () => openCard(el.dataset.card)));
-  tbody.querySelectorAll("[data-stack]").forEach(b => b.addEventListener("click", () => {
-    const r = rows.find(x => x.qb.site_player_id === b.dataset.stack);
-    const ids = [r.qb, ...r.two].map(p => p.site_player_id);
-    const all = ids.every(id => locks.has(id));
-    ids.forEach(id => { if (all) locks.delete(id); else { locks.add(id); excludes.delete(id); } });
-    picksChanged();
-    GS.toast(all ? `Unlocked the ${r.qb.team} stack.` : `Locked ${r.qb.player_name} + ${r.two.map(m => m.player_name).join(" + ")}.`, all ? "" : "ok");
-  }));
-  setStatus(`${rows.length} QB stacks · QB + 2 = the quarterback plus his two highest-projected pass catchers` + (lineups.length ? "" : " · exposures fill in after a build"));
+  const expCell = (x) => `<td class="${x == null ? "dim" : ""}">${x == null ? "–" : Math.round(100 * x) + "%"}</td>`;
+  const live = (p) => (p.mean || 0) > 0 && !excludes.has(p.site_player_id);
+
+  if (stackMode === "games") {
+    const gids = [...new Set(players.map(p => p.game_id).filter(Boolean))];
+    const rows = gids.map(gid => {
+      const ps = players.filter(p => p.game_id === gid && live(p) && p.position !== "DST").sort((a, b) => proj(b) - proj(a));
+      const qbs = [...new Set(ps.map(p => p.team))].map(t => ps.find(p => p.team === t && p.position === "QB")).filter(Boolean);
+      return { gid, label: gameLabel(gid), time: kickoff(ps[0] || {}), ps, qbs, top: ps.filter(p => p.position !== "QB").slice(0, 4), proj: ps.slice(0, 8).reduce((s, p) => s + proj(p), 0) };
+    }).filter(r => !q || r.label.toLowerCase().includes(q)).sort((a, b) => b.proj - a.proj);
+    thead.innerHTML = `<tr><th class="left">Game</th><th class="left col-opt">Quarterbacks</th><th class="left">Top players</th><th title="Sum of the 8 highest projections in the game">Top-8 proj</th><th title="Share of your lineups whose QB stack comes from this game">Stack exp</th><th title="Force at least this share of lineups to stack this game">Min %</th><th title="Cap the share of lineups stacking this game">Max %</th></tr>`;
+    tbody.innerHTML = rows.map(r => { const [mi, ma] = ruleInputs("G:" + r.gid); return `<tr>
+      <td class="left"><div class="pcell"><span class="pname" style="cursor:default">${esc(r.label)}</span><span class="psub">${esc(r.time)}</span></div></td>
+      <td class="left col-opt"><div class="stack-players">${r.qbs.map(chip).join("")}</div></td>
+      <td class="left"><div class="stack-players">${r.top.map(chip).join("")}</div></td>
+      <td><b>${f1(r.proj)}</b></td>${expCell(stackExposure("G:" + r.gid))}<td>${mi}</td><td>${ma}</td></tr>`; }).join("");
+    wireRuleInputs(tbody);
+    setStatus(`${rows.length} games · Min % / Max % control how many lineups take their QB stack from each game` + (lineups.length ? "" : " · exposures fill in after a build"));
+  } else {
+    const teams = [...new Set(players.filter(p => p.position === "QB" && live(p)).map(p => p.team))];
+    const rows = teams.map(team => {
+      const qb = players.filter(p => p.team === team && p.position === "QB" && live(p)).sort((a, b) => proj(b) - proj(a))[0];
+      const mates = players.filter(p => p.team === team && ["WR","TE"].includes(p.position) && live(p)).sort((a, b) => proj(b) - proj(a));
+      const opp = players.filter(p => p.team === qb.opponent && ["RB","WR","TE"].includes(p.position) && (p.mean || 0) > 0).sort((a, b) => proj(b) - proj(a)).slice(0, 2);
+      const two = mates.slice(0, 2);
+      return { team, qb, mates, opp, two, proj: proj(qb) + two.reduce((s, m) => s + proj(m), 0), own: own(qb) + two.reduce((s, m) => s + own(m), 0) };
+    }).filter(r => !q || r.qb.player_name.toLowerCase().includes(q) || r.team.toLowerCase().includes(q)).sort((a, b) => b.proj - a.proj);
+    thead.innerHTML = `<tr><th class="left">Team · QB</th><th>QB proj</th><th class="left">Top pass catchers</th><th>QB + 2 proj</th><th title="Share of your lineups whose QB is from this team">Stack exp</th><th title="Force at least this share of lineups to stack this team">Min %</th><th title="Cap the share of lineups stacking this team">Max %</th><th></th><th class="col-opt">QB + 2 own</th><th class="left col-opt">Bring-back options</th></tr>`;
+    tbody.innerHTML = rows.map(r => {
+      const locked = locks.has(r.qb.site_player_id) && r.two.every(m => locks.has(m.site_player_id));
+      const [mi, ma] = ruleInputs("T:" + r.team);
+      return `<tr>
+        <td class="left"><div class="pcell"><span class="pname" data-card="${esc(r.qb.site_player_id)}"><b style="color:var(--muted);font-weight:700">${esc(r.team)}</b> ${esc(r.qb.player_name)}</span><span class="psub">vs ${esc(r.qb.opponent)}${kickoff(r.qb) ? " · " + kickoff(r.qb) : ""}</span></div></td>
+        <td>${f1(proj(r.qb))}</td>
+        <td class="left"><div class="stack-players">${r.mates.slice(0, 3).map(chip).join("")}</div></td>
+        <td><b>${f1(r.proj)}</b></td>
+        ${expCell(stackExposure("T:" + r.team))}<td>${mi}</td><td>${ma}</td>
+        <td><button class="btn btn-sm ${locked ? "btn-primary" : ""}" data-stack="${esc(r.qb.site_player_id)}" title="Lock this QB and his top two pass catchers into every lineup">${icon("lock")} ${locked ? "Locked" : "Lock"}</button></td>
+        <td class="col-opt">${Math.round(r.own)}%</td>
+        <td class="left col-opt"><div class="stack-players">${r.opp.map(chip).join("")}</div></td></tr>`;
+    }).join("") || `<tr><td colspan="10"><div class="empty"><h3>No quarterbacks match</h3></div></td></tr>`;
+    tbody.querySelectorAll("[data-card]").forEach(el => el.addEventListener("click", () => openCard(el.dataset.card)));
+    tbody.querySelectorAll("[data-stack]").forEach(b => b.addEventListener("click", () => {
+      const r = rows.find(x => x.qb.site_player_id === b.dataset.stack);
+      const ids = [r.qb, ...r.two].map(p => p.site_player_id);
+      const all = ids.every(id => locks.has(id));
+      ids.forEach(id => { if (all) locks.delete(id); else { locks.add(id); excludes.delete(id); } });
+      picksChanged();
+      GS.toast(all ? `Unlocked the ${r.team} stack.` : `Locked ${r.qb.player_name} + ${r.two.map(m => m.player_name).join(" + ")}.`, all ? "" : "ok");
+    }));
+    wireRuleInputs(tbody);
+    setStatus(`${rows.length} teams · Min % / Max % control how many lineups stack each team's QB (with your stacking rule)` + (lineups.length ? "" : " · exposures fill in after a build"));
+  }
+  const bar = $("stackModeBar"); if (bar) { bar.innerHTML = modeBar; bar.hidden = false;
+    bar.querySelectorAll("[data-sm]").forEach(b => b.addEventListener("click", () => { stackMode = b.dataset.sm; render(); })); }
 }
 
 // ---------------------------------------------------------------- optimizer
@@ -545,7 +615,8 @@ async function generate() {
     poolMult: sim ? Math.max(1, Math.min(5, +$("poolMult").value || 1)) : 1,
   };
   const nCand = Math.min(300, n * opts.poolMult);
-  const eff = (p) => (p.status || "").toUpperCase() || ({ Out: "OUT", Doubtful: "D", Questionable: "Q" }[p.injury_report] || "");
+  const SEV = { OUT: 3, IR: 3, O: 3, D: 2, Q: 1 };
+  const eff = (p) => { const a = (p.status || "").toUpperCase(), b = ({ Out: "OUT", Doubtful: "D", Questionable: "Q" }[p.injury_report] || ""); return (SEV[a] || 0) >= (SEV[b] || 0) ? a : b; };
   const pool = players.filter(p => !excludes.has(p.site_player_id) && p.mean != null && proj(p) > 0 &&
     !["OUT","IR","O"].includes(eff(p)) &&
     !(opts.exclQ && ["Q","D"].includes(eff(p))));
@@ -561,7 +632,15 @@ async function generate() {
   const stands = [...minExp.entries()].filter(([id, f]) => f > 0 && pool.some(p => p.site_player_id === id)).sort((a, b) => b[1] - a[1]);
   const plan = [];
   stands.forEach(([id, f]) => { for (let i = 0; i < Math.ceil(f * nCand); i++) plan.push(id); });
+  // stack minimums: force the team's (or the game's two teams') best QB into that share of the candidates
+  const topQB = (team) => pool.filter(p => p.position === "QB" && p.team === team).sort((a, b) => proj(b) - proj(a))[0]?.site_player_id;
+  [...stackRules].filter(([, r]) => r.min > 0).forEach(([k, r]) => {
+    const qbsK = k.startsWith("T:") ? [topQB(k.slice(2))] : [...new Set(pool.filter(p => p.game_id === k.slice(2)).map(p => p.team))].map(topQB);
+    const ids = qbsK.filter(Boolean); if (!ids.length) return;
+    for (let i = 0; i < Math.ceil(r.min * nCand); i++) plan.push(ids[i % ids.length]);
+  });
   while (plan.length < nCand) plan.push(null);
+  const stackUse = new Map();
   let stopped = null;
   try {
     for (let k = 0; k < nCand; k++) {
@@ -583,6 +662,8 @@ async function generate() {
       const ids = Object.entries(res.result.vars).filter(([, v]) => v > 0.5).map(([name]) => name.slice(1));
       const L = summarize(ids); lineups.push(L);
       ids.forEach(id => { const u = (usage.get(id) || 0) + 1; usage.set(id, u); if (!locks.has(id) && u >= capFor(id)) blocked.add(id); });
+      ruleKeys(qbOf(L)).forEach(key => { const u = (stackUse.get(key) || 0) + 1; stackUse.set(key, u); const mx = ruleMax(key);
+        if (mx != null && u >= Math.ceil(mx * nCand)) qbIdsFor(key).forEach(id => { if (!locks.has(id)) blocked.add(id); }); });
       if (k % 10 === 9) renderBuilding(k + 1, nCand);
       await new Promise(r => setTimeout(r));
     }
@@ -604,6 +685,8 @@ async function generate() {
       const used = new Map(); lineups.forEach(L => L.ids.forEach(id => used.set(id, (used.get(id) || 0) + 1)));
       const capN = (id) => Math.max(1, Math.ceil((maxExpP.has(id) ? maxExpP.get(id) : opts.maxExp) * n));
       const blockNow = new Set([...used].filter(([id, u]) => !locks.has(id) && u >= capN(id)).map(([id]) => id));
+      const sUsed = new Map(); lineups.forEach(L => ruleKeys(qbOf(L)).forEach(k => sUsed.set(k, (sUsed.get(k) || 0) + 1)));
+      [...sUsed].forEach(([k, u]) => { const mx = ruleMax(k); if (mx != null && u >= Math.max(1, Math.ceil(mx * n))) qbIdsFor(k).forEach(id => { if (!locks.has(id)) blockNow.add(id); }); });
       const jitter = new Map(pool.map(p => [p.site_player_id, opts.rand ? 1 + opts.rand * gauss() * (p.stdev / Math.max(p.mean, 1)) : 1]));
       opts.score = (p) => {
         const m = proj(p);
@@ -638,8 +721,16 @@ function selectFromPool(quiet = false) {
   const stands = [...minExp.entries()].filter(([id, f]) => f > 0 && pool.some(L => L.ids.includes(id))).sort((a, b) => b[1] - a[1]);
   const used = new Map(), kept = [], short = [];
   const capN = (id) => Math.max(1, Math.ceil((maxExpP.has(id) ? maxExpP.get(id) : candOpts.maxExp) * n));
-  const fits = (L, need) => L.ids.every(id => locks.has(id) || id === need || (used.get(id) || 0) < capN(id)) && !L.ids.some(id => excludes.has(id));
-  const take = (L) => { kept.push(L); L.ids.forEach(id => used.set(id, (used.get(id) || 0) + 1)); };
+  const sUsed = new Map();
+  const capS = (k) => { const mx = ruleMax(k); return mx == null ? Infinity : Math.max(1, Math.ceil(mx * n)); };
+  const fits = (L, need) => L.ids.every(id => locks.has(id) || id === need || (used.get(id) || 0) < capN(id)) && !L.ids.some(id => excludes.has(id))
+    && ruleKeys(qbOf(L)).every(k => (sUsed.get(k) || 0) < capS(k));
+  const take = (L) => { kept.push(L); L.ids.forEach(id => used.set(id, (used.get(id) || 0) + 1)); ruleKeys(qbOf(L)).forEach(k => sUsed.set(k, (sUsed.get(k) || 0) + 1)); };
+  for (const [k, r] of [...stackRules].filter(([, r]) => r.min > 0).sort((a, b) => b[1].min - a[1].min)) {
+    const want = Math.ceil(r.min * n);
+    for (const L of pool) { if ((sUsed.get(k) || 0) >= want || kept.length >= n) break; if (!kept.includes(L) && ruleKeys(qbOf(L)).includes(k) && fits(L)) take(L); }
+    if ((sUsed.get(k) || 0) < want) short.push(`${ruleLabel(k)} ${sUsed.get(k) || 0}/${want}`);
+  }
   for (const [id, f] of stands) {
     const want = Math.ceil(f * n);
     for (const L of pool) { if ((used.get(id) || 0) >= want || kept.length >= n) break; if (!kept.includes(L) && L.ids.includes(id) && fits(L, id)) take(L); }
@@ -819,6 +910,25 @@ async function openCard(id) {
       <div class="pc-tiles" style="margin-top:14px">${tiles.map(([k, v, s]) => `<div class="tile"><div class="k">${k}</div><div class="v">${v}</div><div class="s">${s}</div></div>`).join("")}</div>
       <h4>Simulated outcomes</h4>
       ${scaled ? histogramSVG(scaled, m) : `<p class="hint">Simulations aren't loaded for this slate — summary numbers only.</p>`}`;
+  const st = p.components?.stats;
+  if (st) {
+    const L = [["attempts", "Pass att", 1], ["passing_yards", "Pass yds", 1], ["passing_tds", "Pass TD", 2], ["interceptions", "INT", 2], ["carries", "Rush att", 1], ["rushing_yards", "Rush yds", 1], ["rushing_tds", "Rush TD", 2], ["targets", "Targets", 1], ["receptions", "Rec", 1], ["receiving_yards", "Rec yds", 1], ["receiving_tds", "Rec TD", 2]]
+      .filter(([k]) => st[k] != null && (st[k] >= 0.05));
+    if (L.length) html += `<h4>Simulated stat line <span style="font-weight:400;text-transform:none;letter-spacing:0">(average across the simulations)</span></h4><div class="lines">${L.map(([k, l, d]) => `<span class="line">${l} <b>${Number(st[k]).toFixed(d)}</b></span>`).join("")}</div>`;
+  }
+  if (a) {
+    const mates = players.filter(o => o.game_id === p.game_id && o.site_player_id !== id && sim.index.has(o.site_player_id) && (o.mean || 0) >= 1);
+    const corr = (x, y) => { const n = Math.min(x.length, y.length); let mx = 0, my = 0; for (let i = 0; i < n; i++) { mx += x[i]; my += y[i]; } mx /= n; my /= n;
+      let sxy = 0, sxx = 0, syy = 0; for (let i = 0; i < n; i++) { const dx = x[i] - mx, dy = y[i] - my; sxy += dx * dy; sxx += dx * dx; syy += dy * dy; } return sxx && syy ? sxy / Math.sqrt(sxx * syy) : 0; };
+    const cr = mates.map(o => ({ o, r: corr(a, sim.index.get(o.site_player_id)) })).sort((x, y) => y.r - x.r);
+    if (cr.length) {
+      const row = ({ o, r }) => `<tr><td><span class="pos ${posCls(o.position)}" style="min-width:26px;height:16px;font-size:9.5px">${esc(o.position)}</span></td><td class="pl"><span class="pname" data-card="${esc(o.site_player_id)}">${esc(o.player_name)}</span> <span class="muted small">${esc(o.team)}</span></td>
+        <td class="${r >= 0.1 ? "pos-diff" : r <= -0.1 ? "neg-diff" : "muted"}">${r >= 0 ? "+" : ""}${r.toFixed(2)}</td><td class="muted">${money(o.salary)}</td><td>${f1(proj(o))}</td></tr>`;
+      html += `<h4>Correlation with ${esc(p.player_name.split(" ").slice(-1)[0])} <span style="font-weight:400;text-transform:none;letter-spacing:0">(same game, from the simulations)</span></h4>
+        <div class="table-wrap" style="max-height:260px"><table class="data corr"><thead><tr><th></th><th class="left">Player</th><th title="+1 = always score big together, 0 = unrelated, −1 = one's good day is the other's bad day">Corr</th><th>Salary</th><th>Proj</th></tr></thead><tbody>${cr.map(row).join("")}</tbody></table></div>
+        <p class="hint" style="margin-top:6px">Positive = they tend to have big days together (stack them). Negative = one's good game usually means a worse one for the other.</p>`;
+    }
+  }
   if (pr && (Object.keys(pr.lines).length || pr.td != null)) {
     const lab = { pass_yds: "Pass yds", pass_tds: "Pass TD", pass_interceptions: "INT", rush_yds: "Rush yds", reception_yds: "Rec yds", receptions: "Receptions" };
     html += `<h4>Betting market lines</h4><div class="lines">${Object.entries(pr.lines).map(([k, v]) => `<span class="line">${lab[k] || esc(k)} <b>${Number(v).toFixed(1)}</b></span>`).join("")}${pr.td != null ? `<span class="line">Anytime TD <b>${Math.round(100 * pr.td)}%</b></span>` : ""}</div>`;
@@ -826,6 +936,7 @@ async function openCard(id) {
   html += `<h4>Recent games</h4><div id="cardLog" class="hint">Loading…</div></div>`;
   body.innerHTML = html;
   body.querySelectorAll("[data-pc]").forEach(b => b.addEventListener("click", () => { toggle(b.dataset.pc, id); openCard(id); }));
+  body.querySelectorAll("table.corr [data-card]").forEach(el => el.addEventListener("click", () => openCard(el.dataset.card)));
   const rows = await gameLog(p);
   const logEl = document.getElementById("cardLog"); if (!logEl || cardId !== id) return;
   if (!rows.length) { logEl.textContent = p.position === "DST" ? "Game logs are shown for skill players." : "No games on record."; return; }

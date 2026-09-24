@@ -64,6 +64,20 @@ YDS_COUPLING = 1.0                 # 1 = force team yards to the score-implied t
 DEPTH_MULT = {"QB": {1: 1.0, 2: 0.2, 3: 0.1}, "RB": {1: 1.0, 2: 1.0, 3: 0.8, 4: 0.6},
               "WR": {1: 1.0, 2: 1.0, 3: 1.0, 4: 0.8, 5: 0.6}, "TE": {1: 1.0, 2: 1.0, 3: 1.0}}
 DEPTH_STRENGTH = 1.0               # 0 = ignore depth charts; 1 = full multiplier (tuned by backtest: r .455->.460)
+SEVERITY = {"OUT": 3, "IR": 3, "O": 3, "D": 2, "Q": 1}
+
+
+def eff_status(site_status, report):
+    """Most severe of the site's tag and the official NFL injury report. DK often still shows 'Q' for a
+    player the team ruled Out on Friday (week 2: Kyler Murray Q/Out, Penix Q/Out, Darnold D/Out)."""
+    a = (site_status or "").upper()
+    b = INJURY_MAP.get(report or "", "")
+    return a if SEVERITY.get(a, 0) >= SEVERITY.get(b, 0) else b
+
+
+QB_DEFAULT = {"pos": "QB", "n": 0, "n_team": 0, "tgt_share": 0.0, "tgt_share_sd": 0.01, "carry_share": 0.10,
+              "carry_share_sd": 0.05, "att_share": 0.0, "att_share_recent": 0.0, "qb_carries": 3.0,
+              "catch_rate": 0.6, "ypr": 8.0, "ypc": 4.5, "rec_td": 0.03, "rush_td": QB_TD_PRIOR}   # a QB with no NFL logs (rookie / long-time backup)
 PRACTICE_PROB = {"Full Participation in Practice": 1.0, "Limited Participation in Practice": 0.85,
                  "Did Not Participate In Practice": 0.55}   # play probability for Questionable players by Friday practice
 # weather (outdoor games only): wind cuts passing efficiency and pass rate; cold trims yards slightly
@@ -387,25 +401,38 @@ def simulate(slate, salaries, ctx, n_sims):
             def _rep(s):
                 inj = ctx.get("injuries", {}).get(s["player_id"])
                 return inj["status"] if isinstance(inj, dict) else inj
-            qbs = [s for s in roster if s["position"] == "QB" and ACTIVE_PROB.get(
-                (s["status"] or "").upper() or INJURY_MAP.get(_rep(s) or "", ""), 1.0) > 0]
-            # depth chart names the starter when the box score is ambiguous (new starter, bye-week trade)
-            if qbs and ctx.get("depth"):
-                d1 = [s for s in qbs if ctx["depth"].get(s["player_id"], [None, None])[1] == 1]
-                if d1:
-                    qbs = d1
-            qb = None
-            if qbs:
-                qb = max(qbs, key=lambda s: (pp.get(s["player_id"], {}).get("att_share_recent", 0), s["salary"]))
-                if pp.get(qb["player_id"], {}).get("att_share_recent", 0) < 0.3 and len(qbs) > 1:
-                    qb = max(qbs, key=lambda s: s["salary"])
+            qbs = [s for s in roster if s["position"] == "QB"
+                   and ACTIVE_PROB.get(eff_status(s["status"], _rep(s)), 1.0) > 0]
+            # QBs with no logs still get a stat line (a backup who starts, a rookie): give them QB priors
+            for s in qbs:
+                if s["player_id"] and s["player_id"] not in pp:
+                    pp[s["player_id"]] = dict(QB_DEFAULT)
+                    if s not in modeled:
+                        modeled.append(s)
+
+            def _pick(cands):
+                # depth chart names the starter when the box score is ambiguous (new starter, bye-week trade);
+                # when the depth-1 QB is out, the best-ranked QB still active is the starter
+                if cands and ctx.get("depth"):
+                    ranks = [ctx["depth"].get(c["player_id"], [None, None])[1] for c in cands]
+                    known = [r for r in ranks if r is not None]
+                    if known:
+                        cands = [c for c, r in zip(cands, ranks) if r == min(known)]
+                if not cands:
+                    return None
+                q = max(cands, key=lambda s: (pp.get(s["player_id"], {}).get("att_share_recent", 0), s["salary"]))
+                if pp.get(q["player_id"], {}).get("att_share_recent", 0) < 0.3 and len(cands) > 1:
+                    q = max(cands, key=lambda s: s["salary"])
+                return q
+            qb = _pick(qbs)
+            qb2 = _pick([s for s in qbs if s is not qb]) if qb is not None else None
 
             # active masks (injury designations)
             act = {}
             for s in modeled:
                 inj = ctx.get("injuries", {}).get(s["player_id"])
                 rep = inj["status"] if isinstance(inj, dict) else inj
-                st = (s["status"] or "").upper() or INJURY_MAP.get(rep or "", "")
+                st = eff_status(s["status"], rep)
                 p_act = ACTIVE_PROB.get(st, 1.0)
                 if st == "Q" and isinstance(inj, dict) and inj.get("practice") in PRACTICE_PROB:
                     p_act = PRACTICE_PROB[inj["practice"]]
@@ -487,11 +514,14 @@ def simulate(slate, salaries, ctx, n_sims):
 
             # QB line: passing yards = all receiving yards incl. the "other" bucket
             pass_yds = (ryds.sum(1) if P else 0) + other_yds
+            qb2_mod = qb2 if (qb2 is not None and qb2["player_id"] in pp and qb_mod is not None) else None
             for s in roster:
                 if s["position"] != "QB":
                     continue
-                if qb_mod is not None and s["site_player_id"] == qb_mod["site_player_id"]:
-                    a = act[s["site_player_id"]]
+                is_qb1 = qb_mod is not None and s["site_player_id"] == qb_mod["site_player_id"]
+                is_qb2 = qb2_mod is not None and s["site_player_id"] == qb2_mod["site_player_id"]
+                if is_qb1 or is_qb2:
+                    a = act[s["site_player_id"]] if is_qb1 else (~act[qb_mod["site_player_id"]] & act[s["site_player_id"]])
                     fum = np.random.binomial(sacks + qb_car, FUMBLE_RATE * 1.5)
                     dk, fd = score(pass_yds * a, pass_tds * a, ints * a, qb_cyd * a, qb_ctds * a, 0, 0, 0, fum * a)
                     scores_dk[s["site_player_id"]], scores_fd[s["site_player_id"]] = dk, fd
@@ -551,7 +581,9 @@ def summarize(slate, salaries, scores):
             "median": round(float(q[2]), 2), "p15": round(float(q[1]), 2), "p85": round(float(q[3]), 2),
             "p95": round(float(q[5]), 2), "floor": round(float(q[0]), 2), "ceiling": round(float(q[4]), 2),
             "boom_prob": round(float((x >= BOOM[pos]).mean()), 3), "bust_prob": round(float((x <= BUST[pos]).mean()), 3),
-            "games_used": None, "components": {"n_sims": int(x.size), "status": s["status"]},
+            "games_used": None, "components": {"n_sims": int(x.size), "status": s["status"],
+                                               **({"stats": {k: round(float(v), 2) for k, v in COMPONENTS[pid].items()}}
+                                                  if COMPONENTS and pid in COMPONENTS else {})},
             "updated_at": now,
         })
     return rows
@@ -582,6 +614,8 @@ def main():
     print(f"simulating {slate['slate_key']}: {len(salaries)} players, {args.sims} sims")
     pids = [s["player_id"] for s in salaries if s["player_id"] and not s["player_id"].startswith("DST_")]
     ctx = load_context(client, slate["season"], slate["week"], pids)
+    global COMPONENTS
+    COMPONENTS = {}                    # per-player mean stat lines -> slate_projections.components.stats (player card / Stats columns)
     scores, dk, fd = simulate(slate, salaries, ctx, args.sims)
     rows = summarize(slate, salaries, scores)
     blob = matrix_blob(slate, scores, STORE_SIMS)

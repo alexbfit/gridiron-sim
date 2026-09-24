@@ -136,9 +136,11 @@
         <input id="search" class="input input-search" type="search" placeholder="Search player or team" aria-label="Search player or team">
         <div class="grow"></div>
         <button class="chip" id="onlyMine" aria-pressed="false" title="Show only the players you've locked, excluded or edited">My picks <span class="count" id="mineCount">0</span></button>
+        <div id="stackModeBar" hidden></div>
         <div class="seg seg-compact" id="colSeg" role="group" aria-label="Columns">
           <button type="button" data-cols="core" aria-pressed="true">Core</button>
           <button type="button" data-cols="range" aria-pressed="false" title="Simulated percentiles">Ranges</button>
+          <button type="button" data-cols="stats" aria-pressed="false" title="Simulated stat lines">Stats</button>
           <button type="button" data-cols="port" aria-pressed="false" title="Exposure controls and results">Portfolio</button>
         </div>
       </div>

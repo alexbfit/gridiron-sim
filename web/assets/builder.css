@@ -193,3 +193,7 @@ td.dim { color: var(--faint); }
   table.pool td.left { white-space: normal; }
   .pname { flex-wrap: wrap; row-gap: 2px; }
 }
+.stack-mode button { padding: 0 12px; }
+table.corr td.pl { text-align: left; }
+table.corr td, table.corr th { padding: 6px 8px; }
+#pool input[data-rule] { border-color: var(--border); background: var(--bg-2); }
