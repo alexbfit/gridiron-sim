@@ -12,7 +12,7 @@ const statusEl = $("status");
 
 const SITES = {
   DK: { name: "DraftKings", cap: 50000, slots: ["QB", "RB", "RB", "WR", "WR", "WR", "TE", "FLEX", "DST"],
-        min: { QB: 1, RB: 2, WR: 3, TE: 1, DST: 1 }, flex: 7, maxTeamRule: 8, minGames: 2, defLabel: "DST" },
+        min: { QB: 1, RB: 2, WR: 3, TE: 1, DST: 1 }, flex: 7, maxTeamRule: 8, minGames: 2, defLabel: "DST", minEdits: 2 },
   FD: { name: "FanDuel", cap: 60000, slots: ["QB", "RB", "RB", "WR", "WR", "WR", "TE", "FLEX", "DEF"],
         min: { QB: 1, RB: 2, WR: 3, TE: 1, DST: 1 }, flex: 7, maxTeamRule: 4, minGames: 2, defLabel: "DEF" },
 };
@@ -374,7 +374,8 @@ function render() {
         const inp = document.createElement("input"); inp.type = "number"; inp.step = "0.1"; inp.className = "edit proj";
         inp.value = mean.toFixed(1); inp.setAttribute("aria-label", "Projection for " + p.player_name);
         if (overrides.has(id)) { inp.classList.add("overridden"); inp.title = `Your projection (model: ${f1(p.mean)})`; }
-        inp.addEventListener("change", () => { const v = parseFloat(inp.value); if (Number.isNaN(v) || v === (p.mean ?? 0)) overrides.delete(id); else overrides.set(id, v); picksChanged(); });
+        inp.addEventListener("change", () => { const v = parseFloat(inp.value); const back = overrides.has(id) ? (v === (p.mean ?? 0) || v === +(p.mean ?? 0).toFixed(1)) : v === +mean.toFixed(1);
+          if (Number.isNaN(v) || back) overrides.delete(id); else overrides.set(id, v); picksChanged(); });   // compare with what was shown, so a 0.01 nudge always registers
         td.appendChild(inp);
       } else if (c.key === "own") {
         const inp = document.createElement("input"); inp.type = "number"; inp.step = "1"; inp.min = "0"; inp.max = "100"; inp.className = "edit";
@@ -436,12 +437,25 @@ function toggle(kind, id) {
   if (set.has(id)) set.delete(id); else { set.add(id); other.delete(id); }
   picksChanged();
 }
+// DraftKings community guidelines: a third-party optimizer may only build after the user has
+// locked, excluded, set exposure on, or edited the projection of at least N players.
+function editedPlayers() { return new Set([...locks, ...excludes, ...overrides.keys(), ...minExp.keys(), ...maxExpP.keys()]).size; }
+function gateNeed() { const need = (slate && SITES[slate.site]?.minEdits) || 0; return Math.max(0, need - editedPlayers()); }
+function renderGate() {
+  const el = $("buildGate"); if (!el || !slate) return;
+  const need = SITES[slate.site]?.minEdits || 0, left = gateNeed();
+  el.hidden = !left;
+  if (left) el.innerHTML = `${icon("info")}<span>${esc(SITES[slate.site].name)} requires you to lock, exclude, set Min/Max % on, or edit the projection of <b>at least ${need} players</b> before building (${need - left} of ${need} done). Even a 0.01 projection change counts.</span>`;
+  $("generate").classList.toggle("gated", !!left);
+}
+
 function picksChanged() { estimateOwnership(); savePicks(); render(); }
 
 function renderPicks() {
   const bar = $("picksBar");
   const n = locks.size + excludes.size + overrides.size + stackRules.size;
   $("mineCount").textContent = n + ownOverrides.size + minExp.size + maxExpP.size;
+  renderGate();
   if (!n) { bar.hidden = true; return; }
   bar.hidden = false;
   const tag = (cls, id, label, what) => `<span class="pick-tag ${cls}">${label}<button data-rm="${what}" data-id="${esc(id)}" aria-label="Remove">${icon("x")}</button></span>`;
@@ -604,6 +618,12 @@ function setProgress(k, total) {
 
 async function generate() {
   if (building || !slate) return;
+  const left = gateNeed();
+  if (left) {
+    renderGate(); $("buildGate")?.scrollIntoView({ block: "nearest" });
+    GS.toast(`${SITES[slate.site].name} requires your input on ${left} more player${left > 1 ? "s" : ""} before building: lock, exclude, set Min/Max %, or edit a projection.`, "error");
+    return;
+  }
   const contest = $("contest").value, n = Math.max(1, Math.min(150, +$("nLineups").value || 1));
   const opts = {
     minSalary: +$("minSalary").value || 0, maxTeam: +$("maxTeam").value || 4,

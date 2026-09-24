@@ -35,6 +35,9 @@ body.app .app-footer { display: none; }
 .settings-foot { border-top: 1px solid var(--border); padding: 14px 18px 16px; background: var(--bg); display: flex; flex-direction: column; gap: 10px; }
 .build-summary { font-size: 12px; color: var(--muted); display: flex; gap: 6px; flex-wrap: wrap; }
 .build-summary .badge { height: 20px; font-size: 11px; }
+.build-gate { display: flex; gap: 8px; align-items: flex-start; margin: 0; padding: 8px 10px; font-size: 12px; line-height: 1.45; color: var(--text); background: color-mix(in srgb, var(--warn, #d97706) 12%, transparent); border: 1px solid color-mix(in srgb, var(--warn, #d97706) 35%, transparent); border-radius: 8px; }
+.build-gate .icon { flex: none; width: 14px; height: 14px; margin-top: 2px; color: var(--warn, #d97706); }
+#generate.gated { opacity: .6; }
 .progress { height: 4px; border-radius: 3px; background: var(--surface-3); overflow: hidden; }
 .progress i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .2s; }
 body:not(.is-gpp) .gpp-only { display: none !important; }
