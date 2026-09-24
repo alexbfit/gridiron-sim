@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>try{document.documentElement.dataset.theme=localStorage.getItem("gs_theme")||"dark";if(localStorage.getItem("gs_owner")==="1")document.documentElement.classList.add("owner")}catch(e){}</script>
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/ui.css">
+<title>Player Stats · Gridiron Sim</title>
+<meta name="description" content="Sortable NFL player stats with DraftKings and FanDuel fantasy points, by week or season.">
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="assets/shell.js"></script>
+</head>
+<body>
+<header data-shell-header="app"></header>
+<main class="page" style="max-width:1600px">
+  <div class="page-head">
+    <div><h1>Player stats</h1><p>Box scores with DraftKings and FanDuel fantasy points, updated every morning. Click any column to sort.</p></div>
+  </div>
+  <div class="filters" style="margin-bottom:14px">
+    <label class="field"><span>Season</span><select id="season" class="input"></select></label>
+    <label class="field"><span>Week</span><select id="week" class="input"><option value="all">Season total</option></select></label>
+    <label class="field"><span>Position</span><select id="position" class="input">
+      <option value="ALL">All</option><option value="QB">QB</option><option value="RB">RB</option><option value="WR">WR</option><option value="TE">TE</option></select></label>
+    <label class="field wide"><span>Search</span><input id="search" class="input input-search" type="search" placeholder="Player or team"></label>
+  </div>
+  <div class="table-wrap table-tall">
+    <table id="stats" class="data"><thead></thead><tbody></tbody></table>
+  </div>
+  <p id="status" class="status-line" style="margin-top:10px">Loading…</p>
+</main>
+<footer data-shell-footer="site"></footer>
+<script src="app.js"></script>
+</body>
+</html>

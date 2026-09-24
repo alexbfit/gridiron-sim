@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>try{document.documentElement.dataset.theme=localStorage.getItem("gs_theme")||"dark";if(localStorage.getItem("gs_owner")==="1")document.documentElement.classList.add("owner")}catch(e){}</script>
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/ui.css">
+<link rel="stylesheet" href="assets/site.css">
+<title>Quick-start Guide · Gridiron Sim</title>
+<meta name="description" content="How to build, tune and upload DraftKings lineups with Gridiron Sim.">
+<script src="config.js"></script>
+<script src="assets/shell.js"></script>
+</head>
+<body>
+<header data-shell-header="app"></header>
+<main class="page">
+  <div class="page-head"><div><h1>Quick-start guide</h1><p>Everything you need to go from an empty slate to uploaded lineups, plus what every number in the builder means.</p></div>
+    <a class="btn btn-primary" href="lineups.html">Open the builder <span data-icon="arrow"></span></a></div>
+  <div class="guide-grid">
+    <nav class="toc" aria-label="On this page">
+      <a href="#start">Your first build</a><a href="#contest">Cash vs tournament</a><a href="#control">Locks, excludes &amp; edits</a>
+      <a href="#stacks">Stacking</a><a href="#exposure">Exposure &amp; diversity</a><a href="#reading">Reading your lineups</a>
+      <a href="#upload">Uploading to DraftKings</a><a href="#updates">When numbers update</a><a href="#glossary">Glossary</a>
+    </nav>
+    <article class="prose">
+      <h2 id="start" style="margin-top:0">Your first build (60 seconds)</h2>
+      <ol>
+        <li>Open the <a href="lineups.html">Lineup Builder</a>. This week's DraftKings main slate is already loaded.</li>
+        <li>Under <b>Contest type</b>, choose <b>Cash</b> for 50/50s and double-ups, or <b>Tournament</b> for GPPs.</li>
+        <li>Under <b>How many lineups?</b>, pick the number of entries you're playing (1, 3, 20, 50 or 150, or type any number). The builder applies settings that suit that contest size.</li>
+        <li>Press <b>Build lineups</b>. You'll land on the <b>Lineups</b> tab with your lineups, their simulated ranges and your exposure to every player.</li>
+        <li>Press <b>Download CSV</b> and upload the file on DraftKings (see <a href="#upload">below</a>).</li>
+      </ol>
+      <p>That's it. Everything else here is about making the lineups more <i>yours</i>.</p>
+
+      <h2 id="contest">Cash vs tournament</h2>
+      <p><b>Cash games</b> (50/50s, double-ups, head-to-heads) pay roughly the top half of the field, so you want a lineup that scores well <i>most</i> of the time. Cash lineups lean toward safe floors and are ranked by their <b>simulated median</b>.</p>
+      <p><b>Tournaments</b> pay a small slice of the field, so you need lineups that can reach the top. Tournament lineups stack correlated players, add a little randomness so they don't all look alike, and are ranked by their <b>simulated 90th percentile</b>: the score they reach in their best 1-in-10 outcomes.</p>
+
+      <h2 id="control">Locks, excludes &amp; edits</h2>
+      <ul>
+        <li><b>Lock</b> (the padlock) forces a player into every lineup.</li>
+        <li><b>Exclude</b> (the circle-slash) keeps a player out of every lineup.</li>
+        <li><b>Edit a projection</b> by clicking the number in the <b>Proj</b> column and typing your own. Edited numbers turn amber and flow into every lineup.</li>
+        <li><b>Edit ownership</b> the same way if you have a better estimate.</li>
+      </ul>
+      <p>Your locks, excludes and edits are remembered in this browser for the slate. The <b>My picks</b> filter shows only the players you've touched, and <b>Clear all</b> resets them. Click any player's name for his full player card.</p>
+
+      <h2 id="stacks">Stacking</h2>
+      <p>A <b>stack</b> pairs your quarterback with his own pass catchers: when the passing game goes off, the whole group scores together. <b>QB + 1</b> requires at least one teammate WR/TE with the QB; <b>QB + 2</b> requires two. <b>Bring-back</b> adds at least one player from the opposing team, betting that the game turns into a shootout.</p>
+      <p>The <b>Team stacks</b> tab ranks every quarterback with his top pass catchers. <b>Lock stack</b> locks the QB and his two best receivers into every lineup in one click.</p>
+
+      <h2 id="exposure">Exposure &amp; diversity</h2>
+      <p><b>Max exposure</b> caps how often any one player appears across your lineups. At 40% with 20 lineups, nobody appears in more than 8. Lower numbers spread your risk; higher numbers concentrate on your favorite plays. Locked players ignore the cap.</p>
+      <p>For player-level control, switch the table's columns to <b>Portfolio</b>. There you can set a <b>Min %</b> (force a player into at least that share of lineups) or a <b>Max %</b> for anyone. Changes there re-pick from the lineups already built, with no rebuild needed.</p>
+      <p><b>Fine-tune</b> holds the rest: minimum salary used, max players per team, minimum unique players between lineups, randomness, an ownership fade, a cap on total lineup ownership, the candidate pool size, and how much projections lean on the betting markets. <b>Reset to preset</b> puts everything back.</p>
+
+      <h2 id="reading">Reading your lineups</h2>
+      <p>Every lineup card shows its projection and its <b>simulated range</b>. Because every player's score comes from the same simulated games, a lineup's range already accounts for correlation: a QB and his receiver rise and fall together, and a defense suffers when the opposing offense booms.</p>
+      <dl class="gloss">
+        <dt>10th percentile</dt><dd>A bad day. The lineup scores below this 1 time in 10.</dd>
+        <dt>Median</dt><dd>The middle outcome. Cash lineups are ranked by this.</dd>
+        <dt>90th percentile</dt><dd>A great day, reached 1 time in 10. Tournament lineups are ranked by this.</dd>
+      </dl>
+      <p>The <b>Exposure</b> panel shows how much of your portfolio each player takes up (green bar) next to how much of the field is projected to play him (tick mark).</p>
+
+      <h2 id="upload">Uploading to DraftKings</h2>
+      <ol>
+        <li>In the builder, press <b>Download CSV</b>. The file has one lineup per row, using DraftKings player IDs in the order QB, RB, RB, WR, WR, WR, TE, FLEX, DST.</li>
+        <li>On DraftKings (desktop site), go to <b>Lineups</b> and choose <b>Upload lineups</b>. Pick NFL, this slate, and the file.</li>
+        <li>Enter the uploaded lineups into your contests. To change lineups you've already entered, use <b>Edit entries</b> on the contest and upload in the same format.</li>
+      </ol>
+      <p>Late news? Exclude the player, rebuild, and upload again before his game locks.</p>
+
+      <h2 id="updates">When numbers update</h2>
+      <p>Stats, injuries, depth charts, weather and betting lines refresh every night at 5 AM ET, again Thursday and Saturday evenings, and at 7:00, 10:00 and 11:45 AM ET on Sundays. The badge next to the slate picker shows when the simulations last ran; reload the page after an update to pick it up.</p>
+
+      <h2 id="glossary">Glossary</h2>
+      <dl class="gloss">
+        <dt>Proj</dt><dd>Projected fantasy points: the average of the simulated outcomes, blended with betting-market player props where they're posted.</dd>
+        <dt>Value</dt><dd>Projected points per $1,000 of salary.</dd>
+        <dt>Floor / Ceiling</dt><dd>The 10th and 90th percentile of the player's simulated outcomes.</dd>
+        <dt>Boom / Bust</dt><dd>The chance of a big game or a dud relative to his salary.</dd>
+        <dt>Own%</dt><dd>Projected share of the contest field that will play the player.</dd>
+        <dt>Exposure</dt><dd>The share of <i>your</i> lineups the player is in.</dd>
+        <dt>Leverage</dt><dd>Exposure minus projected ownership. Positive means you're over the field on him.</dd>
+        <dt>Pool %</dt><dd>How often the player showed up across every candidate lineup the builder considered: the simulations' own preference.</dd>
+        <dt>Ranges (25th–99th)</dt><dd>Points at each percentile of the player's simulated outcomes.</dd>
+      </dl>
+    </article>
+  </div>
+</main>
+<footer data-shell-footer="site"></footer>
+</body>
+</html>

@@ -3,4 +3,17 @@
 window.GRIDIRON_CONFIG = {
   SUPABASE_URL: "https://YOUR-PROJECT.supabase.co",
   SUPABASE_ANON_KEY: "YOUR-ANON-KEY",
+
+  // ---- product switches (all off = the site behaves exactly as before: free, no sign-in) ----
+  AUTH_ENABLED: false,          // show Sign in / Account (needs supabase/pending/012_accounts.sql + Supabase Auth email set up)
+  REQUIRE_SUBSCRIPTION: false,  // paywall the Lineup Builder for visitors without an active plan (needs AUTH_ENABLED)
+  BILLING_LIVE: false,          // show the paid plan + Subscribe button (needs the Netlify functions in billing/ + Stripe keys)
+  PLAN: {                       // pricing copy used by the landing page and the account page
+    name: "Pro",
+    price: "$19",
+    description: "Everything, every week of the season.",
+    headline: "One plan. Every slate.",
+    subhead: "Cancel any time from your account page.",
+    tag: "Founding price",
+  },
 };

@@ -1,61 +1,217 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Gridiron Sim — Player Stats</title>
-<link rel="stylesheet" href="styles.css">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Gridiron Sim · NFL DFS lineups from 10,000 simulated games</title>
+<meta name="description" content="Gridiron Sim simulates every NFL game on the slate, blends in betting-market player props, and builds DraftKings lineups tuned to your contest — cash, single-entry or 150-max.">
+<meta property="og:title" content="Gridiron Sim — NFL DFS lineups from 10,000 simulated games">
+<meta property="og:description" content="Game simulations, market-anchored projections and a contest-aware lineup optimizer for DraftKings.">
+<meta name="theme-color" content="#090c11">
+<script>try{document.documentElement.dataset.theme=localStorage.getItem("gs_theme")||"dark";if(localStorage.getItem("gs_owner")==="1")document.documentElement.classList.add("owner")}catch(e){}</script>
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/ui.css">
+<link rel="stylesheet" href="assets/site.css">
 <script src="config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="assets/shell.js"></script>
 </head>
 <body>
-<header class="topbar">
-  <div class="brand">
-    <span class="logo">GS</span>
-    <div>
-      <h1>Gridiron Sim</h1>
-      <p class="sub">NFL player stats · DK &amp; FD scoring · updated nightly</p>
-    </div>
-    <nav class="nav"><a href="index.html" class="active">Stats</a><a href="lineups.html">Lineups</a><a href="backtest.html">Backtest</a><a href="results.html">Results</a></nav>
-  </div>
-  <div class="controls">
-    <label>Season
-      <select id="season"></select>
-    </label>
-    <label>Week
-      <select id="week">
-        <option value="all">Season total</option>
-      </select>
-    </label>
-    <label>Position
-      <select id="position">
-        <option value="ALL">All</option>
-        <option value="QB">QB</option>
-        <option value="RB">RB</option>
-        <option value="WR">WR</option>
-        <option value="TE">TE</option>
-      </select>
-    </label>
-    <label>Search
-      <input id="search" type="search" placeholder="player or team">
-    </label>
-  </div>
-</header>
+<header data-shell-header="marketing"></header>
 
 <main>
-  <div id="status" class="status">Loading…</div>
-  <div class="table-wrap">
-    <table id="stats">
-      <thead></thead>
-      <tbody></tbody>
-    </table>
-  </div>
+  <!-- ============================================ hero -->
+  <section class="hero">
+    <div class="hero-inner">
+      <div>
+        <span class="eyebrow"><span class="dot live"></span><span id="heroSlate">NFL DFS · DraftKings</span></span>
+        <h1>Build sharper NFL lineups from <em>10,000 simulated games</em>.</h1>
+        <p class="sub">Gridiron Sim plays out every game on the slate thousands of times, anchors each projection to the betting markets, and builds DraftKings lineups tuned to your contest — cash, single-entry or 150-max. Set your rules, download the file, upload.</p>
+        <div class="hero-ctas">
+          <a class="btn btn-primary btn-lg" href="lineups.html">Open the lineup builder <span data-icon="arrow"></span></a>
+          <a class="btn btn-lg" href="#how">See how it works</a>
+        </div>
+        <div class="hero-proof">
+          <div><b>10,000</b>simulations per slate</div>
+          <div><b id="proofCal">≈10% / 90%</b>calibrated floors &amp; ceilings</div>
+          <div><b>&lt; 10 sec</b>for 20 lineups</div>
+        </div>
+      </div>
+
+      <div class="mock" aria-hidden="true">
+        <div class="mock-card">
+          <div class="mock-top"><span class="dots"><i></i><i></i><i></i></span>Lineup #1 · Tournament · QB + 1 stack</div>
+          <div class="mock-body">
+            <div>
+              <div class="mock-row"><span class="pos QB">QB</span><span class="nm">Quarterback A<small>Home vs Away · 1:00 PM</small></span><span class="muted">$6,800</span><span class="pts">21.4</span></div>
+              <div class="mock-row"><span class="pos WR">WR</span><span class="nm">His WR1<small>Stacked with the QB</small></span><span class="muted">$7,600</span><span class="pts">18.9</span></div>
+              <div class="mock-row"><span class="pos RB">RB</span><span class="nm">Workhorse back<small>High-total game</small></span><span class="muted">$7,200</span><span class="pts">19.6</span></div>
+              <div class="mock-row"><span class="pos TE">TE</span><span class="nm">Value tight end<small>Role growing</small></span><span class="muted">$3,900</span><span class="pts">11.2</span></div>
+              <div class="mock-row"><span class="pos WR">WR</span><span class="nm">Bring-back receiver<small>From the opponent</small></span><span class="muted">$5,100</span><span class="pts">13.8</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="mock-float b"><div class="k">Sim ceiling (90th pct)</div><div class="v" style="color:var(--accent)">183.2</div></div>
+        <div class="mock-float a">
+          <div class="k">Simulated outcomes · WR1</div>
+          <div class="spark"><i class="lo" style="height:10%"></i><i class="lo" style="height:26%"></i><i style="height:48%"></i><i style="height:74%"></i><i style="height:92%"></i><i style="height:100%"></i><i style="height:86%"></i><i style="height:70%"></i><i style="height:52%"></i><i style="height:38%"></i><i class="hi" style="height:26%"></i><i class="hi" style="height:18%"></i><i class="hi" style="height:12%"></i><i class="hi" style="height:8%"></i></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================ how -->
+  <section class="band" id="how">
+    <div class="band-inner">
+      <div class="band-head"><span class="kicker">How it works</span><h2>From slate to upload in three steps.</h2>
+        <p>No spreadsheets, no guesswork about settings. Pick the contest you're entering and the builder applies sensible defaults you can tweak.</p></div>
+      <div class="steps">
+        <div class="card step"><div class="n">1</div><h3>Pick your contest</h3><p>Cash game or tournament, single entry or 150-max. The builder sets stacking, diversity and exposure rules that fit it.</p></div>
+        <div class="card step"><div class="n">2</div><h3>Make it yours</h3><p>Lock the players you love, exclude the ones you don't, edit any projection, lock a QB stack in one click, cap how often anyone appears.</p></div>
+        <div class="card step"><div class="n">3</div><h3>Download &amp; upload</h3><p>Every lineup is scored across the same simulated games and the best ones are kept. Download a DraftKings-ready CSV and upload it in one go.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================ features -->
+  <section class="band alt" id="features">
+    <div class="band-inner">
+      <div class="band-head"><span class="kicker">What's inside</span><h2>A simulation engine, not a spreadsheet.</h2>
+        <p>Most optimizers add up average projections. Gridiron Sim simulates the games themselves, so the lineups understand how players win together.</p></div>
+      <div class="features">
+        <div class="card feature"><div class="ic" data-icon="dice"></div><h3>Monte Carlo game sim</h3><p>Every game is played out 10,000 times from the Vegas spread and total — pace, game script, targets, carries and touchdowns — so every player gets a full range of outcomes, not one number.</p></div>
+        <div class="card feature"><div class="ic" data-icon="chart"></div><h3>Market-anchored projections</h3><p>Sportsbook and prediction-market player props are blended into projections. In testing on 2024 data they predicted fantasy points better than any model alone.</p></div>
+        <div class="card feature"><div class="ic" data-icon="layers"></div><h3>Correlation built in</h3><p>A QB and his receivers come from the same simulated game, so stacks are priced honestly. Lineups are ranked by their simulated median (cash) or ceiling (tournaments).</p></div>
+        <div class="card feature"><div class="ic" data-icon="sliders"></div><h3>Portfolio controls</h3><p>Max exposure, per-player minimums and maximums, uniqueness, bring-backs, salary floors and leverage against projected ownership — for when you want full control.</p></div>
+        <div class="card feature"><div class="ic" data-icon="eye"></div><h3>Player cards</h3><p>Click any player to see his simulated distribution, market lines, floor and ceiling, boom and bust odds, and recent game log.</p></div>
+        <div class="card feature"><div class="ic" data-icon="refresh"></div><h3>Always current</h3><p>Stats, injuries, depth charts, weather and betting lines refresh nightly, and again Thursday and Saturday evening and three times on Sunday morning before lock.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================ record -->
+  <section class="band" id="record">
+    <div class="band-inner">
+      <div class="band-head"><span class="kicker">Track record</span><h2>We grade ourselves in public.</h2>
+        <p>Every week, every projection is scored against what actually happened. No cherry-picked screenshots — the full results are on the Track Record page.</p></div>
+      <div class="record">
+        <div class="card">
+          <h3>2025 season backtest</h3>
+          <p class="muted small" id="btMeta">Weeks 5–18, replayed with only pre-kickoff information.</p>
+          <div class="big-stats">
+            <div><b id="btCal10">9.6%</b><span>of scores landed under our 10th percentile (target 10%)</span></div>
+            <div><b id="btCal90">9.5%</b><span>landed over our 90th percentile (target 10%)</span></div>
+            <div><b id="btErr">5%</b><span>smaller average miss than a season-average projection</span></div>
+          </div>
+          <p class="muted small" style="margin-top:14px">Calibrated ranges matter: tournament lineups are built for the top of the distribution, so the top has to be real.</p>
+          <a class="link small" href="backtest.html" style="display:inline-block;margin-top:10px">See the full accuracy report →</a>
+        </div>
+        <div class="card">
+          <h3>What you get every week</h3>
+          <ul class="checklist">
+            <li><span data-icon="check"></span>Projections, floors, ceilings and simulated ranges for every player on the DraftKings main slate</li>
+            <li><span data-icon="check"></span>A lineup builder for 1 to 150 lineups with presets for every contest type</li>
+            <li><span data-icon="check"></span>One-click QB stacks, bring-backs and exposure controls</li>
+            <li><span data-icon="check"></span>Upload-ready CSV files for DraftKings</li>
+            <li><span data-icon="check"></span>A weekly scorecard of how the projections did</li>
+          </ul>
+          <a class="link small" href="results.html" style="display:inline-block;margin-top:16px">View the track record →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================ pricing -->
+  <section class="band alt" id="pricing">
+    <div class="band-inner">
+      <div class="band-head center"><span class="kicker">Pricing</span><h2 id="pricingTitle">Free while we're in beta.</h2>
+        <p id="pricingSub">Use the full builder at no cost during the beta. Paid plans are coming — beta users will get founding-member pricing.</p></div>
+      <div class="pricing" id="plans">
+        <div class="card plan">
+          <h3>Beta</h3>
+          <div class="price">$0<small> / month</small></div>
+          <p class="desc">Everything, while we're in beta.</p>
+          <ul class="checklist">
+            <li><span data-icon="check"></span>Full lineup builder, 1–150 lineups</li>
+            <li><span data-icon="check"></span>Simulated projections &amp; player cards</li>
+            <li><span data-icon="check"></span>DraftKings CSV export</li>
+          </ul>
+          <a class="btn btn-block" href="lineups.html">Start building</a>
+        </div>
+        <div class="card plan featured">
+          <span class="badge ok tag">Coming soon</span>
+          <h3 id="proName">Pro</h3>
+          <div class="price" id="proPrice">Soon</div>
+          <p class="desc" id="proDesc">Founding-member pricing for beta users.</p>
+          <ul class="checklist">
+            <li><span data-icon="check"></span>Everything in Beta</li>
+            <li><span data-icon="check"></span>Founding-member price, locked in</li>
+            <li><span data-icon="check"></span>New sites and slate types as they launch</li>
+          </ul>
+          <a class="btn btn-primary btn-block" id="proCta" href="account.html">Get notified</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================ faq -->
+  <section class="band" id="faq">
+    <div class="band-inner">
+      <div class="band-head center"><span class="kicker">FAQ</span><h2>Questions, answered.</h2></div>
+      <div class="faq">
+        <details><summary>Which sites and slates are supported?</summary><p>DraftKings NFL classic main slates today. The builder already speaks FanDuel's roster and salary rules; FanDuel slates and showdown are next on the list.</p></details>
+        <details><summary>How do I get my lineups onto DraftKings?</summary><p>Build, then press <b>Download CSV</b>. In DraftKings open the contest, choose <b>Upload lineups</b> (or <b>Edit lineups → Upload</b> for entries you already have) and pick the file. Each row is one lineup. The <a href="guide.html">quick-start guide</a> walks through it.</p></details>
+        <details><summary>When are projections updated?</summary><p>Every night at 5 AM ET, again Thursday and Saturday evenings, and at 7:00, 10:00 and 11:45 AM ET on Sundays so final injury designations and line moves are in before lock. The builder shows when the simulations last ran.</p></details>
+        <details><summary>Can I use my own projections or opinions?</summary><p>Yes. Click any projection or ownership number to change it — your edits flow into every lineup and are remembered in your browser. You can also lock, exclude and set minimum or maximum exposure for any player.</p></details>
+        <details><summary>What's the difference between cash and tournament settings?</summary><p>Cash lineups aim for a high, safe score and are ranked by their simulated median. Tournament lineups chase the ceiling: they stack a quarterback with his receivers, add randomness for variety, and are ranked by their simulated 90th percentile.</p></details>
+        <details><summary>Will this guarantee I win?</summary><p>No. Nobody can promise that — daily fantasy has real variance and a rake. Gridiron Sim gives you well-calibrated projections and disciplined lineup construction, and shows its own results every week so you can judge for yourself. Only play with money you can afford to lose.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <section class="band cta-band">
+    <div class="band-inner">
+      <h2>Your next slate, simulated.</h2>
+      <p>Open the builder, pick your contest and have lineups ready to upload in under a minute.</p>
+      <a class="btn btn-primary btn-lg" href="lineups.html">Open the lineup builder <span data-icon="arrow"></span></a>
+    </div>
+  </section>
 </main>
 
-<footer class="foot">
-  Data: nflverse · Scoring: DraftKings classic / FanDuel · Click any column header to sort.
-</footer>
+<footer data-shell-footer="site"></footer>
 
-<script src="app.js"></script>
+<script>
+(async function () {
+  const cfg = window.GRIDIRON_CONFIG || {};
+  // pricing copy comes from config.js so it can change without touching the page
+  const plan = cfg.PLAN;
+  if (plan && cfg.BILLING_LIVE) {
+    document.getElementById("pricingTitle").textContent = plan.headline || "Simple, monthly pricing.";
+    document.getElementById("pricingSub").textContent = plan.subhead || "Cancel any time.";
+    document.getElementById("proName").textContent = plan.name || "Pro";
+    document.getElementById("proPrice").innerHTML = `${plan.price}<small> / month</small>`;
+    document.getElementById("proDesc").textContent = plan.description || "";
+    document.getElementById("proCta").textContent = "Subscribe";
+    document.querySelector(".plan.featured .tag").textContent = plan.tag || "Most popular";
+  }
+  // live numbers for the record section (backtest file shipped with the site + the current slate)
+  try {
+    const bt = await (await fetch("data/backtest.json", { cache: "no-cache" })).json();
+    const all = bt.positions.ALL, cov = all.calibration.coverage;
+    document.getElementById("btCal10").textContent = (100 * cov.p10).toFixed(1) + "%";
+    document.getElementById("btCal90").textContent = (100 * (1 - cov.p90)).toFixed(1) + "%";
+    document.getElementById("btErr").textContent = Math.round(100 * (1 - all.sim.mae / all.naive.mae)) + "%";
+    document.getElementById("btMeta").textContent = `${bt.meta.season} weeks ${bt.meta.weeks[0]}–${bt.meta.weeks[1]} · ${bt.meta.n_player_weeks.toLocaleString()} player-games, replayed with only pre-kickoff information.`;
+  } catch (e) { /* keep defaults */ }
+  try {
+    if (!window.supabase || !cfg.SUPABASE_URL) return;
+    const supa = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY);
+    const { data } = await supa.from("slates").select("site,season,week,slate_type,n_players").order("imported_at", { ascending: false }).limit(1);
+    if (data && data[0]) { const s = data[0]; document.getElementById("heroSlate").textContent = `Week ${s.week} ${s.slate_type === "main" ? "main slate" : s.slate_type} is live · ${s.n_players} players`; }
+  } catch (e) { /* static copy */ }
+})();
+</script>
 </body>
 </html>

@@ -1,88 +1,176 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Gridiron Sim — Lineup Builder</title>
-<link rel="stylesheet" href="styles.css">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lineup Builder · Gridiron Sim</title>
+<meta name="description" content="Build DraftKings and FanDuel NFL lineups from 10,000 simulated games. Pick a contest, set your rules, download an upload-ready CSV.">
+<script>try{document.documentElement.dataset.theme=localStorage.getItem("gs_theme")||"dark";if(localStorage.getItem("gs_owner")==="1")document.documentElement.classList.add("owner")}catch(e){}</script>
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/ui.css">
+<link rel="stylesheet" href="assets/builder.css">
 <script src="config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="assets/shell.js"></script>
 </head>
-<body>
-<header class="topbar">
-  <div class="brand">
-    <span class="logo">GS</span>
-    <div>
-      <h1>Gridiron Sim</h1>
-      <p class="sub">Lineup builder · DK &amp; FD</p>
-    </div>
-    <nav class="nav"><a href="index.html">Stats</a><a href="lineups.html" class="active">Lineups</a><a href="backtest.html">Backtest</a><a href="results.html">Results</a></nav>
-  </div>
-  <div class="controls">
-    <label>Slate <select id="slate"></select></label>
-    <label>Contest
-      <select id="contest">
-        <option value="cash">Cash (50/50, double-up)</option>
-        <option value="gpp">GPP (tournament)</option>
-      </select>
-    </label>
-    <label>Lineups <input id="nLineups" type="number" min="1" max="150" value="1"></label>
-    <label>Position <select id="posFilter">
-      <option value="ALL">All</option><option>QB</option><option>RB</option><option>WR</option><option>TE</option><option>DST</option>
-    </select></label>
-    <label>Search <input id="search" type="search" placeholder="player or team"></label>
-  </div>
-</header>
+<body class="app">
+<header data-shell-header="app"></header>
 
-<main class="builder">
-  <section class="pool">
-    <div class="viewbar"><div id="viewTabs"><button class="active" data-view="players">Players</button><button data-view="stacks">Team stacks</button></div><div id="status" class="status"></div></div>
-    <div class="table-wrap pool-wrap">
-      <table id="pool"><thead></thead><tbody></tbody></table>
+<!-- slate bar -->
+<div class="slatebar">
+  <div class="slatebar-inner">
+    <label class="slate-pick">
+      <span class="sr-only">Slate</span>
+      <select id="slate" class="input select" aria-label="Slate"></select>
+    </label>
+    <div class="slate-meta" id="slateMeta"><span class="skeleton" style="width:260px;height:14px;display:inline-block"></span></div>
+    <button class="btn btn-ghost btn-sm settings-toggle" id="settingsToggle" data-icon="sliders" aria-controls="settings" aria-expanded="false">Settings</button>
+  </div>
+</div>
+
+<main class="builder" data-requires-sub>
+  <!-- ================================================= settings -->
+  <aside class="settings" id="settings" aria-label="Build settings">
+    <div class="settings-scroll">
+      <section class="set-block">
+        <div class="set-label">Contest type</div>
+        <div class="seg seg-tall" id="contestSeg" role="group" aria-label="Contest type">
+          <button type="button" data-v="cash" aria-pressed="false">Cash<small>50/50s · double-ups</small></button>
+          <button type="button" data-v="gpp" aria-pressed="true">Tournament<small>GPPs · big fields</small></button>
+        </div>
+        <select id="contest" hidden><option value="cash">cash</option><option value="gpp" selected>gpp</option></select>
+      </section>
+
+      <section class="set-block" id="entriesBlock">
+        <div class="set-label">How many lineups? <span class="help" tabindex="0" data-tip="Pick the max entries of the contest you're playing. Presets tune diversity for you: single-entry goes for the best lineup, 150-max spreads exposure across the whole player pool.">?</span></div>
+        <div class="seg" id="entriesSeg" role="group" aria-label="Entries">
+          <button type="button" data-n="1" aria-pressed="false">1</button>
+          <button type="button" data-n="3" aria-pressed="false">3</button>
+          <button type="button" data-n="20" aria-pressed="true">20</button>
+          <button type="button" data-n="50" aria-pressed="false">50</button>
+          <button type="button" data-n="150" aria-pressed="false">150</button>
+        </div>
+        <div class="stepper">
+          <button type="button" class="btn btn-sm btn-icon" data-step="-1" aria-label="Fewer" data-icon="minus"></button>
+          <input id="nLineups" class="input" type="number" min="1" max="150" value="20" aria-label="Number of lineups">
+          <button type="button" class="btn btn-sm btn-icon" data-step="1" aria-label="More" data-icon="plus"></button>
+          <span class="hint" id="entriesHint">lineups</span>
+        </div>
+      </section>
+
+      <section class="set-block gpp-only">
+        <div class="set-label">Stacking <span class="help" tabindex="0" data-tip="Pair your QB with his own pass catchers so the lineup wins when that passing game goes off. Bring-back adds a player from the opposing team, betting on a shootout.">?</span></div>
+        <div class="seg" id="stackSeg" role="group" aria-label="QB stack">
+          <button type="button" data-v="0" aria-pressed="false">No stack</button>
+          <button type="button" data-v="1" aria-pressed="true">QB + 1</button>
+          <button type="button" data-v="2" aria-pressed="false">QB + 2</button>
+        </div>
+        <select id="stack" hidden><option value="0">0</option><option value="1" selected>1</option><option value="2">2</option></select>
+        <label class="switch"><span class="switch-text">Bring-back from the opponent</span><input type="checkbox" id="bringbackSw"></label>
+        <select id="bringback" hidden><option value="0" selected>0</option><option value="1">1</option></select>
+      </section>
+
+      <section class="set-block multi-only">
+        <div class="set-label">Max exposure per player <b class="set-val" id="maxExpVal">40%</b> <span class="help" tabindex="0" data-tip="No player appears in more than this share of your lineups (locked players excepted). Lower = more diversified. Per-player limits can be set in the Portfolio columns.">?</span></div>
+        <input type="range" id="maxExpRange" min="10" max="100" step="5" value="40" aria-label="Max exposure">
+        <input id="maxExp" type="number" hidden value="40">
+        <div class="range-ends"><span>Diversified</span><span>Concentrated</span></div>
+      </section>
+
+      <section class="set-block">
+        <label class="switch"><span class="switch-text">Skip questionable &amp; doubtful players</span><input type="checkbox" id="exclQSw"></label>
+        <select id="exclQ" hidden><option value="0" selected>0</option><option value="1">1</option></select>
+      </section>
+
+      <details class="set-advanced" id="advanced">
+        <summary><span data-icon="sliders"></span> Fine-tune <span class="muted small" id="advCount"></span></summary>
+        <div class="adv-grid">
+          <label class="field"><span>Min salary used <span class="help" tabindex="0" data-tip="Force lineups to use at least this much of the cap. 0 = no minimum. $49,000+ is common.">?</span></span><input id="minSalary" class="input" type="number" step="100" value="0"></label>
+          <label class="field"><span>Max players per team</span><input id="maxTeam" class="input" type="number" min="1" max="8" value="4"></label>
+          <label class="field multi-only"><span>Min unique players <span class="help" tabindex="0" data-tip="Each new lineup must differ from every earlier one by at least this many players.">?</span></span><input id="minUniq" class="input" type="number" min="1" max="8" value="3"></label>
+          <label class="field gpp-only"><span>Randomness % <span class="help" tabindex="0" data-tip="Jitters projections by each player's volatility before every solve, so lineups explore different builds. 0 = pure projections.">?</span></span><input id="rand" class="input" type="number" min="0" max="50" value="15"></label>
+          <label class="field gpp-only"><span>Ownership fade % <span class="help" tabindex="0" data-tip="Penalises highly-owned players. Our 14-week backtest against real Millionaire Maker fields found fading did not help, so the default is 0.">?</span></span><input id="fade" class="input" type="number" min="0" max="100" value="0"></label>
+          <label class="field gpp-only"><span>Max lineup ownership % <span class="help" tabindex="0" data-tip="Cap on the sum of projected ownership across the 9 players. 0 = no cap; around 120 is a moderate anti-chalk rule.">?</span></span><input id="maxOwn" class="input" type="number" min="0" max="400" step="10" value="0"></label>
+          <label class="field"><span>Candidate pool × <span class="help" tabindex="0" data-tip="Builds this many times more lineups than you asked for, then keeps the best by simulated median (cash) or 90th percentile (tournaments). Higher = better selection, slower.">?</span></span><input id="poolMult" class="input" type="number" min="1" max="5" value="3"></label>
+          <label class="field" id="propsWrap" style="display:none"><span>Betting-market weight % <span class="help" tabindex="0" data-tip="How much each player's projection leans on sportsbook / prediction-market player props (where posted) vs. the game sim. 85 is our default; props predicted fantasy points better than the sim on 2024 data.">?</span></span><input id="propsBlend" class="input" type="number" min="0" max="100" value="85"><span class="hint" id="propsSrc"></span></label>
+          <label class="field" id="blendWrap" style="display:none"><span>External projections %</span><input id="blend" class="input" type="number" min="0" max="100" value="50"><span class="hint" id="blendSrc"></span></label>
+        </div>
+        <button type="button" class="btn btn-ghost btn-sm" id="resetSettings" data-icon="refresh">Reset to preset</button>
+      </details>
+
+      <p class="obj-hint" id="objHint"></p>
+    </div>
+
+    <div class="settings-foot">
+      <div class="build-summary" id="buildSummary"></div>
+      <button id="generate" class="btn btn-primary btn-lg btn-block" disabled><span class="gen-label">Build lineups</span></button>
+      <div class="progress" id="progress" hidden><i></i></div>
+    </div>
+  </aside>
+
+  <!-- ================================================= workspace -->
+  <section class="workspace">
+    <div class="ws-tabs" role="tablist">
+      <button role="tab" class="ws-tab" data-view="players" aria-selected="true">Players</button>
+      <button role="tab" class="ws-tab" data-view="stacks" aria-selected="false">Team stacks</button>
+      <button role="tab" class="ws-tab" data-view="lineups" aria-selected="false">Lineups <span class="tab-count" id="luCount">0</span></button>
+      <div class="ws-tabs-end">
+        <button class="btn btn-sm" id="exportBtn" data-icon="download" disabled>Download CSV</button>
+      </div>
+    </div>
+
+    <!-- players + stacks -->
+    <div class="ws-pane" id="poolPane">
+      <div class="pool-toolbar">
+        <div class="pos-chips" id="posChips" role="group" aria-label="Position filter">
+          <button class="chip" data-pos="ALL" aria-pressed="true">All</button>
+          <button class="chip" data-pos="QB" aria-pressed="false">QB</button>
+          <button class="chip" data-pos="RB" aria-pressed="false">RB</button>
+          <button class="chip" data-pos="WR" aria-pressed="false">WR</button>
+          <button class="chip" data-pos="TE" aria-pressed="false">TE</button>
+          <button class="chip" data-pos="DST" aria-pressed="false">DST</button>
+        </div>
+        <select id="posFilter" hidden><option value="ALL">ALL</option><option>QB</option><option>RB</option><option>WR</option><option>TE</option><option>DST</option></select>
+        <input id="search" class="input input-search" type="search" placeholder="Search player or team" aria-label="Search player or team">
+        <div class="grow"></div>
+        <button class="chip" id="onlyMine" aria-pressed="false" title="Show only the players you've locked, excluded or edited">My picks <span class="count" id="mineCount">0</span></button>
+        <div class="seg seg-compact" id="colSeg" role="group" aria-label="Columns">
+          <button type="button" data-cols="core" aria-pressed="true">Core</button>
+          <button type="button" data-cols="range" aria-pressed="false" title="Simulated percentiles">Ranges</button>
+          <button type="button" data-cols="port" aria-pressed="false" title="Exposure controls and results">Portfolio</button>
+        </div>
+      </div>
+      <div class="picks-bar" id="picksBar" hidden></div>
+      <div class="table-wrap pool-wrap" id="poolWrap">
+        <table class="data pool" id="pool"><thead></thead><tbody></tbody></table>
+      </div>
+      <div class="status-line pool-status" id="status" aria-live="polite"></div>
+    </div>
+
+    <!-- lineups -->
+    <div class="ws-pane" id="lineupPane" hidden>
+      <div id="results" class="results"></div>
     </div>
   </section>
-
-  <aside class="side">
-    <details class="panel" open>
-      <summary>Rules</summary>
-      <div class="grid2">
-        <label>Min salary used <input id="minSalary" type="number" step="100" value="0"></label>
-        <label>Max per team <input id="maxTeam" type="number" min="1" max="8" value="4"></label>
-        <label>QB stack (pass catchers) <select id="stack"><option value="0">none</option><option value="1" selected>QB + 1</option><option value="2">QB + 2</option></select></label>
-        <label>Bring-back from opponent <select id="bringback"><option value="0">no</option><option value="1">yes</option></select></label>
-        <label>Max exposure % <input id="maxExp" type="number" min="5" max="100" value="60"></label>
-        <label>Min unique players / lineup <input id="minUniq" type="number" min="1" max="8" value="2"></label>
-        <label>Randomness (GPP) % <input id="rand" type="number" min="0" max="50" value="15"></label>
-        <label>Exclude Q / D <select id="exclQ"><option value="0">no</option><option value="1">yes</option></select></label>
-        <label title="GPP only: penalises highly-owned players (0 = ignore ownership, 100 = strong fade). Ownership is a heuristic — overwrite the Own% column with real numbers if you have them.">Ownership fade (GPP) % <input id="fade" type="number" min="0" max="100" value="40"></label>
-        <label id="propsWrap" style="display:none" title="Weight on the sportsbook / Kalshi props projection for players who have one (jobs/props.py). 85 = the Sunday build's default; 0 = pure sim. On 2024 data props predicted points far better than the sim.">Props blend % (<span id="propsSrc"></span>) <input id="propsBlend" type="number" min="0" max="100" value="85"></label>
-        <label id="blendWrap" style="display:none" title="Weight on the imported third-party projections (data/projections/). 0 = sim only, 100 = external only. External ownership replaces the heuristic when present.">Blend external proj % (<span id="blendSrc"></span>) <input id="blend" type="number" min="0" max="100" value="50"></label>
-        <label title="GPP only: a lineup's summed projected ownership may not exceed this (0 = no limit). 120 is a moderate anti-chalk rule for large fields.">Max lineup own% (GPP) <input id="maxOwn" type="number" min="0" max="400" step="10" value="0"></label>
-        <label title="Build this many × lineups into a pool, then select the best by simulated median (cash) or 90th percentile (GPP). Min%/Max% changes re-select from this pool instantly without rebuilding.">Candidates × (needs sim) <input id="poolMult" type="number" min="1" max="5" value="2"></label>
-      </div>
-      <p class="hint" id="objHint"></p>
-    </details>
-    <div class="actions">
-      <button id="generate" class="primary">Generate</button>
-      <button id="exportBtn" disabled>Export CSV</button>
-      <button id="clearBtn">Clear locks</button>
-    </div>
-    <div id="results" class="results"></div>
-  </aside>
 </main>
 
-<footer class="foot">
-  Projections: Monte Carlo game sim (falls back to the baseline model). Lineup p10/p50/p90 are totals across the same simulated games, so stacks and game correlation are priced in. Optimizer runs in your browser (GLPK).
-</footer>
+<!-- mobile build bar -->
+<div class="mobile-bar">
+  <button class="btn btn-lg" id="mSettings" data-icon="sliders">Settings</button>
+  <button class="btn btn-primary btn-lg" id="mBuild">Build lineups</button>
+</div>
 
 <div id="playerCard" class="modal" hidden>
   <div class="modal-back"></div>
-  <div class="card" role="dialog" aria-modal="true">
-    <button class="card-close" id="cardClose" aria-label="Close">×</button>
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="pcName">
+    <button class="btn btn-ghost btn-icon btn-sm modal-close" id="cardClose" aria-label="Close" data-icon="x"></button>
     <div id="cardBody"></div>
   </div>
 </div>
 
+<footer data-shell-footer="app"></footer>
 <script type="module" src="lineups.js"></script>
 </body>
 </html>

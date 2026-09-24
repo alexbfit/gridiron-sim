@@ -1,88 +1,88 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Gridiron Sim — Results</title>
-<link rel="stylesheet" href="styles.css">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>try{document.documentElement.dataset.theme=localStorage.getItem("gs_theme")||"dark";if(localStorage.getItem("gs_owner")==="1")document.documentElement.classList.add("owner")}catch(e){}</script>
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/ui.css">
+<title>Track Record · Gridiron Sim</title>
+<meta name="description" content="Every week, every Gridiron Sim projection graded against what actually happened.">
 <style>
-  .rs { padding: 12px 20px 32px; max-width: 1300px; }
-  .rs h2 { font-size: 15px; margin: 22px 0 8px; color: var(--accent); }
-  .rs p.lead { color: var(--muted); font-size: 13px; max-width: 900px; margin: 0 0 6px; }
-  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 12px 0; }
-  .tile { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }
-  .tile .k { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
-  .tile .v { font-size: 22px; font-weight: 700; margin-top: 2px; font-variant-numeric: tabular-nums; }
-  .tile .s { font-size: 11px; color: var(--muted); }
-  table.m { border-collapse: collapse; width: 100%; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
-  table.m th, table.m td { padding: 6px 10px; text-align: right; font-variant-numeric: tabular-nums; border-bottom: 1px solid #202634; font-size: 13px; white-space: nowrap; }
-  table.m th { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .04em; background: var(--panel-2); cursor: pointer; position: sticky; top: 0; }
-  table.m td.l, table.m th.l { text-align: left; }
-  table.m td.best { color: var(--accent); font-weight: 600; }
-  td.pos-diff { color: var(--accent); } td.neg-diff { color: #ff6b6b; }
-  .table-wrap.rs-wrap { max-height: 70vh; }
-  .lineup { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; }
-  .lu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 10px; }
-  .bar { height: 8px; background: var(--panel-2); border-radius: 4px; overflow: hidden; margin-top: 4px; }
-  .bar i { display: block; height: 100%; background: var(--accent); }
-  .lu-group { margin: 14px 0 6px; font-size: 13px; }
-  .muted { color: var(--muted); }
-  .trend { display: flex; gap: 8px; flex-wrap: wrap; }
-  .trend .tile { min-width: 150px; }
+  .rs-filters { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; }
+  .rs-filters .field { width: 170px; } .rs-filters .field.wide { width: 280px; }
+  .trend { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 12px; }
+  .owner-zone { margin-top: 44px; padding-top: 8px; border-top: 1px dashed var(--border-strong); }
+  .owner-zone > .badge { margin-bottom: 4px; }
+  #status { color: var(--muted); font-size: 13px; margin-top: 6px; }
+  @media (max-width: 640px) { .rs-filters .field, .rs-filters .field.wide { width: calc(50% - 5px); } }
 </style>
-</head>
-<body>
-<header class="topbar">
-  <div class="brand">
-    <span class="logo">GS</span>
-    <div><h1>Gridiron Sim</h1><p class="sub">Results · how last week's projections did</p></div>
-    <nav class="nav"><a href="index.html">Stats</a><a href="lineups.html">Lineups</a><a href="backtest.html">Backtest</a><a href="results.html" class="active">Results</a></nav>
-  </div>
-  <div class="controls">
-    <label>Slate <select id="slate"></select></label>
-    <label>Position <select id="posFilter"><option value="ALL">All</option><option>QB</option><option>RB</option><option>WR</option><option>TE</option><option>DST</option></select></label>
-    <label>Search <input id="search" type="search" placeholder="player or team"></label>
-  </div>
-</header>
-
-<main class="rs">
-  <p class="lead" id="status">Loading…</p>
-  <div class="tiles" id="tiles"></div>
-
-  <h2>Which projection source was closest?</h2>
-  <p class="lead">Every source scored on the same players. <b>sim</b> = Monte Carlo, <b>baseline</b> = the simple model, <b>external</b> = an imported projection file (if any), <b>blend50</b> = half sim, half external. Season-to-date is the average across all scored weeks — give it 3–4 weeks before trusting the ranking.</p>
-  <table class="m" id="sources"></table>
-
-  <h2>Lineup scoreboard</h2>
-  <p class="lead">Every lineup recorded before kickoff — Claude's Sunday cash + GPP lineups and anything exported from the builder — scored with actual points. <b>sim</b> = where the actual landed in the lineup's own simulated distribution; <b>field</b> = share of real contest entries it would have beaten (needs a contest standings file in <code>data/ownership/</code>).</p>
-  <div id="mine"></div>
-
-  <h2>Lineup record — season to date</h2>
-  <div id="luSeason"></div>
-
-  <h2>Contest Flashback</h2>
-  <p class="lead">The honest scoreboard. After the games, every one of the contest's real entries (from the standings export) is scored in the same simulated worlds as our lineups, so the question is not "did we win Sunday" but "how much would these lineups make on average against these opponents". <b>Consensus view</b> puts every player on the market projection (props / salary line) and judges construction alone — stacks, uniqueness, leverage against what the field actually played. <b>Model view</b> uses our own projections, so it also carries our opinions; over a season its gap to the realized number tells you how much to trust them. The field's own expected ROI is about −15% (the rake); a portfolio that sits above the field's median in the consensus view is built better than the average entry. One week proves nothing.</p>
-  <div class="tiles" id="fbTiles"></div>
-  <div id="fbSeason"></div>
-
-  <h2>News agents — did the notes help?</h2>
-  <p class="lead">Per-game news readers file sourced role/injury notes Saturday evening and Sunday morning; the lineup task applies the confident ones as overrides. After the games each adjustment is graded: <b>helped</b> = the adjusted projection was closer to the actual than the sim's. Give it several weeks — one Sunday proves nothing.</p>
-  <div id="news"></div>
-
-  <h2>Upset picks vs the market</h2>
-  <p class="lead">For fun and to test a theory: the same agents give a win probability for every game, logged next to the spread-implied market probability. Scored by Brier (lower is better) — if the agents cannot beat the market over a season, the "upset story" idea is dead.</p>
-  <div id="upsets"></div>
-
-  <h2>Players</h2>
-  <p class="lead">Proj = projection live at kickoff. PIT = where the actual landed in the sim distribution (0.5 = dead on; near 0 or 1 = a bust or a boom the sim gave little weight to). Own = actual ownership if a contest file was imported, else the heuristic.</p>
-  <div class="table-wrap rs-wrap"><table class="m" id="players"><thead></thead><tbody></tbody></table></div>
-
-  <h2>Season to date</h2>
-  <div class="trend" id="trend"></div>
-</main>
-<footer class="foot">Scored automatically by the nightly job once a slate's games are final. Import a DK contest standings CSV into data/ownership/ for exact points + real ownership.</footer>
 <script src="config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="assets/shell.js"></script>
+</head>
+<body>
+<header data-shell-header="app"></header>
+<main class="page">
+  <div class="page-head">
+    <div><h1>Track record</h1><p>Every projection, graded after the games against the real box scores (and, when available, DraftKings' exact contest points). Wins and misses, nothing hidden.</p></div>
+    <div class="rs-filters"><label class="field wide"><span>Slate</span><select id="slate" class="input"></select></label></div>
+  </div>
+  <p id="status">Loading…</p>
+  <div class="tiles" id="tiles"></div>
+
+  <section class="section">
+    <h2>Season to date</h2>
+    <p class="lead">Average miss (MAE, in DraftKings points) for DFS-relevant players each week. Lower is better; r is the correlation between projection and result.</p>
+    <div class="trend" id="trend"></div>
+  </section>
+
+  <section class="section">
+    <h2>Which projection was closest?</h2>
+    <p class="lead">Every projection source scored on the same players. <b>sim</b> = the Monte Carlo game simulation, <b>baseline</b> = a simpler recent-form model. Give it several weeks before trusting the ranking — one Sunday is noisy.</p>
+    <div class="table-wrap"><table class="m" id="sources"></table></div>
+  </section>
+
+  <section class="section">
+    <h2>Every player</h2>
+    <p class="lead"><b>Proj</b> = projection at kickoff. <b>PIT</b> = where the actual score landed inside the simulated range (0.5 = right on the median; near 0 or 1 = a bust or boom the sim thought unlikely). <b>Own</b> = real ownership when a contest file was imported.</p>
+    <div class="rs-filters" style="margin-bottom:12px">
+      <label class="field"><span>Position</span><select id="posFilter" class="input"><option value="ALL">All</option><option>QB</option><option>RB</option><option>WR</option><option>TE</option><option>DST</option></select></label>
+      <label class="field wide"><span>Search</span><input id="search" class="input input-search" type="search" placeholder="Player or team"></label>
+    </div>
+    <div class="table-wrap table-tall"><table class="data" id="players"><thead></thead><tbody></tbody></table></div>
+  </section>
+
+  <!-- owner-only: Alex's Sunday-task lineups, real entries, news agents, upset picks -->
+  <div class="owner-zone" data-owner-only>
+    <span class="badge ok">Owner view</span>
+    <section class="section">
+      <h2>Lineup scoreboard</h2>
+      <p class="lead">Every lineup recorded before kickoff — the Sunday task's cash + GPP lineups and your own builder exports — scored with actual points. <b>sim</b> = where the actual landed in the lineup's simulated distribution; <b>field</b> = share of real contest entries it would have beaten (needs a standings file in <code>data/ownership/</code>).</p>
+      <div id="mine"></div>
+    </section>
+    <section class="section"><h2>Lineup record — season to date</h2><div id="luSeason"></div></section>
+    <section class="section">
+      <h2>Contest Flashback</h2>
+      <p class="lead">Every real entry from the standings export is scored in the same simulated worlds as our lineups: "how much would these lineups make on average against these opponents". <b>Consensus view</b> puts every player on the market projection and judges construction alone; <b>model view</b> uses our projections. The field's own expected ROI is about −15% (the rake). One week proves nothing.</p>
+      <div class="tiles" id="fbTiles"></div>
+      <div id="fbSeason"></div>
+    </section>
+    <section class="section">
+      <h2>News agents — did the notes help?</h2>
+      <p class="lead">Per-game news readers file sourced role/injury notes Saturday evening and Sunday morning; the lineup task applies the confident ones. <b>helped</b> = the adjusted projection was closer to the actual than the sim's.</p>
+      <div id="news"></div>
+    </section>
+    <section class="section">
+      <h2>Upset picks vs the market</h2>
+      <p class="lead">The agents' win probability for every game next to the spread-implied market probability, scored by Brier (lower is better).</p>
+      <div id="upsets"></div>
+    </section>
+  </div>
+</main>
+<footer data-shell-footer="site"></footer>
 <script src="results.js"></script>
 </body>
 </html>

@@ -41,7 +41,12 @@ jobs/pipeline.py                     import + project in one go
 .github/workflows/nightly-ingest.yml scheduled ingest + re-project latest slate
 .github/workflows/slate-pipeline.yml runs on push of data/slates/*.csv
 data/slates/                         drop DK / FD salary exports here
-web/index.html                       sortable stats site
+web/index.html                       landing page (product site: how it works, features, track record, pricing, FAQ)
+web/stats.html                       sortable stats site (was index.html)
+web/guide.html, web/account.html     quick-start guide; account / sign-in page (inert until AUTH_ENABLED in config.js)
+web/assets/                          design system (ui.css), builder / site styles, shell.js (header, footer, theme, owner mode, accounts)
+billing/                             Stripe + Supabase-auth scaffolding for selling subscriptions — OFF; see billing/README.md
+supabase/pending/012_accounts.sql    subscriber profiles table (not applied)
 web/lineups.html                     lineup builder + optimizer (GLPK in the browser), DK/FD CSV export
 web/backtest.html                    backtest report (accuracy by position, weekly error, calibration)
 ```
@@ -226,3 +231,16 @@ Stored in the DB as generated columns on `player_game_stats`:
 7. ✅ Results tracking + real ownership from contest exports
 8. ✅ Practice reports, depth charts, live-odds hook, game-day refresh, external projection blend
 9. Next: showdown slates, FanDuel validation, QB modelling
+
+## Web front end (product UI, 2026-09-24)
+
+Static pages, no build step (Netlify publishes `web/`). One design system in `web/assets/ui.css` (dark default, light
+toggle), shared header/footer from `web/assets/shell.js`. The builder's optimizer math is unchanged; the UI adds contest
+presets (cash / 1 / 3 / 20 / 50 / 150), a settings panel with a Fine-tune section, per-slate locks/edits remembered in
+the browser, one-click stack locks, a Lineups tab with exposure, and a mobile layout.
+
+* **Owner mode** — open any page once with `?owner=1` (off: `?owner=0`). Shows the private Track Record sections (Sunday
+  task lineups, Flashback, news agents, upset picks) and records builder exports via `save_lineups` for Monday grading.
+  Visitors' exports stay in their browser and never touch the scoreboard.
+* **Selling it** — `web/config.js` has `AUTH_ENABLED`, `REQUIRE_SUBSCRIPTION`, `BILLING_LIVE` and `PLAN` switches, all off.
+  Launch checklist: `billing/README.md`.

@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>try{document.documentElement.dataset.theme=localStorage.getItem("gs_theme")||"dark";if(localStorage.getItem("gs_owner")==="1")document.documentElement.classList.add("owner")}catch(e){}</script>
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/ui.css">
+<link rel="stylesheet" href="assets/site.css">
+<title>Account · Gridiron Sim</title>
+<meta name="robots" content="noindex">
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="assets/shell.js"></script>
+</head>
+<body>
+<header data-shell-header="app"></header>
+<main class="page">
+  <div class="card auth-card" id="acct">
+    <div class="skeleton" style="height:28px;width:60%"></div>
+    <div class="skeleton" style="height:14px;width:90%;margin-top:14px"></div>
+  </div>
+</main>
+<footer data-shell-footer="site"></footer>
+<script>
+(async function () {
+  const cfg = window.GRIDIRON_CONFIG || {}, GS = window.GS, box = document.getElementById("acct");
+  const plan = cfg.PLAN || { name: "Pro", price: "" };
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+  if (!cfg.AUTH_ENABLED) {
+    box.innerHTML = `<div class="empty" style="padding:6px 0 0"><div class="icon-wrap">${GS.icon("user")}</div>
+      <h1>Accounts are coming soon</h1>
+      <p style="margin-top:6px">Gridiron Sim is free while it's in beta — no sign-up needed. Your locks, edits and settings are saved in this browser automatically.</p></div>
+      <a class="btn btn-primary btn-block" style="margin-top:22px" href="lineups.html">Open the lineup builder</a>
+      <a class="btn btn-ghost btn-block" style="margin-top:8px" href="index.html#pricing">See pricing plans</a>`;
+    return;
+  }
+
+  const supa = GS.Account.getClient();
+  await GS.Account.ready;
+  const user = GS.Account.user, profile = GS.Account.profile;
+  const qs = new URLSearchParams(location.search);
+  if (qs.get("checkout") === "success") GS.toast("Thanks for subscribing! It can take a few seconds for your plan to show.", "ok");
+  if (qs.get("checkout") === "cancel") GS.toast("Checkout canceled — you weren't charged.");
+
+  if (!user) {
+    box.innerHTML = `<h1>Sign in</h1>
+      <p class="muted">We'll email you a one-time sign-in link — no password needed. New here? The same link creates your account.</p>
+      <form id="signin" style="margin-top:20px;display:grid;gap:12px">
+        <label class="field"><span>Email</span><input class="input" type="email" id="email" required autocomplete="email" placeholder="you@example.com"></label>
+        <button class="btn btn-primary btn-block" type="submit" id="sendBtn">Email me a sign-in link</button>
+      </form>
+      <p class="hint" style="margin-top:14px">By continuing you agree to use Gridiron Sim for research only. Must be of legal age to play paid contests in your state.</p>`;
+    document.getElementById("signin").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById("sendBtn"); btn.disabled = true; btn.innerHTML = `<span class="spinner"></span> Sending…`;
+      const { error } = await supa.auth.signInWithOtp({ email: document.getElementById("email").value.trim(), options: { emailRedirectTo: location.origin + "/account.html" } });
+      if (error) { GS.toast(error.message, "error"); btn.disabled = false; btn.textContent = "Email me a sign-in link"; return; }
+      box.innerHTML = `<div class="empty" style="padding:6px 0"><div class="icon-wrap">${GS.icon("check")}</div><h1>Check your email</h1><p style="margin-top:6px">We sent a sign-in link to <b>${esc(document.getElementById("email")?.value || "your inbox")}</b>. Open it on this device to finish signing in.</p></div>`;
+    });
+    return;
+  }
+
+  const status = profile?.subscription_status || "none";
+  const active = status === "active" || status === "trialing";
+  const until = profile?.current_period_end ? new Date(profile.current_period_end).toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" }) : null;
+  box.innerHTML = `<h1>Your account</h1>
+    <p class="muted">${esc(user.email)}</p>
+    <div class="tile" style="margin-top:20px">
+      <div class="k">Plan</div>
+      <div class="v" style="font-size:20px">${active ? esc(plan.name) : "No active plan"} ${active ? `<span class="badge ok" style="vertical-align:4px">${status === "trialing" ? "Trial" : "Active"}</span>` : ""}</div>
+      <div class="s">${active ? (until ? (profile.cancel_at_period_end ? "Ends " : "Renews ") + until : "") : (cfg.BILLING_LIVE ? `${esc(plan.price)} / month · cancel any time` : "Paid plans aren't open yet.")}</div>
+    </div>
+    <div style="display:grid;gap:8px;margin-top:18px">
+      ${active ? `<a class="btn btn-primary btn-block" href="lineups.html">Open the lineup builder</a>
+                  <button class="btn btn-block" id="portal">Manage billing</button>`
+               : (cfg.BILLING_LIVE ? `<button class="btn btn-primary btn-block" id="checkout">Subscribe — ${esc(plan.price)}/month</button>` : `<a class="btn btn-primary btn-block" href="lineups.html">Open the lineup builder</a>`)}
+      <button class="btn btn-ghost btn-block" id="signout">${GS.icon("logout")} Sign out</button>
+    </div>`;
+  const call = async (fn) => {
+    const { data } = await supa.auth.getSession();
+    const res = await fetch(`/.netlify/functions/${fn}`, { method: "POST", headers: { Authorization: "Bearer " + data.session.access_token } });
+    const j = await res.json().catch(() => ({}));
+    if (!res.ok || !j.url) throw new Error(j.error || "Billing is not set up yet.");
+    location.href = j.url;
+  };
+  document.getElementById("checkout")?.addEventListener("click", (e) => { e.target.disabled = true; call("create-checkout").catch(err => { GS.toast(err.message, "error"); e.target.disabled = false; }); });
+  document.getElementById("portal")?.addEventListener("click", (e) => { e.target.disabled = true; call("billing-portal").catch(err => { GS.toast(err.message, "error"); e.target.disabled = false; }); });
+  document.getElementById("signout").addEventListener("click", async () => { await supa.auth.signOut(); location.href = "index.html"; });
+})();
+</script>
+</body>
+</html>

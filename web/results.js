@@ -2,6 +2,8 @@
 (async function () {
   const cfg = window.GRIDIRON_CONFIG || {};
   const $ = (id) => document.getElementById(id);
+  const esc = (v) => String(v ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const safeUrl = (u) => /^https?:\/\//i.test(String(u || "")) ? esc(u) : "";
   const f1 = (v) => v == null ? "–" : Number(v).toFixed(1);
   const money = (v) => "$" + Number(v).toLocaleString();
   let supa, slates = [], slate = null, rows = [], sim = null, dbLineups = [], sortKey = "actual", sortAsc = false;
@@ -17,7 +19,7 @@
     if (error) throw error;
     slates = data;
     if (!slates.length) { $("status").textContent = "No completed slates scored yet — results appear the morning after a slate's games finish."; return false; }
-    $("slate").replaceChildren(...slates.map(s => new Option(`${s.site} · ${s.season} wk ${s.week} · ${s.slate_type}`, s.slate_id)));
+    $("slate").replaceChildren(...slates.map(s => new Option(`${s.site === "DK" ? "DraftKings" : s.site === "FD" ? "FanDuel" : s.site} · ${s.season} Week ${s.week} · ${s.slate_type === "main" ? "Main slate" : s.slate_type}`, s.slate_id)));
     return true;
   }
 
@@ -47,13 +49,13 @@
 
   function renderTiles() {
     const m = slate.results_meta || {};
-    $("status").textContent = `${slate.site} · ${slate.season} week ${slate.week} · ${m.n} DFS-relevant players scored · actuals from ${m.actual_source === "contest" ? "contest export (exact)" : "box scores (DST approximate)"} · ${(m.scored_at || "").slice(0, 10)}`;
+    $("status").textContent = `${slate.season} Week ${slate.week} · ${m.n} DFS-relevant players graded · actual points from ${m.actual_source === "contest" ? "DraftKings contest results (exact)" : "box scores (DST approximate)"} · scored ${(m.scored_at || "").slice(0, 10)}`;
     const tiles = [
       ["MAE", f1(m.mae), "DK pts, relevant players"],
       ["Correlation", m.r?.toFixed(3) ?? "–", "projection vs actual"],
       ["Bias", (m.bias > 0 ? "+" : "") + f1(m.bias), "projection − actual"],
       ["Actual ≤ p10 / p90", m.coverage ? `${Math.round(m.coverage.p10 * 100)}% / ${Math.round(m.coverage.p90 * 100)}%` : "–", "target 10% / 90%"],
-      ["Ownership", m.has_ownership ? "actual" : "heuristic", m.has_ownership ? "from contest file" : "import a standings CSV"],
+      ["Ownership", m.has_ownership ? "actual" : "estimated", m.has_ownership ? "from contest results" : "projected"],
     ];
     const pos = Object.entries(m.by_pos || {}).map(([p, v]) => `${p} ${f1(v.mae)} (${v.bias > 0 ? "+" : ""}${f1(v.bias)})`).join(" · ");
     $("tiles").innerHTML = tiles.map(([k, v, s]) => `<div class="tile"><div class="k">${k}</div><div class="v">${v}</div><div class="s">${s}</div></div>`).join("")
@@ -152,8 +154,8 @@
         <div class="lu-head"><b>#${L.idx}</b> <span>proj ${f1(L.proj)}</span> <span>actual <b>${f1(actual)}</b></span>${sp != null ? ` <span title="percentile of the lineup's own simulated distribution">sim ${pct(sp)}</span>` : ""}${cp != null ? ` <span title="share of real contest entries this total beat">field ${pct(cp)}</span>` : ""}</div>
         ${L.fb ? `<div class="lu-head" style="margin-top:2px"><span title="expected ROI vs the real field on market projections (construction only)">flashback <b>${roi(L.fb.cons)}</b></span>${L.fb.model != null ? ` <span title="expected ROI on our own projections">model ${roi(L.fb.model)}</span>` : ""}${L.fb.cash != null ? ` <span>cash ${pct(L.fb.cash)}</span>` : ""}${L.fb.rank ? ` <span title="real finish among all entries">rank ${Number(L.fb.rank).toLocaleString()}${L.fb.prize ? ` · $${Math.round(L.fb.prize)}` : ""}</span>` : ""}</div>` : ""}
         ${sp != null ? `<div class="bar"><i style="width:${Math.round(sp * 100)}%"></i></div>` : ""}
-        <table class="lu">${ps.map(p => `<tr><td><span class="pos ${["QB","RB","WR","TE"].includes(p.position) ? p.position : "other"}">${p.position}</span></td><td class="left">${p.player_name}</td><td>${f1(p.proj_mean)}</td><td><b>${f1(p.actual)}</b></td></tr>`).join("")}</table>
-        ${L.note ? `<div class="muted" style="font-size:11px;margin-top:4px">${L.note}</div>` : ""}
+        <table class="lu">${ps.map(p => `<tr><td><span class="pos ${["QB","RB","WR","TE"].includes(p.position) ? p.position : "other"}">${esc(p.position)}</span></td><td class="left">${esc(p.player_name)}</td><td>${f1(p.proj_mean)}</td><td><b>${f1(p.actual)}</b></td></tr>`).join("")}</table>
+        ${L.note ? `<div class="muted" style="font-size:11px;margin-top:4px">${esc(L.note)}</div>` : ""}
       </div>`).join("") + `</div>`;
     }).join("");
   }
@@ -189,9 +191,9 @@
     const latest = runs.includes("sun") ? "sun" : runs[runs.length - 1];
     const list = newsNotes.filter(n => n.run === latest).sort((a, b) => Number(b.confidence) - Number(a.confidence));
     html += `<div class="table-wrap"><table class="m"><thead><tr><th class="left">Player</th><th>Team</th><th class="left">Change</th><th>Adj</th><th>Conf</th><th>Proj</th><th>Actual</th><th>Helped</th><th class="left">Source</th></tr></thead><tbody>`
-      + list.map(n => `<tr><td class="left">${n.player_name}${n.site_player_id ? "" : " <span class='muted'>(unmatched)</span>"}</td><td>${n.team ?? "–"}</td><td class="left">${n.change}</td>`
-        + `<td>${n.adjustment}${n.value != null ? " " + n.value : ""}</td><td>${Number(n.confidence).toFixed(2)}</td><td>${f1(n.proj_at_note)}</td><td>${f1(n.actual)}</td>`
-        + `<td>${n.helped == null ? "–" : n.helped ? "✓" : "✗"}</td><td class="left">${n.source_url ? `<a href="${n.source_url}" target="_blank" rel="noopener">${n.source_name || "link"}</a>` : (n.source_name || "–")}</td></tr>`).join("")
+      + list.map(n => `<tr><td class="left">${esc(n.player_name)}${n.site_player_id ? "" : " <span class='muted'>(unmatched)</span>"}</td><td>${esc(n.team ?? "–")}</td><td class="left">${esc(n.change)}</td>`
+        + `<td>${esc(n.adjustment)}${n.value != null ? " " + esc(n.value) : ""}</td><td>${Number(n.confidence).toFixed(2)}</td><td>${f1(n.proj_at_note)}</td><td>${f1(n.actual)}</td>`
+        + `<td>${n.helped == null ? "–" : n.helped ? "✓" : "✗"}</td><td class="left">${safeUrl(n.source_url) ? `<a href="${safeUrl(n.source_url)}" target="_blank" rel="noopener">${esc(n.source_name || "link")}</a>` : esc(n.source_name || "–")}</td></tr>`).join("")
       + `</tbody></table></div><p class="lead">Run: ${latest} · ${list.length} notes</p>`;
     el.innerHTML = html;
   }
@@ -210,9 +212,9 @@
     const runs = [...new Set(mine.map(u => u.run))]; const latest = runs.includes("sun") ? "sun" : runs[runs.length - 1];
     const list = mine.filter(u => u.run === latest).sort((a, b) => Number(b.upset) - Number(a.upset) || Math.abs(Number(b.agent_home_prob) - Number(b.market_home_prob ?? 0.5)) - Math.abs(Number(a.agent_home_prob) - Number(a.market_home_prob ?? 0.5)));
     html += `<div class="table-wrap"><table class="m"><thead><tr><th class="left">Game</th><th>Spread</th><th>Market home %</th><th>Agent home %</th><th>Pick</th><th class="left">Why</th><th>Result</th></tr></thead><tbody>`
-      + list.map(u => `<tr${u.upset ? ' style="font-weight:600"' : ""}><td class="left">${u.away_team} @ ${u.home_team}</td><td>${u.spread_line == null ? "–" : (Number(u.spread_line) > 0 ? "-" : "+") + Math.abs(Number(u.spread_line))}</td>`
-        + `<td>${u.market_home_prob == null ? "–" : Math.round(100 * Number(u.market_home_prob)) + "%"}</td><td>${Math.round(100 * Number(u.agent_home_prob))}%</td><td>${u.pick}${u.upset ? " ⚡" : ""}</td>`
-        + `<td class="left">${u.reasoning || ""}</td><td>${u.winner ? (u.correct ? "✓ " : "✗ ") + u.winner : "–"}</td></tr>`).join("")
+      + list.map(u => `<tr${u.upset ? ' style="font-weight:600"' : ""}><td class="left">${esc(u.away_team)} @ ${esc(u.home_team)}</td><td>${u.spread_line == null ? "–" : (Number(u.spread_line) > 0 ? "-" : "+") + Math.abs(Number(u.spread_line))}</td>`
+        + `<td>${u.market_home_prob == null ? "–" : Math.round(100 * Number(u.market_home_prob)) + "%"}</td><td>${Math.round(100 * Number(u.agent_home_prob))}%</td><td>${esc(u.pick)}${u.upset ? " ⚡" : ""}</td>`
+        + `<td class="left">${esc(u.reasoning || "")}</td><td>${u.winner ? (u.correct ? "✓ " : "✗ ") + esc(u.winner) : "–"}</td></tr>`).join("")
       + `</tbody></table></div>`;
     el.innerHTML = html;
   }
