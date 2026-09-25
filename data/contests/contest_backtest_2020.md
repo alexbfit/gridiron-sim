@@ -108,3 +108,21 @@ Reading:
   Hits cluster by week, so tripling entries doesn't triple the weeks.
 - A top-250 finish in a Milly pays only ~$120–$1,200. Across everything there was one top-20 (rank 16, $3,000: the same
   week-11 QB+2 lineup in three modes). ROI is negative in every mode.
+
+## Addendum 2026-09-25 — QB filters on top of QB+2 (jobs/contest_backtest_qbfilter.py)
+Same harness, 50 lineups, QB+2 / bring-back / p90 / max-exp .35 / min-uniq 4, seeds 7 + 11 (28 runs each). QBs failing
+the filter are marked OUT before each build. Control = "QB+2, p90" from round 3.
+
+| QB pool | wks best ≤250 | ≤1000 | median best rank | lineups ≤1000 | top-1%/wk | cash% | net $/wk | ROI |
+|---|---|---|---|---|---|---|---|---|
+| all QBs (control) | 4 (14%) | 6 (21%) | 5,254 | 9 | 0.46 | 24% | −300 | −31% |
+| home QBs only | 4 (14%) | **9 (32%)** | **2,548** | **15** | **0.89** | 24% | **−228** | **−23%** |
+| top-3 game totals | 2 (7%) | 7 (25%) | 3,250 | 8 | 0.71 | 26% | −260 | −26% |
+| total ≥ slate median | 3 (11%) | 7 (25%) | 4,586 | 10 | 0.61 | 25% | −384 | −39% |
+| home + total ≥ median | 1 (4%) | 5 (18%) | 2,176 | 9 | 0.79 | 25% | −337 | −34% |
+
+Reading: no filter produced more top-250 weeks. Home-only tied on top-250 weeks and was better on every secondary
+measure, with hits spread over 6 weeks instead of 3. But 2020 was the no-fans season (home-field advantage ≈ 0), so
+it is the wrong year to trust a home effect, and it is one season. Game-total filters did not help: the sim already
+uses the Vegas total, so filtering on it double-counts and just shrinks the QB pool; top-half and home+top-half were
+the worst. Not adopted; re-test home-only on a normal season before changing the Sunday build.
