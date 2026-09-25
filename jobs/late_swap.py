@@ -90,6 +90,7 @@ def main():
     ap.add_argument("--cands", type=int, default=6, help="full: candidates solved per lineup (1 deterministic + jittered)")
     ap.add_argument("--rand", type=float, default=0.15, help="full: projection jitter for the extra candidates (builder default)")
     ap.add_argument("--stack", type=int, default=1, help="full/gpp: QB + this many WR/TE from his team")
+    ap.add_argument("--qb-home", action="store_true", help="full swap: only home QBs may come in (matches build_lineups --qb-home)")
     ap.add_argument("--bringback", action="store_true", default=True, help="full/gpp: one opponent RB/WR/TE with the QB stack (default on)")
     ap.add_argument("--no-bringback", dest="bringback", action="store_false")
     ap.add_argument("--max-exp", type=float, default=0.35, help="full: max share of the final lineups any OPEN player may be in")
@@ -205,6 +206,8 @@ def main():
     full_report = []
     if args.full:
         open_pool = [r for r in rows if not locked(r) and r["site_player_id"] not in dead and r["mean"] is not None and proj(r) > 0]
+        if args.qb_home:                                   # match the Sunday build: GPP lineups only use home QBs
+            open_pool = [r for r in open_pool if r["position"] != "QB" or bl.is_home(r)]
         n_final = len(new_sets)
         cap_exp = max(1, int(np.ceil(args.max_exp * n_final)))
         usage, finals = {}, []
