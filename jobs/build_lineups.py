@@ -38,7 +38,7 @@ import urllib.request
 import numpy as np
 import pulp
 
-from common import fetch_all, get_client, norm_name
+from common import fetch_all, get_client, norm_name, norm_team
 
 SITES = {
     "DK": {"cap": 50000, "slots": ["QB", "RB", "RB", "WR", "WR", "WR", "TE", "FLEX", "DST"], "max_team": 8, "def": "DST"},
@@ -161,6 +161,76 @@ def apply_props(rows, matrix, weight, overrides=()):
     return n_p
 
 
+EXT_ALIASES = {
+    "name": ["name", "player", "player name", "player_name", "nickname", "full name"],
+    "team": ["team", "tm", "teamabbrev", "team abbrev"],
+    "pos": ["pos", "position", "roster position"],
+    "proj": ["ss proj", "ssproj", "saber proj", "sabersim proj", "ss projection", "proj", "projection", "projected points", "fpts", "points",
+             "dk proj", "dkproj", "dk points", "fantasy points", "proj pts", "my proj", "median"],
+    "own": ["own", "own%", "ownership", "proj own", "%drafted", "pown", "flagship mme own", "adj own"],
+}
+
+
+def read_ext_file(path, rows):
+    """{site_player_id: {"mean", "own"}} from an outside projections CSV (e.g. a SaberSim projections export).
+    Any file with a player-name column and a projection column; team/position/ownership optional."""
+    with open(path, encoding="utf-8-sig", newline="") as f:
+        data = list(csv.DictReader(f))
+    if not data:
+        return {}
+    hdr = {h.lower().strip(): h for h in data[0].keys()}
+    col = {k: next((hdr[a] for a in al if a in hdr), None) for k, al in EXT_ALIASES.items()}
+    if not col["name"] or not col["proj"]:
+        raise SystemExit(f"--ext-file: need a player-name and a projection column, got {list(data[0].keys())}")
+    idx = {}
+    for r in rows:
+        idx.setdefault(norm_name(r["player_name"]), []).append(r)
+    out = {}
+    for d in data:
+        try:
+            v = float(str(d[col["proj"]]).replace(",", ""))
+        except (TypeError, ValueError):
+            continue
+        c = idx.get(norm_name(d[col["name"]] or ""), [])
+        if len(c) > 1 and col["team"]:
+            c = [x for x in c if x.get("team") == norm_team(d[col["team"]])] or c
+        if len(c) > 1 and col["pos"]:
+            c = [x for x in c if x.get("position") == str(d[col["pos"]]).strip().upper()[:3].replace("DEF", "DST")] or c
+        if not c:
+            continue
+        own = None
+        if col["own"] and d.get(col["own"]) not in (None, ""):
+            try:
+                own = float(str(d[col["own"]]).replace("%", ""))
+            except ValueError:
+                pass
+        out[c[0]["site_player_id"]] = {"mean": v, "own": own}
+    return out
+
+
+def apply_ext(rows, matrix, ext, weight, overrides=()):
+    """Pull each player's board mean toward the outside projection (weight 0..1) and rescale his quantiles and sim
+    draws by the same factor (correlations kept), like the props blend. A 0 outside projection zeroes the player;
+    players the sim has at ~0 are left alone (no sim draws to rescale)."""
+    n = 0
+    if not weight or weight <= 0 or not ext:
+        return 0
+    for r in rows:
+        e = ext.get(r["site_player_id"])
+        if not e or r["site_player_id"] in overrides or r["mean"] is None:
+            continue
+        new = (1 - weight) * r["mean"] + weight * e["mean"]
+        if r["mean"] > 0.3:
+            f = max(new / r["mean"], 0.0)
+            for k in ("mean", "median", "p15", "p85", "p95", "floor", "ceiling"):
+                if r.get(k) is not None:
+                    r[k] = r[k] * f
+            if matrix is not None and r["site_player_id"] in matrix:
+                matrix[r["site_player_id"]] = matrix[r["site_player_id"]] * np.float32(f)
+            n += 1
+    return n
+
+
 def solve(pool, score, site, opts, prior, blocked, locks, own_map=None):
     prob = pulp.LpProblem("lineup", pulp.LpMaximize)
     x = {p["site_player_id"]: pulp.LpVariable("x_" + p["site_player_id"].replace("-", "_"), cat="Binary") for p in pool}
@@ -280,6 +350,12 @@ def parse_args(argv=None):
     ap.add_argument("--props", type=float, default=0.85,
                     help="weight (0-1) on the sportsbook-props projection (jobs/props.py) for players who have one; the sim mean is "
                          "pulled toward it and his sim draws rescaled. 2024 backtest: props r .48 vs sim .35. 0 disables.")
+    ap.add_argument("--ext-file", help="CSV of outside projections (e.g. SaberSim's projections export: Name, Team, Pos, SS Proj ...), "
+                                       "matched by name (+team/position). Used by --ext-sim.")
+    ap.add_argument("--ext-sim", type=float, default=0.0,
+                    help="weight (0-1) pulling each player's sim (mean, quantiles AND sim draws) toward the outside projection "
+                         "(--ext-file, or projections imported with jobs/import_projections.py). 2024-26 contest backtest vs real "
+                         "Millionaire fields: SaberSim projections at 1.0 beat the raw sim. Applied after --props. 0 = off.")
     ap.add_argument("--lock", action="append", default=[], help="player name (repeatable)")
     ap.add_argument("--exclude", action="append", default=[])
     ap.add_argument("--set", action="append", default=[], help='"Name=proj" projection override')
@@ -344,6 +420,13 @@ def build(args, slate, rows, ext, own_model, matrix, quiet=False):
     n_p = apply_props(rows, matrix, args.props, overrides)
     if n_p:
         log(f"props blend {args.props:g}: {n_p} players pulled toward the sportsbook projection")
+    if getattr(args, "ext_file", None):
+        ext = dict(ext)
+        ext.update(read_ext_file(args.ext_file, rows))
+        log(f"outside projections from {args.ext_file}: {len(ext)} players matched")
+    n_e = apply_ext(rows, matrix, ext, getattr(args, "ext_sim", 0.0), overrides)
+    if n_e:
+        log(f"outside-projection blend {args.ext_sim:g}: {n_e} players pulled toward it (sim draws rescaled)")
     own_over = {}
     if args.own_file:
         own_over.update(read_own_file(args.own_file, byname))

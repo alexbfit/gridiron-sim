@@ -77,6 +77,8 @@ def main():
     ap.add_argument("--exclude", action="append", default=[], help="player ruled out / inactive (repeatable)")
     ap.add_argument("--set", action="append", default=[], help='"Name=proj" projection override before choosing swaps')
     ap.add_argument("--props", type=float, default=0.85)
+    ap.add_argument("--ext-sim", type=float, default=0.0, help="pull the board toward imported outside projections (SaberSim), same as build_lineups --ext-sim")
+    ap.add_argument("--ext-file", help="outside projections CSV (e.g. data/projections/DK-...-main_sabersim.csv), same as build_lineups --ext-file")
     ap.add_argument("--max-team", type=int, default=4)
     ap.add_argument("--now", help="override the clock (ISO, ET) for tests")
     ap.add_argument("--entries", help="DraftKings 'Download entries' CSV — write an edit file for these Entry IDs")
@@ -116,6 +118,12 @@ def main():
     # blended projection (same as the builder): props pull applied to the board + matrix, then overrides
     overrides = {find(s.split("=")[0])["site_player_id"]: float(s.split("=")[1]) for s in args.set}
     n_blend = bl.apply_props(rows, matrix, args.props, overrides)
+    if args.ext_file:
+        ext = dict(ext)
+        ext.update(bl.read_ext_file(args.ext_file, rows))
+    n_ext = bl.apply_ext(rows, matrix, ext, args.ext_sim, overrides)
+    if n_ext:
+        print(f"outside-projection blend {args.ext_sim:g}: {n_ext} players", file=sys.stderr)
     def proj(r):
         i = r["site_player_id"]
         if i in overrides:
