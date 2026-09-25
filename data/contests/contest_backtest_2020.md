@@ -82,3 +82,29 @@ top-250 weeks); p90 with the wider spread is worse. The ranking key and the expo
 from — with projections at consensus level the top finish is a 1-in-8-weeks event for 50 entries whatever the build. What
 moves the "max wins" number: more entries in the contest with the biggest top prize (linear in shots), the projection edge
 (props + news), and late swap. `build_lineups --rank p98` stays available; the Sunday task keeps p90 / .35 / 4.
+
+## Addendum 2026-09-24 night — hunting top-250 finishes; 50 vs 150 lineups (Opus session)
+Same harness and weeks (2–16, no wk 13), fresh offline pull (game-day inactives treated as ACTIVE: the build doesn't know
+them), seeds 7 + 11 unless noted, fade 0, bring-back on, max-exp .35, min-uniq 4. The standings were compacted to
+Rank/Points/Player/%Drafted/FPTS (`DFS DATA/_compact_2020_milly/`) so they fit through the device bridge.
+
+| mode | runs | lineups | weeks best ≤250 | ≤1000 | median best rank | lineups ≤250 | top-1%/wk | cash% | net $/wk | ROI |
+|---|---|---|---|---|---|---|---|---|---|---|
+| QB+1, p90 (current Sunday default) | 28 | 50 | 0 (0%) | 6 (21%) | 4,472 | 0 | 0.50 | 24% | −434 | −44% |
+| **QB+2, p90** | 28 | 49 | **4 (14%)** | 6 (21%) | 5,254 | 4 | 0.46 | 24% | −300 | −31% |
+| QB+2, p98 | 28 | 50 | 3 (11%) | 7 (25%) | 4,901 | 3 | 0.61 | 25% | −285 | −29% |
+| QB+2, lineup own ≤110% | 28 | 48 | 3 (11%) | 6 (21%) | 4,759 | 3 | 0.54 | 23% | −318 | −33% |
+| QB+2, rand .30, cand 12 | 28 | 50 | 1 (4%) | 7 (25%) | 8,544 | 1 | 0.71 | 21% | −459 | −46% |
+| 150: QB+1, p90 (seed 7) | 14 | 147 | 2 (14%) | 4 (29%) | 2,769 | 3 | 1.57 | 23% | −1,355 | −46% |
+| **150: QB+2, p90** | 28 | 146 | **7 (25%)** | 9 (32%) | 2,892 | 9 | 1.39 | 23% | −1,129 | −39% |
+| 150: QB+2, p98 (seed 7) | 14 | 149 | 4 (29%) | 5 (36%) | 1,449 | 6 | 1.93 | 23% | −1,118 | −38% |
+
+Reading:
+- QB+2 beat QB+1 for top-250 weeks at both sizes (50: 4 vs 0 of 28; 150: 7/28 vs 2/14), with a better ROI (−31% vs −44%).
+  Caveat: the hits cluster in weeks 10, 11, 14 and 16 (the QB+2 variants find the same stacks), so this is 3–4 real
+  weeks of evidence, not dozens. The direction matches real Milly winners (mostly QB+2 with a bring-back).
+- p98 ranking and an ownership cap are neither better nor worse than plain QB+2. More randomness hurt.
+- 150 lineups ≈ doubles the share of weeks with a top-250 finish (25–29% vs 11–14%) at the same ROI and 3× the cost.
+  Hits cluster by week, so tripling entries doesn't triple the weeks.
+- A top-250 finish in a Milly pays only ~$120–$1,200. Across everything there was one top-20 (rank 16, $3,000: the same
+  week-11 QB+2 lineup in three modes). ROI is negative in every mode.

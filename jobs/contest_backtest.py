@@ -67,6 +67,14 @@ MODES = {
     "p98 f0, exp .35 uniq 4": ["--stack", "1", "--bringback", "--max-exp", "0.35", "--min-uniq", "4", "--candidates", "8", "--fade", "0", "--rank", "p98"],
     "p98 f0, exp .25 uniq 5": ["--stack", "1", "--bringback", "--max-exp", "0.25", "--min-uniq", "5", "--candidates", "8", "--fade", "0", "--rank", "p98"],
     "p98 f0, stack 2, exp .3": ["--stack", "2", "--bringback", "--max-exp", "0.3", "--min-uniq", "4", "--candidates", "8", "--fade", "0", "--rank", "p98"],
+    # round 3 (9/24 night): top-250 hunting — QB+2, leverage, exploration, 150-max (run with --n 150 for the 150 modes)
+    "s2 .35/4":               ["--stack", "2", "--bringback", "--max-exp", "0.35", "--min-uniq", "4", "--candidates", "8", "--fade", "0"],
+    "s2 p98 .35/4":           ["--stack", "2", "--bringback", "--max-exp", "0.35", "--min-uniq", "4", "--candidates", "8", "--fade", "0", "--rank", "p98"],
+    "s2 maxown 110":          ["--stack", "2", "--bringback", "--max-exp", "0.35", "--min-uniq", "4", "--candidates", "8", "--fade", "0", "--max-own", "110"],
+    "s2 rand .30 cand 12":    ["--stack", "2", "--bringback", "--max-exp", "0.35", "--min-uniq", "4", "--candidates", "12", "--fade", "0", "--rand", "0.30"],
+    "150: s1 .35/4":          ["--stack", "1", "--bringback", "--max-exp", "0.35", "--min-uniq", "4", "--candidates", "4", "--fade", "0"],
+    "150: s2 .35/4":          ["--stack", "2", "--bringback", "--max-exp", "0.35", "--min-uniq", "4", "--candidates", "4", "--fade", "0"],
+    "150: s2 p98 .35/4":      ["--stack", "2", "--bringback", "--max-exp", "0.35", "--min-uniq", "4", "--candidates", "4", "--fade", "0", "--rank", "p98"],
 }
 
 
