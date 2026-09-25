@@ -189,7 +189,13 @@ def solve(pool, score, site, opts, prior, blocked, locks, own_map=None):
             if opts.stack > 0:
                 prob += pulp.lpSum(by(lambda p, qb=qb: p["team"] == qb["team"] and p["position"] in stack_pos)) >= opts.stack * x[qb["site_player_id"]]
             if opts.bringback:
-                prob += pulp.lpSum(by(lambda p, qb=qb: p["team"] == qb["opponent"] and p["position"] in ("RB", "WR", "TE"))) >= x[qb["site_player_id"]]
+                prob += pulp.lpSum(by(lambda p, qb=qb: p["team"] == qb["opponent"] and p["position"] in ("RB", "WR", "TE"))) >= getattr(opts, "bringback_n", 1) * x[qb["site_player_id"]]
+        if getattr(opts, "rb_one_per_game", False):          # at most one RB from any game (teammates or opponents)
+            for g in {p["game_id"] for p in pool if p.get("game_id") and p["position"] == "RB"}:
+                prob += pulp.lpSum(by(lambda p, g=g: p["position"] == "RB" and p.get("game_id") == g)) <= 1
+        if getattr(opts, "rb_dst", False):                   # the defense comes with one of its own team's RBs
+            for d in [p for p in pool if p["position"] == "DST"]:
+                prob += pulp.lpSum(by(lambda p, d=d: p["position"] == "RB" and p["team"] == d["team"])) >= x[d["site_player_id"]]
     if getattr(opts, "max_own", 0) and own_map:
         prob += pulp.lpSum(own_map.get(p["site_player_id"], 0.0) * x[p["site_player_id"]] for p in pool) <= opts.max_own
     for L in prior:
@@ -250,6 +256,13 @@ def parse_args(argv=None):
     ap.add_argument("--min-salary", type=int, default=0)
     ap.add_argument("--max-own", type=float, default=0, help="cap on a lineup's summed ownership %% (gpp)")
     ap.add_argument("--stack-rb", action="store_true", help="QB's RB counts toward --stack")
+    ap.add_argument("--rb-one-per-game", action="store_true", help="gpp: at most one RB from any one game")
+    ap.add_argument("--bringback-n", type=int, default=1, help="gpp with --bringback: how many opponents of the QB (2 = full game stack)")
+    ap.add_argument("--ev-key", default="ev", choices=["ev", "p_top1", "p_top01"], help="--objective ev: rank candidates by expected profit or by P(top 1%%) / P(top 0.1%%) vs the simulated field")
+    ap.add_argument("--max-qb-exp", type=float, default=0, help="gpp: separate (lower) exposure cap for QBs, e.g. 0.12 spreads 50 lineups over 9+ QBs")
+    ap.add_argument("--ceil-weight", type=float, default=0.4, help="gpp score = (1-w)*proj + w*ceiling (default 0.4)")
+    ap.add_argument("--ceil-q", default="p85", choices=["p85", "p95"], help="gpp: which percentile is the ceiling in the score")
+    ap.add_argument("--rb-dst", action="store_true", help="gpp: pair the DST with one of its own team's RBs")
     ap.add_argument("--rank", choices=["p90", "p98", "proj"], default="p90",
                     help="gpp candidate ranking key from the sim: p90 (default), p98 (fatter tail — tournament-winner hunting), proj")
     ap.add_argument("--objective", choices=["default", "ev"], default="default",
@@ -387,7 +400,8 @@ def build(args, slate, rows, ext, own_model, matrix, quiet=False):
         rand_k = args.rand * (1.6 if use_ev else 1.0)
         for p in pool:
             m = proj(p)
-            base = 0.8 * m + 0.2 * (p["floor"] or 0) if args.contest == "cash" else 0.6 * m + 0.4 * ((p["p85"] or m) * (m / max(p["mean"] or 0.1, 0.1)))
+            cw, cq = getattr(args, "ceil_weight", 0.4), getattr(args, "ceil_q", "p85")
+            base = 0.8 * m + 0.2 * (p["floor"] or 0) if args.contest == "cash" else (1 - cw) * m + cw * ((p.get(cq) or p["p85"] or m) * (m / max(p["mean"] or 0.1, 0.1)))
             jit = 1 + (rand_k * random.gauss(0, 1) * ((p["stdev"] or 5) / max(m, 1)) if args.contest == "gpp" else 0)
             score[p["site_player_id"]] = base * jit - (fade_k * 0.06 * own_map[p["site_player_id"]] if args.contest == "gpp" else 0)
         ids = solve(pool, score, site, args, [L["ids"] for L in lineups], blocked, locks, own_map)
@@ -397,7 +411,8 @@ def build(args, slate, rows, ext, own_model, matrix, quiet=False):
         lineups.append(lineup_stats(ids, byid, proj, own_map, matrix))
         for i in ids:
             usage[i] = usage.get(i, 0) + 1
-            if i not in locks and usage[i] >= max(1, round(args.max_exp * n_cand)):
+            qcap = getattr(args, "max_qb_exp", 0) if byid[i]["position"] == "QB" else 0
+            if i not in locks and (usage[i] >= max(1, round(args.max_exp * n_cand)) or (qcap and usage[i] >= max(1, round(qcap * n_cand)))):
                 blocked.add(i)
     key = "p50" if args.contest == "cash" else getattr(args, "rank", "p90")
     if use_ev:
@@ -409,10 +424,10 @@ def build(args, slate, rows, ext, own_model, matrix, quiet=False):
         ev = evaluate([tuple(L["ids"]) for L in lineups], field, matrix, proj_by_id, args.entries, args.fee, args.payout, own=own_map)
         for L, e in zip(lineups, ev):
             L.update(e)
-        key = "ev"
+        key = getattr(args, "ev_key", "ev")
         log(f"contest sim: {len(field)} field lineups · {args.entries:,} entries · {args.payout} payouts · ${args.fee:g} fee · "
               f"{len(lineups)} candidates, best EV ${max(L['ev'] for L in lineups):.2f}")
-        lineups.sort(key=lambda L: -L["ev"])
+        lineups.sort(key=lambda L: (-L[key], -L["ev"]))
     elif matrix:
         lineups.sort(key=lambda L: -L.get(key, L["proj"]))
     cap, used, kept = max(1, int(np.ceil(args.max_exp * args.n))), {}, []
@@ -420,8 +435,9 @@ def build(args, slate, rows, ext, own_model, matrix, quiet=False):
         kept.append(L)
         for i in L["ids"]:
             used[i] = used.get(i, 0) + 1
+    qcap = int(np.ceil(args.max_qb_exp * args.n)) if getattr(args, "max_qb_exp", 0) else cap
     def fits(L, need=None):
-        return all(i in locks or i == need or used.get(i, 0) < cap for i in L["ids"])
+        return all(i in locks or i == need or used.get(i, 0) < (qcap if byid[i]["position"] == "QB" else cap) for i in L["ids"])
     # exposure stands first: for each target, pull the best-ranked candidates containing the player until the share is met
     for pid, share in sorted(exp_targets.items(), key=lambda kv: -kv[1]):
         want = int(np.ceil(share * args.n))

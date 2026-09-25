@@ -33,5 +33,6 @@ def build(args, slate, rows, *a, **k):
 bl.build = build
 cb.bl.build = build
 S2 = ["--stack", "2", "--bringback", "--max-exp", "0.35", "--min-uniq", "4", "--candidates", "8", "--fade", "0"]
-cb.MODES.update({f"QB {QBF}, s2": S2})
+EXTRA = os.environ.get("EXTRA", "").split()
+cb.MODES.update({f"QB {QBF}, s2" + (" " + os.environ["TAG"] if os.environ.get("TAG") else ""): S2 + EXTRA})
 cb.main()

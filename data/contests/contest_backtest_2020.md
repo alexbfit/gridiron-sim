@@ -126,3 +126,32 @@ measure, with hits spread over 6 weeks instead of 3. But 2020 was the no-fans se
 it is the wrong year to trust a home effect, and it is one season. Game-total filters did not help: the sim already
 uses the Vegas total, so filtering on it double-counts and just shrinks the QB pool; top-half and home+top-half were
 the worst. Not adopted; re-test home-only on a normal season before changing the Sunday build.
+
+## Addendum 2026-09-25 — the big settings sweep (rounds 5–11), plus 2026 week-2 and 3-max checks
+~30 settings on top of QB+2 (p90 / .35 / 4 / bring-back), 2020 Milly weeks 2–16. Screened with seed 7, finalists with
+seeds 11 and 23. Every lineup was then re-graded against the 2020 nickel 3-max field (~36k entries, same weeks), and
+the finalists were rebuilt for 2026 week 2 (Milly 172,692 entries + a 20-max, 11,181) — the only 2026 week with salaries.
+
+Control (QB+2, 3 seeds): top-250 weeks 5/42 (12%), top-1000 10, median best rank 4,508, top-1%/wk 0.60, ROI −22%.
+
+No noticeable change (seed 7, some with more seeds): max-exp .5/uniq 3; 16 candidates; no bring-back; QB+3
+(max-team 5); min salary 49,500; rank by proj; QB exposure caps .12 / .08; ceiling weight .7; ceiling p95; one RB per
+game; RB+own DST; both; lineup own ≤110%; more randomness; field-sim P(top 0.1%) ranking (worse: 0 top-250,
+−54%); chalk boost with our heuristic ownership (3 seeds: tie; one seed's rank-3 $40k was luck).
+
+Signals worth keeping:
+- **Home QBs only** (3 seeds): top-250 weeks 7/42 (17%), top-1000 13, median best 2,226, top-1%/wk 0.79, ROI −21%.
+  Nickel re-grade: top-1%/wk 0.74 vs 0.60, weeks with a top-0.1% lineup 7 vs 5. 2026 wk2 Milly: best ranks
+  778/111/499 vs 5,490/652/3,096, top-1% lineups 6 vs 1; 20-max: 71/6/43 vs 922/49/719. At 150 lineups: top-1000
+  weeks 7 vs 5, top-1%/wk 2.29 vs 1.71. Small but the only setting that points the same way in all four fields.
+  Caveats: 2020 had no fans, and the 2026 week-2 gain is mostly one home QB (Dak) getting more exposure.
+- **Ownership tilt with a SaberSim-quality ownership projection** (noisy real ownership, r ≈ .8, fade −.8, 2 seeds):
+  top-1%/wk 0.75, median best 2,959. 2026 wk2 20-max best 49/130/42; Milly mixed. Needs an ownership feed we don't have.
+- **Full game stack** (2 bring-backs): good on 2020 seed 7, **failed** on 2026 week 2 in both contests. Not adopted.
+- **Week of the season matters more than any setting**: across ~720 week-runs every setting found its top finishes in
+  weeks 10/11/14/16; weeks 2–5 averaged 41% of field, 0% top-250 weeks, −58% ROI vs 52% / 14% / −17% in weeks 6–16.
+  A salary-market blend did not fix early weeks (35% vs 39% of field in weeks 2–8).
+
+Builder options added for these tests (all off by default): --rb-one-per-game, --rb-dst, --max-qb-exp, --ceil-weight,
+--ceil-q, --bringback-n, --ev-key. QB filters: jobs/contest_backtest_qbfilter.py (QBF=home|top3|tophalf|home_tophalf,
+EXTRA="<more builder args>", TAG=<mode suffix>).
