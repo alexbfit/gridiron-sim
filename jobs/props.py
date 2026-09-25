@@ -30,7 +30,7 @@ import os
 import sys
 import urllib.parse
 import urllib.request
-from collections import defaultdict
+from collections import Counter, defaultdict
 
 import numpy as np
 
@@ -163,6 +163,31 @@ def from_file(path: str, week: int | None):
     return collect(gen()), {}
 
 
+def merge_kalshi(props: dict, games: list[dict]) -> dict:
+    """Add Kalshi's implied lines (jobs/kalshi.py) for the slate's Sunday. A player's line per market = the mean of the
+    sportsbook median and the Kalshi median where both exist, else whichever exists; TD prob likewise."""
+    from kalshi import kalshi_lines
+    days = Counter(str(g.get("gameday"))[:10] for g in games if g.get("gameday"))
+    if not days:
+        return props
+    day = dt.date.fromisoformat(days.most_common(1)[0][0])
+    try:
+        kal = kalshi_lines(day, verbose=True)
+    except Exception as e:
+        print(f"  kalshi failed: {e}")
+        return props
+    out = {n: (dict(lines), td) for n, (lines, td) in props.items()}
+    for n, rec in kal.items():
+        lines, td = out.get(n, ({}, 0.0))
+        for m, v in rec["lines"].items():
+            lines[m] = (lines[m] + v) / 2 if m in lines else v
+        if rec.get("td") is not None:
+            td = (td + rec["td"]) / 2 if n in props and props[n][1] else rec["td"]
+        out[n] = (lines, td)
+    print(f"  kalshi {day}: {len(kal)} players ({sum(1 for n in kal if n in props)} also at the books)")
+    return out
+
+
 # ------------------------------------------------------------------ main
 def main():
     ap = argparse.ArgumentParser()
@@ -171,6 +196,10 @@ def main():
     ap.add_argument("--week", type=int, help="week filter for --file")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--force", action="store_true", help="refetch even if props for this slate are < 6 h old")
+    ap.add_argument("--source", choices=["odds", "kalshi", "both"], default="odds",
+                    help="odds = The Odds API sportsbooks (needs ODDS_API_KEY, ~84 credits); kalshi = Kalshi player ladders "
+                         "(free, no key); both = average the two where both exist. The workflows call --source kalshi on every "
+                         "refresh and --source both on Sunday 7 AM.")
     args = ap.parse_args()
 
     client = get_client(need_write=not args.dry_run)
@@ -189,13 +218,25 @@ def main():
             if age < dt.timedelta(hours=6):
                 print(f"props for {slate['slate_key']} are {age.seconds // 60} min old — skipping (use --force)")
                 return
-        key = os.environ.get("ODDS_API_KEY")
-        if not key:
-            print("ODDS_API_KEY not set — no props")
-            return
         games = fetch_all(client.table("games").select("game_id,home_team,away_team,gameday")
                           .in_("game_id", list(slate.get("game_ids") or [])), order="game_id")
-        props, _ = from_api(key, games)
+        props = {}
+        if args.source in ("odds", "both"):
+            key = os.environ.get("ODDS_API_KEY")
+            if not key:
+                print("ODDS_API_KEY not set — no sportsbook props")
+            else:
+                try:
+                    props, _ = from_api(key, games)
+                except SystemExit as e:
+                    print(f"  sportsbook props skipped: {e}")
+                except Exception as e:
+                    print(f"  sportsbook props failed: {e}")
+        if args.source in ("kalshi", "both"):
+            props = merge_kalshi(props, games)
+        if not props:
+            print("no props from any source")
+            return
     else:
         props, _ = from_file(args.file, args.week)
 
