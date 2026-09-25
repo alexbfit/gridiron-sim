@@ -137,6 +137,40 @@ def read_own_file(path, byname):
 
 
 # ------------------------------------------------------------------ optimizer
+MISSING_DEFAULT = "QB=0.15,RB=0.8,WR=0.4,TE=0.5"
+
+
+def apply_missing(rows, matrix, have, spec, overrides=(), min_team=4):
+    """Market-missing discount. When a team's player markets are posted (its QB plus >= min_team-1 others have a
+    projection in `have`), a skill player on that team with NO market is usually inactive, a backup or a gadget
+    player: scale his mean and sim draws by the per-position factor in `spec` ("QB=0.15,RB=0.8,..."). 2024 wk1-15:
+    props + this discount r .648 / RMSE 6.70 vs SaberSim .632 / 6.82 on every board player (props alone .621)."""
+    if not spec or not have:
+        return 0
+    fac = {k.strip().upper(): float(v) for k, v in (x.split("=") for x in spec.split(",") if "=" in x)}
+    by_team = {}
+    for r in rows:
+        if r["position"] in fac:
+            by_team.setdefault(r["team"], []).append(r)
+    n = 0
+    for team, rs in by_team.items():
+        posted = [r for r in rs if r["site_player_id"] in have]
+        if len(posted) < min_team or not any(r["position"] == "QB" for r in posted):
+            continue
+        for r in rs:
+            i = r["site_player_id"]
+            if i in have or i in overrides or r["mean"] is None or r["mean"] < 1.0:
+                continue
+            f = fac.get(r["position"], 1.0)
+            for k in ("mean", "median", "p15", "p85", "p95", "floor", "ceiling"):
+                if r.get(k) is not None:
+                    r[k] = r[k] * f
+            if matrix is not None and i in matrix:
+                matrix[i] = matrix[i] * np.float32(f)
+            n += 1
+    return n
+
+
 def apply_props(rows, matrix, weight, overrides=()):
     """Pull each player's board mean toward his props projection (weight 0..1) and rescale his quantiles and sim
     draws by the same factor, so correlations survive. Shared by the builder, late_swap and flashback."""
@@ -350,6 +384,12 @@ def parse_args(argv=None):
     ap.add_argument("--props", type=float, default=0.85,
                     help="weight (0-1) on the sportsbook-props projection (jobs/props.py) for players who have one; the sim mean is "
                          "pulled toward it and his sim draws rescaled. 2024 backtest: props r .48 vs sim .35. 0 disables.")
+    ap.add_argument("--props-missing", default=MISSING_DEFAULT,
+                    help='per-position factor for skill players with NO props on a team whose markets are posted (likely '
+                         'inactive / backup): "QB=0.15,RB=0.8,WR=0.4,TE=0.5" (default). "" disables. Only runs when props exist.')
+    ap.add_argument("--ext-missing", default="",
+                    help='same discount for players missing from --ext-file / imported external projections (off by default; '
+                         'use it when the outside file is a props-style projection that only lists players with markets).')
     ap.add_argument("--ext-file", help="CSV of outside projections (e.g. SaberSim's projections export: Name, Team, Pos, SS Proj ...), "
                                        "matched by name (+team/position). Used by --ext-sim.")
     ap.add_argument("--ext-sim", type=float, default=0.0,
@@ -420,6 +460,10 @@ def build(args, slate, rows, ext, own_model, matrix, quiet=False):
     n_p = apply_props(rows, matrix, args.props, overrides)
     if n_p:
         log(f"props blend {args.props:g}: {n_p} players pulled toward the sportsbook projection")
+        have = {r["site_player_id"] for r in rows if r.get("props") is not None}
+        n_m = apply_missing(rows, matrix, have, getattr(args, "props_missing", ""), overrides)
+        if n_m:
+            log(f"props-missing discount ({args.props_missing}): {n_m} players with no market on a posted team")
     if getattr(args, "ext_file", None):
         ext = dict(ext)
         ext.update(read_ext_file(args.ext_file, rows))
@@ -427,6 +471,9 @@ def build(args, slate, rows, ext, own_model, matrix, quiet=False):
     n_e = apply_ext(rows, matrix, ext, getattr(args, "ext_sim", 0.0), overrides)
     if n_e:
         log(f"outside-projection blend {args.ext_sim:g}: {n_e} players pulled toward it (sim draws rescaled)")
+        if getattr(args, "ext_missing", ""):
+            n_m = apply_missing(rows, matrix, set(ext), args.ext_missing, overrides)
+            log(f"ext-missing discount ({args.ext_missing}): {n_m} players not in the outside file on a posted team")
     own_over = {}
     if args.own_file:
         own_over.update(read_own_file(args.own_file, byname))
