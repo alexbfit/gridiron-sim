@@ -167,6 +167,7 @@ def merge_kalshi(props: dict, games: list[dict]) -> dict:
     """Add Kalshi's implied lines (jobs/kalshi.py) for the slate's Sunday. A player's line per market = the mean of the
     sportsbook median and the Kalshi median where both exist, else whichever exists; TD prob likewise."""
     from kalshi import kalshi_lines
+    merge_kalshi.last = set()
     days = Counter(str(g.get("gameday"))[:10] for g in games if g.get("gameday"))
     if not days:
         return props
@@ -185,6 +186,7 @@ def merge_kalshi(props: dict, games: list[dict]) -> dict:
             td = (td + rec["td"]) / 2 if n in props and props[n][1] else rec["td"]
         out[n] = (lines, td)
     print(f"  kalshi {day}: {len(kal)} players ({sum(1 for n in kal if n in props)} also at the books)")
+    merge_kalshi.last = set(kal)
     return out
 
 
@@ -232,13 +234,17 @@ def main():
                     print(f"  sportsbook props skipped: {e}")
                 except Exception as e:
                     print(f"  sportsbook props failed: {e}")
+        odds_names = set(props)
+        kal_names = set()
         if args.source in ("kalshi", "both"):
             props = merge_kalshi(props, games)
+            kal_names = set(getattr(merge_kalshi, "last", set()))
         if not props:
             print("no props from any source")
             return
     else:
         props, _ = from_file(args.file, args.week)
+        odds_names, kal_names = set(props), set()
 
     idx = defaultdict(list)
     for s in sal:
@@ -260,7 +266,8 @@ def main():
         out.append({"slate_id": slate["slate_id"], "site_player_id": c["site_player_id"], "player_id": c["player_id"],
                     "player_name": c["player_name"], "position": c["position"], "team": c["team"], "salary": c["salary"],
                     "method": "props", "mean": round(calibrated(c["position"], raw), 2), "median": round(raw, 2),
-                    "components": {"lines": {k.replace("player_", ""): v for k, v in lines.items()}, "td_prob": round(td, 3), "raw": round(raw, 2)},
+                    "components": {"lines": {k.replace("player_", ""): v for k, v in lines.items()}, "td_prob": round(td, 3), "raw": round(raw, 2),
+                                   "src": [x for x, names in (("odds", odds_names), ("kalshi", kal_names)) if n in names]},
                     "updated_at": dt.datetime.now(dt.timezone.utc).isoformat()})
         matched += 1
     print(f"{slate['slate_key']}: {matched} players with complete props, {partial} skipped (core markets not posted yet), "

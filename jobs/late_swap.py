@@ -80,6 +80,7 @@ def main():
     ap.add_argument("--props-missing", default=bl.MISSING_DEFAULT, help="same as build_lineups --props-missing")
     ap.add_argument("--ext-missing", default="", help="same as build_lineups --ext-missing")
     ap.add_argument("--ext-sim", type=float, default=0.0, help="pull the board toward imported outside projections (SaberSim), same as build_lineups --ext-sim")
+    ap.add_argument("--corr", default="off", help="same as build_lineups --corr (on/off/JSON)")
     ap.add_argument("--ext-file", help="outside projections CSV (e.g. data/projections/DK-...-main_sabersim.csv), same as build_lineups --ext-file")
     ap.add_argument("--max-team", type=int, default=4)
     ap.add_argument("--now", help="override the clock (ISO, ET) for tests")
@@ -121,7 +122,8 @@ def main():
     overrides = {find(s.split("=")[0])["site_player_id"]: float(s.split("=")[1]) for s in args.set}
     n_blend = bl.apply_props(rows, matrix, args.props, overrides)
     if n_blend:
-        n_miss = bl.apply_missing(rows, matrix, {r["site_player_id"] for r in rows if r.get("props") is not None}, args.props_missing, overrides)
+        have = {r["site_player_id"] for r in rows if r.get("props") is not None and (r.get("props_src") is None or "odds" in (r.get("props_src") or []))}
+        n_miss = bl.apply_missing(rows, matrix, have, args.props_missing, overrides) if len(have) >= 100 else 0
         if n_miss:
             print(f"props-missing discount: {n_miss} players", file=sys.stderr)
     if args.ext_file:
@@ -132,6 +134,9 @@ def main():
         bl.apply_missing(rows, matrix, set(ext), args.ext_missing, overrides)
     if n_ext:
         print(f"outside-projection blend {args.ext_sim:g}: {n_ext} players", file=sys.stderr)
+    if matrix and (args.corr or "off") != "off":
+        n_c = bl.apply_corr(rows, matrix, None if args.corr == "on" else json.load(open(args.corr)), {find(n)["site_player_id"] for n in args.exclude})
+        print(f"correlation calibration ({args.corr}): {n_c} games", file=sys.stderr)
     def proj(r):
         i = r["site_player_id"]
         if i in overrides:

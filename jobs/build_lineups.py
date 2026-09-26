@@ -72,11 +72,13 @@ def load_board(client, slate_key=None):
     try:
         for r in fetch_all(client.table("slate_projections").select("site_player_id,mean,components")
                            .eq("slate_id", slate["slate_id"]).eq("method", "props"), order="site_player_id"):
-            props[r["site_player_id"]] = float(r["mean"])
+            props[r["site_player_id"]] = (float(r["mean"]), (r.get("components") or {}).get("src"))
     except Exception:
         pass
     for r in rows:
-        r["props"] = props.get(r["site_player_id"])
+        pv = props.get(r["site_player_id"])
+        r["props"] = pv[0] if pv else None
+        r["props_src"] = pv[1] if pv else None
     own_model = {"b": 1.4, "c": 0.8, "cap": 60.0}
     try:
         mp = client.table("model_params").select("param_value").eq("param_key", "ownership_model").execute().data
@@ -244,7 +246,7 @@ def read_ext_file(path, rows):
 
 def apply_ext(rows, matrix, ext, weight, overrides=()):
     """Pull each player's board mean toward the outside projection (weight 0..1) and rescale his quantiles and sim
-    draws by the same factor (correlations kept), like the props blend. A 0 outside projection zeroes the player;
+    draws by the same factor (correlations kept), like the props blend. A 0 outside projection zeroes the player at any weight;
     players the sim has at ~0 are left alone (no sim draws to rescale)."""
     n = 0
     if not weight or weight <= 0 or not ext:
@@ -253,7 +255,8 @@ def apply_ext(rows, matrix, ext, weight, overrides=()):
         e = ext.get(r["site_player_id"])
         if not e or r["site_player_id"] in overrides or r["mean"] is None:
             continue
-        new = (1 - weight) * r["mean"] + weight * e["mean"]
+        # an outside 0 means "not playing" (SaberSim zeroes inactives) - zero him at any blend weight
+        new = (1 - weight) * r["mean"] + weight * e["mean"] if e["mean"] > 0 else 0.0
         if r["mean"] > 0.3:
             f = max(new / r["mean"], 0.0)
             for k in ("mean", "median", "p15", "p85", "p95", "floor", "ceiling"):
@@ -263,6 +266,123 @@ def apply_ext(rows, matrix, ext, weight, overrides=()):
                 matrix[r["site_player_id"]] = matrix[r["site_player_id"]] * np.float32(f)
             n += 1
     return n
+
+
+# --- correlation calibration -------------------------------------------------------------------------------
+# The sim's player-vs-player correlations were checked against 2024-25 outcomes (Contest Flashback archive,
+# ~750 team-weeks, residual = actual - SaberSim projection). It under-links a QB to his WR1/WR2 (.27/.22 vs
+# real .39/.38) and the two sides of a game (QB-opp QB -.02 vs .13, WR1-opp WR1 .02 vs .12), and over-links a
+# QB to his own RB1 and DST (.21/.10 vs .04/-.08) and RB1 to RB2 (.03 vs -.08). apply_corr() nudges every
+# game's sim draws toward those real correlations: Gaussian-copula normal scores -> the smallest linear map that
+# takes the sim's correlation C to the target T (C + shrunk gap per role pair) -> back to each player's own
+# sorted draws. Every player's distribution (mean, p85, ...) is unchanged; only who-booms-with-whom moves.
+CORR_ROLES = (("QB", 1), ("RB", 2), ("WR", 3), ("TE", 1), ("DST", 1))
+CORR_DELTA = {  # pooled 2024+2025, shrunk (tau .08), |d| >= .03
+    "opp DST-DST": 0.032, "opp QB-QB": 0.108, "opp QB-RB1": 0.095, "opp QB-RB2": 0.04, "opp QB-TE": 0.044, "opp QB-WR1": 0.048,
+    "opp RB1-RB1": -0.03, "opp RB2-RB2": 0.036, "opp RB2-TE": -0.036, "opp RB2-WR1": -0.034, "opp TE-DST": 0.041, "opp WR1-DST": -0.108,
+    "opp WR1-TE": 0.053, "opp WR1-WR1": 0.07, "opp WR2-DST": -0.061, "opp WR2-WR2": 0.08, "opp WR3-DST": -0.042,
+    "same QB-DST": -0.15, "same QB-RB1": -0.146, "same QB-RB2": -0.057, "same QB-WR1": 0.1, "same QB-WR2": 0.129, "same QB-WR3": 0.039,
+    "same RB1-DST": -0.081, "same RB1-RB2": -0.095, "same RB1-WR2": -0.043, "same RB2-DST": -0.063, "same RB2-TE": -0.03,
+    "same TE-DST": -0.082, "same WR1-TE": 0.056, "same WR1-WR2": 0.11, "same WR1-WR3": 0.03, "same WR2-DST": -0.036, "same WR2-TE": 0.057,
+    "same WR2-WR3": 0.037, "same WR3-TE": 0.031,
+}
+_ROLE_IDX = {"QB": 0, "RB1": 1, "RB2": 2, "WR1": 3, "WR2": 4, "WR3": 5, "TE": 6, "DST": 7}
+_ZTAB = {}
+
+
+def _normal_scores(x):
+    """Average-rank normal scores (ties share a score) without scipy."""
+    n = len(x)
+    if n not in _ZTAB:
+        from statistics import NormalDist
+        nd = NormalDist()
+        _ZTAB[n] = np.array([nd.inv_cdf((j / 2 + 0.5) / n) for j in range(2 * n - 1)])
+    order = np.argsort(x, kind="mergesort")
+    xs = x[order]
+    _, first, counts = np.unique(xs, return_index=True, return_counts=True)
+    twice = np.repeat(2 * first + (counts - 1), counts)          # 2 x average rank, an integer
+    z = np.empty(n)
+    z[order] = _ZTAB[n][twice]
+    return z
+
+
+def _msqrt(a, inv=False):
+    w, v = np.linalg.eigh(a)
+    w = np.clip(w, 1e-6, None)
+    return (v * (w ** (-0.5 if inv else 0.5))) @ v.T
+
+
+def corr_roles(rows, skip=()):
+    """{site_player_id: role} - per team, top-salary QB / RB1-2 / WR1-3 / TE / DST among players still projected."""
+    by = {}
+    for r in rows:
+        if r["site_player_id"] in skip or (r.get("mean") or 0) < 1.0 or eff_status(r) in OUT_STATUSES:
+            continue
+        by.setdefault((r.get("team"), r["position"]), []).append(r)
+    roles = {}
+    for (team, pos), ps in by.items():
+        n = dict(CORR_ROLES).get(pos)
+        if not n:
+            continue
+        for k, r in enumerate(sorted(ps, key=lambda r: -(r.get("salary") or 0))[:n]):
+            roles[r["site_player_id"]] = pos if n == 1 else f"{pos}{k + 1}"
+    return roles
+
+
+def apply_corr(rows, matrix, delta=None, skip=()):
+    """Move each game's sim draws toward the real role-pair correlations (see CORR_DELTA). Returns games adjusted."""
+    if not matrix:
+        return 0
+    delta = CORR_DELTA if delta is None else delta
+    roles = corr_roles(rows, skip)
+    games = {}
+    for r in rows:
+        i = r["site_player_id"]
+        if r.get("game_id") and i in matrix:
+            games.setdefault(r["game_id"], []).append(r)
+    n_games = 0
+    for gid, ps in games.items():
+        ps = [r for r in ps if np.std(matrix[r["site_player_id"]]) > 0]
+        if len(ps) < 3:
+            continue
+        ids = [r["site_player_id"] for r in ps]
+        D = np.stack([np.asarray(matrix[i], dtype=np.float64) for i in ids], axis=1)      # sims x players
+        Z = np.stack([_normal_scores(D[:, j]) for j in range(len(ids))], axis=1)
+        Z -= Z.mean(axis=0)
+        Z /= Z.std(axis=0)
+        C = np.corrcoef(Z, rowvar=False)
+        T = C.copy()
+        touched = False
+        for a in range(len(ps)):
+            ra = roles.get(ids[a])
+            if not ra:
+                continue
+            for b in range(a + 1, len(ps)):
+                rb = roles.get(ids[b])
+                if not rb:
+                    continue
+                same = ps[a].get("team") == ps[b].get("team")
+                x, y = sorted((ra, rb), key=_ROLE_IDX.get)
+                d = delta.get(f"{'same' if same else 'opp'} {x}-{y}")
+                if d:
+                    T[a, b] = T[b, a] = float(np.clip(C[a, b] + d, -0.95, 0.95))
+                    touched = True
+        if not touched:
+            continue
+        w, v = np.linalg.eigh(T)                                  # nearest PSD, unit diagonal
+        T = (v * np.clip(w, 1e-4, None)) @ v.T
+        s = np.sqrt(np.diag(T))
+        T = T / np.outer(s, s)
+        Ch, Ci = _msqrt(C), _msqrt(C, inv=True)
+        M = Ci @ _msqrt(Ch @ T @ Ch) @ Ci                         # optimal-transport map C -> T (smallest change)
+        Z2 = Z @ M
+        for j, i in enumerate(ids):
+            srt = np.sort(D[:, j])
+            new = np.empty(len(srt))
+            new[np.argsort(Z2[:, j], kind="mergesort")] = srt
+            matrix[i] = new.astype(np.asarray(matrix[i]).dtype)
+        n_games += 1
+    return n_games
 
 
 def solve(pool, score, site, opts, prior, blocked, locks, own_map=None):
@@ -390,6 +510,10 @@ def parse_args(argv=None):
     ap.add_argument("--ext-missing", default="",
                     help='same discount for players missing from --ext-file / imported external projections (off by default; '
                          'use it when the outside file is a props-style projection that only lists players with markets).')
+    ap.add_argument("--corr", default="off",
+                    help='"on" = calibrate the sim\'s player-vs-player correlations to 2024-25 outcomes (QB-WR1/WR2 and '
+                         'both sides of a game up; QB-own RB1/DST and RB1-RB2 down; marginals unchanged), "off", or a JSON '
+                         'file of role-pair deltas like CORR_DELTA.')
     ap.add_argument("--ext-file", help="CSV of outside projections (e.g. SaberSim's projections export: Name, Team, Pos, SS Proj ...), "
                                        "matched by name (+team/position). Used by --ext-sim.")
     ap.add_argument("--ext-sim", type=float, default=0.0,
@@ -460,8 +584,9 @@ def build(args, slate, rows, ext, own_model, matrix, quiet=False):
     n_p = apply_props(rows, matrix, args.props, overrides)
     if n_p:
         log(f"props blend {args.props:g}: {n_p} players pulled toward the sportsbook projection")
-        have = {r["site_player_id"] for r in rows if r.get("props") is not None}
-        n_m = apply_missing(rows, matrix, have, getattr(args, "props_missing", ""), overrides)
+        # only trust "no market = not playing" when sportsbook props are in (Kalshi alone lists ~5 players a team)
+        have = {r["site_player_id"] for r in rows if r.get("props") is not None and (r.get("props_src") is None or "odds" in (r.get("props_src") or []))}
+        n_m = apply_missing(rows, matrix, have, getattr(args, "props_missing", ""), overrides) if len(have) >= 100 else 0
         if n_m:
             log(f"props-missing discount ({args.props_missing}): {n_m} players with no market on a posted team")
     if getattr(args, "ext_file", None):
@@ -474,6 +599,11 @@ def build(args, slate, rows, ext, own_model, matrix, quiet=False):
         if getattr(args, "ext_missing", ""):
             n_m = apply_missing(rows, matrix, set(ext), args.ext_missing, overrides)
             log(f"ext-missing discount ({args.ext_missing}): {n_m} players not in the outside file on a posted team")
+    corr = getattr(args, "corr", "off") or "off"
+    if matrix and corr != "off":
+        delta = None if corr == "on" else json.load(open(corr))
+        n_c = apply_corr(rows, matrix, delta, {find(n)["site_player_id"] for n in args.exclude})
+        log(f"correlation calibration ({corr}): {n_c} games")
     own_over = {}
     if args.own_file:
         own_over.update(read_own_file(args.own_file, byname))
