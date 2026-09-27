@@ -107,6 +107,24 @@ def median_from_ladder(points: list[tuple[float, float]]) -> float | None:
     return pts[-1][0]                                      # still above 0.5 at the top rung
 
 
+def _pois_ge(lam: float, k: int) -> float:
+    """P(X >= k) for X ~ Poisson(lam)."""
+    term, cdf = pow(2.718281828459045, -lam), 0.0
+    for i in range(k):
+        if i:
+            term *= lam / i
+        cdf += term
+    return 1.0 - cdf
+
+
+def poisson_fit(ladder: list[tuple[int, float]]) -> float:
+    """Poisson mean whose P(X >= k) best matches an integer ladder [(k, p)] (least squares, grid 0.02 then 0.001)."""
+    def err(lam):
+        return sum((_pois_ge(lam, k) - p) ** 2 for k, p in ladder)
+    best = min((x / 50 for x in range(1, 751)), key=err)
+    return min((best + d / 1000 for d in range(-20, 21) if best + d / 1000 > 0), key=err)
+
+
 def kalshi_lines(gameday: dt.date, verbose: bool = False) -> dict:
     """{norm_name: {"lines": {market: median}, "td": prob or None, "n_markets": k}} for games on `gameday`."""
     ladders: dict[tuple[str, str], list] = {}
@@ -141,9 +159,19 @@ def kalshi_lines(gameday: dt.date, verbose: bool = False) -> dict:
                 rec["td"] = one[0]; rec["n_markets"] += 1
             continue
         if market in COUNT_MARKETS:
-            # integer stat: books quote k - 0.5 with the over near 50%; take the rung whose P(>= k) is closest to 0.5
-            k, p = min(pts, key=lambda tp: abs(tp[1] - 0.5))
-            med = k - 0.5
+            # integer stat (pass TDs, receptions): use the MEAN, like props.py does from sportsbook prices.
+            # Complete ladder (starts at 1+ or at a rung >= 85%, top rung <= 15%, no gaps): E[X] = sum_k P(X >= k).
+            # Otherwise: the Poisson mean that best fits the listed rungs (least squares on P(X >= k)).
+            lad = sorted((int(round(t_)), p_) for t_, p_ in pts)
+            kmin = lad[0][0]
+            if (kmin >= 1 and (kmin == 1 or lad[0][1] >= 0.85) and lad[-1][1] <= 0.15
+                    and all(b[0] == a[0] + 1 for a, b in zip(lad, lad[1:]))):
+                med = (kmin - 1) + sum(p_ for _, p_ in lad)
+            elif kmin >= 1:
+                med = poisson_fit(lad)
+            else:
+                k, p = min(pts, key=lambda tp: abs(tp[1] - 0.5))
+                med = k - 0.5
         else:
             med = median_from_ladder(pts)
         if med is not None:

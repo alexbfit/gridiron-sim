@@ -39,8 +39,10 @@ from common import chunked, fetch_all, get_client, norm_name
 API = "https://api.the-odds-api.com/v4/sports/americanfootball_nfl"
 MARKETS = ["player_pass_yds", "player_pass_tds", "player_rush_yds", "player_reception_yds", "player_receptions", "player_anytime_td"]
 TD_DEVIG = 0.88                       # anytime-TD "Yes" prices carry ~12% vig one-sided
-# actual ~= a + b * raw_props, fitted per position on 2024 wk1-15 (n=1,284 players with all markets)
-CALIB = {"QB": (-4.90, 1.35), "RB": (-2.15, 1.32), "WR": (-1.55, 1.26), "TE": (-0.59, 1.13)}
+# actual ~= a + b * raw_props, fitted per position on real Sunday 7 AM lines, 2025 wk1-18 (2,656 players who played;
+# raw uses the price-based pass TDs / receptions). The first fit (2024 file, slopes 1.26-1.35) came from a props dump with
+# post-kickoff lines and is void.
+CALIB = {"QB": (-2.24, 1.127), "RB": (1.41, 1.039), "WR": (0.30, 1.064), "TE": (0.24, 1.067)}
 NAME_TO_ABBR = {
     "Arizona Cardinals": "ARI", "Atlanta Falcons": "ATL", "Baltimore Ravens": "BAL", "Buffalo Bills": "BUF",
     "Carolina Panthers": "CAR", "Chicago Bears": "CHI", "Cincinnati Bengals": "CIN", "Cleveland Browns": "CLE",
@@ -108,18 +110,63 @@ def api_get(path, params):
         return json.load(r), r.headers.get("x-requests-remaining"), r.headers.get("x-requests-used")
 
 
+# Count stats (pass TDs, receptions) are quoted at coarse half-points (almost every QB is "1.5 TDs"), so the point alone
+# carries little information — the Over/Under PRICES do. For these markets the projection uses the Poisson mean implied
+# by each book's de-vigged over price (averaged over books) instead of the median point. 2025 Sunday 7 AM lines:
+# pass TDs r .17 -> .28 vs actual (SaberSim .32); QB DK value-over-salary r .18 -> .25; all positions .329 -> .344
+# (SaberSim .346).
+PRICED_COUNTS = ("player_pass_tds", "player_receptions")
+
+
+def _pois_sf(lam: float, k: float) -> float:
+    """P(X > k) for X ~ Poisson(lam) and a half-point line k."""
+    n = int(np.floor(k))
+    term, cdf = np.exp(-lam), 0.0
+    for i in range(n + 1):
+        if i:
+            term *= lam / i
+        cdf += term
+    return 1.0 - cdf
+
+
+def poisson_mean(p_over: float, point: float) -> float:
+    lo, hi = 0.01, 15.0
+    for _ in range(50):
+        mid = (lo + hi) / 2
+        if _pois_sf(mid, point) < p_over:
+            lo = mid
+        else:
+            hi = mid
+    return (lo + hi) / 2
+
+
 def collect(outcomes_iter):
-    """outcomes_iter yields (player, market, label, price, point). Returns {player: (lines, td_prob)}."""
+    """outcomes_iter yields (player, market, label, price, point[, bookmaker]). Returns {player: (lines, td_prob)}.
+    Yardage markets: median point across books. Pass TDs / receptions: Poisson mean from the de-vigged over price
+    (needs the bookmaker to pair each book's Over with its Under; falls back to the median point)."""
     lines, tds = defaultdict(lambda: defaultdict(list)), defaultdict(list)
-    for player, market, label, price, point in outcomes_iter:
+    ou = defaultdict(dict)
+    for item in outcomes_iter:
+        player, market, label, price, point = item[:5]
+        book = item[5] if len(item) > 5 else None
         n = norm_name(player)
         if market == "player_anytime_td" and label == "Yes":
             tds[n].append(implied(price))
         elif label == "Over" and point not in (None, ""):
             lines[n][market].append(float(point))
+        if market in PRICED_COUNTS and book and label in ("Over", "Under") and point not in (None, "") and price not in (None, ""):
+            ou[(n, market, book)][label] = (float(point), price)
+    means = defaultdict(list)
+    for (n, m, b), d in ou.items():
+        if "Over" in d and "Under" in d and d["Over"][0] == d["Under"][0]:
+            po, pu = implied(d["Over"][1]), implied(d["Under"][1])
+            means[(n, m)].append(poisson_mean(po / (po + pu), d["Over"][0]))
     out = {}
     for n in set(lines) | set(tds):
         med = {m: float(np.median(v)) for m, v in lines[n].items()}
+        for m in PRICED_COUNTS:
+            if means.get((n, m)):
+                med[m] = float(np.mean(means[(n, m)]))
         td = float(np.mean(tds[n])) * TD_DEVIG if tds.get(n) else 0.0
         out[n] = (med, td)
     return out
@@ -145,7 +192,7 @@ def from_api(key: str, slate_games: list[dict]):
         for book in data.get("bookmakers", []):
             for m in book.get("markets", []):
                 for o in m.get("outcomes", []):
-                    outcomes.append((o.get("description", ""), m["key"], o.get("name"), o.get("price"), o.get("point")))
+                    outcomes.append((o.get("description", ""), m["key"], o.get("name"), o.get("price"), o.get("point"), book.get("key")))
                     n_out += 1
         print(f"  {a}@{h}: {n_out} outcomes from {len(data.get('bookmakers', []))} books · remaining {remaining}")
     return collect(outcomes), team_of
@@ -159,7 +206,7 @@ def from_file(path: str, week: int | None):
             for r in csv.DictReader(fh):
                 if week is not None and int(r["week"]) != week:
                     continue
-                yield r["player"], r["market"], r["label"], r["price"], r.get("point")
+                yield r["player"], r["market"], r["label"], r["price"], r.get("point"), r.get("bookmaker")
     return collect(gen()), {}
 
 
