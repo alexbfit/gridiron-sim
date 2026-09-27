@@ -48,9 +48,10 @@
   };
   const icon = (name, cls = "icon") => `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${P[name] || ""}</svg>`;
   const LOGO = `<svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
-    <defs><linearGradient id="gtwg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="var(--accent)"/><stop offset="1" stop-color="var(--gold)"/></linearGradient></defs>
-    <rect width="32" height="32" rx="9" fill="url(#gtwg)"/>
-    <path d="M17.6 5.5 9.5 17.6h6.2l-1.4 8.9 8.2-12.3h-6.3l1.4-8.7Z" fill="var(--accent-ink)"/></svg>`;
+    <rect width="32" height="32" rx="9" fill="#1b7a3d"/>
+    <path d="M0 10.7h32M0 21.3h32" stroke="#ffffff" stroke-opacity=".22" stroke-width="1.2"/>
+    <g transform="rotate(-35 16 16)"><ellipse cx="16" cy="16" rx="11" ry="6.6" fill="#8a4b22" stroke="#ffffff" stroke-width="1.4"/>
+    <path d="M11.2 16h9.6M13.2 14.3v3.4M15.2 14.3v3.4M17.2 14.3v3.4M19.2 14.3v3.4" stroke="#ffffff" stroke-width="1.3" stroke-linecap="round"/></g></svg>`;
 
   // ------------------------------------------------------------ theme
   function applyTheme(t) { root.dataset.theme = t; store.set("gs_theme", t); document.querySelectorAll("[data-theme-toggle]").forEach(b => b.innerHTML = icon(t === "light" ? "moon" : "sun")); }
