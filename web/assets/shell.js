@@ -1,4 +1,4 @@
-/* Gridiron Sim — shared page shell: header, footer, theme, owner mode, toasts, icons, (optional) accounts.
+/* GameTime Win — shared page shell: header, footer, theme, owner mode, toasts, icons, (optional) accounts.
    Every page loads this with <script src="assets/shell.js"></script> right after config.js.
    It never touches projections, the sim or the optimizer — presentation only. */
 (function () {
@@ -48,8 +48,9 @@
   };
   const icon = (name, cls = "icon") => `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${P[name] || ""}</svg>`;
   const LOGO = `<svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
-    <rect width="32" height="32" rx="9" fill="var(--accent)"/>
-    <path d="M10 7v9.5h12V7M16 16.5V26" fill="none" stroke="var(--accent-ink)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+    <defs><linearGradient id="gtwg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="var(--accent)"/><stop offset="1" stop-color="var(--gold)"/></linearGradient></defs>
+    <rect width="32" height="32" rx="9" fill="url(#gtwg)"/>
+    <path d="M17.6 5.5 9.5 17.6h6.2l-1.4 8.9 8.2-12.3h-6.3l1.4-8.7Z" fill="var(--accent-ink)"/></svg>`;
 
   // ------------------------------------------------------------ theme
   function applyTheme(t) { root.dataset.theme = t; store.set("gs_theme", t); document.querySelectorAll("[data-theme-toggle]").forEach(b => b.innerHTML = icon(t === "light" ? "moon" : "sun")); }
@@ -74,13 +75,13 @@
 
   function header(kind) {
     const nav = kind === "marketing"
-      ? [["#how", "How it works"], ["#features", "Features"], ["#record", "Track record"], ["#pricing", "Pricing"], ["#faq", "FAQ"]]
+      ? [["#offer", "What you get"], ["#how", "How it works"], ["#proof", "Proof"], ["#faq", "FAQ"]]
       : APP_NAV;
     const cta = kind === "marketing"
-      ? `<a class="btn btn-primary btn-sm" href="lineups.html">Open the builder ${icon("arrow")}</a>`
+      ? `<a class="btn btn-primary btn-sm" href="#join"><span>Join<span class="hide-sm"> the free</span> beta</span></a>`
       : `<a class="btn btn-ghost btn-sm hide-sm" href="index.html">Home</a>`;
     return `<div class="inner">
-      <a class="brand" href="index.html" aria-label="Gridiron Sim home">${LOGO}<span>Gridiron Sim</span><small class="owner-flag" title="Owner tools visible (?owner=0 to hide)">Owner</small></a>
+      <a class="brand" href="index.html" aria-label="GameTime Win home">${LOGO}<span>GameTime<b class="brand-win">Win</b></span><small class="owner-flag" title="Owner tools visible (?owner=0 to hide)">Owner</small></a>
       <nav class="main-nav" id="mainNav" aria-label="Main">${nav.map(([h, l]) => `<a href="${h}"${h.toLowerCase() === here ? ' aria-current="page"' : ""}>${l}</a>`).join("")}</nav>
       <div class="header-actions">
         <span id="accountSlot"></span>
@@ -90,14 +91,14 @@
       </div></div>`;
   }
   function footer(kind) {
-    const legal = `Gridiron Sim is an independent research tool and is not affiliated with, endorsed by or sponsored by DraftKings, FanDuel or the NFL. Projections are estimates; daily fantasy contests involve risk and past results do not guarantee future results. Play within your means — must be of legal age in your state to enter paid contests. Problem gambling? Call 1-800-GAMBLER.`;
+    const legal = `GameTime Win is an independent research tool and is not affiliated with, endorsed by or sponsored by DraftKings, FanDuel or the NFL. Projections are estimates; daily fantasy contests involve risk and past results do not guarantee future results. Play within your means — must be of legal age in your state to enter paid contests. Problem gambling? Call 1-800-GAMBLER.`;
     if (kind === "app") return `<div class="app-footer">${legal}</div>`;
     return `<div class="inner">
-      <div><a class="brand" href="index.html">${LOGO}<span>Gridiron Sim</span></a>
-        <p style="margin-top:10px;max-width:320px">NFL game simulations and a lineup optimizer for DraftKings &amp; FanDuel, built on 10,000 simulated games per slate.</p></div>
+      <div><a class="brand" href="index.html">${LOGO}<span>GameTime<b class="brand-win">Win</b></span></a>
+        <p style="margin-top:10px;max-width:320px">NFL DFS lineups built from 10,000 simulated games per slate. Now in free beta at gametimewin.com.</p></div>
       <div><h4>Product</h4><a href="lineups.html">Lineup Builder</a><a href="stats.html">Player Stats</a><a href="results.html">Track Record</a><a href="backtest.html">Accuracy</a></div>
       <div><h4>Learn</h4><a href="guide.html">Quick-start guide</a><a href="index.html#how">How it works</a><a href="index.html#faq">FAQ</a></div>
-      <div><h4>Account</h4><a href="account.html">Sign in</a><a href="index.html#pricing">Pricing</a></div>
+      <div><h4>Beta</h4><a href="index.html#join">Join the beta</a><a href="index.html#faq">FAQ</a></div>
       <div class="legal">${legal}</div></div>`;
   }
 

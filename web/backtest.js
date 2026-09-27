@@ -1,4 +1,4 @@
-/* Gridiron Sim — backtest report. Reads data/backtest.json written by jobs/backtest.py. */
+/* GameTime Win — backtest report. Reads data/backtest.json written by jobs/backtest.py. */
 (async function () {
   const $ = (id) => document.getElementById(id);
   const tt = $("tt");

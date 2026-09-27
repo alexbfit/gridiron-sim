@@ -1,0 +1,48 @@
+/* GameTime Win — beta landing page (index.html). Builds on ui.css tokens + site.css sections. */
+.beta-hero::before { background:
+    radial-gradient(900px 440px at 80% -10%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 70%),
+    radial-gradient(700px 380px at 0% 110%, color-mix(in srgb, var(--gold) 14%, transparent), transparent 70%); }
+.hero h1 em { background: linear-gradient(90deg, var(--accent), var(--gold)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+.beta-form { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; max-width: 560px; }
+.beta-form.center { margin-left: auto; margin-right: auto; justify-content: center; }
+.beta-input { flex: 1 1 250px; height: 46px; font-size: 15px; padding: 0 16px; border-radius: 11px; }
+.beta-form .hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+.beta-msg { flex-basis: 100%; min-height: 20px; font-size: 13.5px; color: var(--muted); }
+.beta-msg.ok { color: var(--accent); font-weight: 600; }
+.beta-msg.err { color: var(--danger); }
+.beta-form.done .beta-input, .beta-form.done button { display: none; }
+.beta-form.done .beta-msg { font-size: 16px; padding: 12px 16px; border-radius: 11px; background: var(--accent-soft); border: 1px solid var(--accent-line); }
+
+.risk-row { list-style: none; padding: 0; margin: 16px 0 0; display: flex; flex-wrap: wrap; gap: 8px 20px; font-size: 13px; color: var(--text-2); }
+.risk-row li { display: flex; align-items: center; gap: 6px; }
+.risk-row svg { width: 15px; height: 15px; color: var(--accent); }
+
+.band-inner.narrow { max-width: 1040px; }
+.center { text-align: center; }
+.pain { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.pain .card { padding: 22px; }
+.pain b { display: block; font: 700 16px var(--font-display); margin-bottom: 6px; }
+.pain p { color: var(--muted); font-size: 14px; line-height: 1.55; }
+
+.stack { max-width: 860px; margin: 0 auto; display: grid; gap: 10px; }
+.stack-row { display: grid; grid-template-columns: 44px 1fr; gap: 16px; align-items: start; padding: 18px 20px; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; }
+.stack-row .ic { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent-line); }
+.stack-row .ic svg { width: 20px; height: 20px; }
+.stack-row h3 { font-size: 16px; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.stack-row p { color: var(--muted); font-size: 14px; line-height: 1.55; }
+.stack-row.bonus { border-color: color-mix(in srgb, var(--gold) 45%, transparent); background: linear-gradient(90deg, var(--gold-soft), var(--surface) 60%); }
+.stack-row.bonus .ic { background: var(--gold-soft); color: var(--gold); border-color: color-mix(in srgb, var(--gold) 45%, transparent); }
+.badge.gold { background: var(--gold-soft); color: var(--gold); border-color: color-mix(in srgb, var(--gold) 40%, transparent); }
+.stack-total { max-width: 860px; margin: 18px auto 0; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding: 20px 22px; border-radius: 14px; background: var(--surface-2); border: 1px dashed var(--accent-line); }
+.stack-total b { display: block; font: 800 40px var(--font-display); letter-spacing: -.03em; color: var(--accent); line-height: 1.1; }
+
+.proof-stats { max-width: 900px; margin: 0 auto; }
+.proof-stats b { color: var(--accent); }
+
+@media (max-width: 800px) {
+  .pain { grid-template-columns: 1fr; }
+  .beta-form .btn { width: 100%; }
+}
+.beta-form input.beta-input { height: 46px; font-size: 15px; padding: 0 16px; border-radius: 11px; }
+.beta-hero h1 { font-size: clamp(34px, 4.6vw, 54px); }

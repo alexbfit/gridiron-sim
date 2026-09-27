@@ -1,4 +1,4 @@
-/* Gridiron Sim — results page: slate_results + results_meta, your exported lineups from localStorage. */
+/* GameTime Win — results page: slate_results + results_meta, your exported lineups from localStorage. */
 (async function () {
   const cfg = window.GRIDIRON_CONFIG || {};
   const $ = (id) => document.getElementById(id);

@@ -1,4 +1,4 @@
-/* Gridiron Sim — sortable stats table backed by Supabase */
+/* GameTime Win — sortable stats table backed by Supabase */
 (function () {
   const cfg = window.GRIDIRON_CONFIG || {};
   const statusEl = document.getElementById("status");

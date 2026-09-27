@@ -1,4 +1,4 @@
-/* Gridiron Sim — lineup builder.
+/* GameTime Win — lineup builder.
    Reads slate_board + the sim matrix from Supabase and optimizes with GLPK in the browser.
    The projection blend, ownership model, LP, candidate pool and selection are unchanged from the
    original builder (same math as jobs/build_lineups.py); this file adds the product UI around them. */
