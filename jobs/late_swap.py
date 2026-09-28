@@ -95,6 +95,7 @@ def main():
     ap.add_argument("--cands", type=int, default=6, help="full: candidates solved per lineup (1 deterministic + jittered)")
     ap.add_argument("--rand", type=float, default=0.15, help="full: projection jitter for the extra candidates (builder default)")
     ap.add_argument("--stack", type=int, default=1, help="full/gpp: QB + this many WR/TE from his team")
+    ap.add_argument("--max-te", type=int, default=2, help="1 = no TE in the FLEX (match the Sunday build)")
     ap.add_argument("--qb-home", action="store_true", help="full swap: only home QBs may come in (matches build_lineups --qb-home)")
     ap.add_argument("--bringback", action="store_true", default=True, help="full/gpp: one opponent RB/WR/TE with the QB stack (default on)")
     ap.add_argument("--no-bringback", dest="bringback", action="store_false")
@@ -199,6 +200,8 @@ def main():
             allowed = {p["position"]}
             if p["position"] in ("RB", "WR", "TE") and pos_counts.get(p["position"], 0) >= mins.get(p["position"], 0):
                 allowed = {"RB", "WR", "TE"}
+                if pos_counts.get("TE", 0) >= args.max_te:
+                    allowed.discard("TE")
             cands = [r for r in rows if r["position"] in allowed and r["site_player_id"] not in ids and r["site_player_id"] not in dead
                      and not locked(r) and r["salary"] <= cap_room
                      and teams.get(r["team"], 0) + 1 <= min(args.max_team, site["max_team"]) and proj(r) > 0]
@@ -246,7 +249,8 @@ def main():
             n_open = 9 - len(locks)
             m_uniq = min(args.min_uniq, max(1, n_open // 2))
             opts = SimpleNamespace(min_salary=0, max_team=args.max_team, contest=contest, stack=args.stack, stack_rb=False,
-                                   bringback=args.bringback, max_own=0, min_uniq=9 - n_open + m_uniq)
+                                   bringback=args.bringback, max_own=0, min_uniq=9 - n_open + m_uniq,
+                                   max_te=max(args.max_te, sum(byid[i]["position"] == "TE" for i in locks if i in byid)))
             prior_open = lambda: [[i for i in f if i not in locks] for f in finals]
             blocked = {i for i, u in usage.items() if u >= cap_exp}
             base_key = lineup_key(ids, matrix, proj, byid, contest)
