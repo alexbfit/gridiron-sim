@@ -28,6 +28,7 @@ jobs:
             python jobs/ingest.py --seasons ${{ github.event.inputs.seasons }}
           else
             python jobs/ingest.py || echo "ingest failed - continuing with the last good data"
+            python jobs/inactives.py || echo "inactives skipped"
           fi
       - name: Re-project latest slate (lines / new games)
         if: ${{ always() && github.event.inputs.seasons == '' }}

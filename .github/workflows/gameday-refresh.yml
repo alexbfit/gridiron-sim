@@ -32,6 +32,7 @@ jobs:
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
         run: |
           python jobs/ingest.py || echo "ingest failed - continuing with the last good data"
+          python jobs/inactives.py || echo "inactives skipped"
           python jobs/odds.py || echo "odds skipped"
           python jobs/weather.py || echo "weather skipped"
           python jobs/props.py --source kalshi || echo "kalshi props skipped"
