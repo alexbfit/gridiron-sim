@@ -24,7 +24,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -37,7 +37,10 @@ jobs:
           elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "files=$(ls data/slates/*.csv data/ownership/*.csv data/projections/*.csv 2>/dev/null | tr '\n' ' ')" >> $GITHUB_OUTPUT
           else
-            echo "files=$(git diff --name-only HEAD~1 HEAD -- 'data/slates/*.csv' 'data/ownership/*.csv' 'data/projections/*.csv' | tr '\n' ' ')" >> $GITHUB_OUTPUT
+            # the whole push, not just the last commit (9/28: a two-commit push hid the week-4 salary CSV in the first commit)
+            BASE="${{ github.event.before }}"
+            if [ -z "$BASE" ] || ! git cat-file -e "$BASE^{commit}" 2>/dev/null || [ "$BASE" = "0000000000000000000000000000000000000000" ]; then BASE="HEAD~1"; fi
+            echo "files=$(git diff --name-only "$BASE" HEAD -- 'data/slates/*.csv' 'data/ownership/*.csv' 'data/projections/*.csv' | tr '\n' ' ')" >> $GITHUB_OUTPUT
           fi
       - name: Import + project
         env:
