@@ -31,16 +31,33 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
         run: |
-          python jobs/ingest.py
+          python jobs/ingest.py || echo "ingest failed - continuing with the last good data"
           python jobs/odds.py || echo "odds skipped"
           python jobs/weather.py || echo "weather skipped"
           python jobs/props.py --source kalshi || echo "kalshi props skipped"
           python jobs/project.py --latest || echo "no slate"
           python jobs/simulate.py --latest || echo "no slate"
       - name: Sportsbook player props merged with Kalshi (Sunday 7 AM ET, or on request)
-        if: ${{ github.event.schedule == '0 11 * * 0' || github.event.inputs.props == 'true' }}
+        if: ${{ always() && (github.event.schedule == '0 11 * * 0' || github.event.inputs.props == 'true') }}
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
-        run: python jobs/props.py --source both --force || echo "props skipped"
+        run: |
+          # Supabase pg_cron (supabase/pending/014_cron_dispatch.sql) dispatches this run on time; GitHub's own
+          # schedule is only a backup and is often hours late. Never pay for sportsbook props twice in a morning:
+          # skip if >= 150 sportsbook-sourced rows for the latest slate were written in the last 3 hours.
+          if python - <<'PY'
+          import json, os, sys, urllib.request, datetime as dt
+          U, K = os.environ["SUPABASE_URL"], os.environ["SUPABASE_SERVICE_ROLE_KEY"]
+          h = {"apikey": K}
+          get = lambda q: json.load(urllib.request.urlopen(urllib.request.Request(f"{U}/rest/v1/{q}", headers=h)))
+          slate = get("slates?select=slate_id&order=imported_at.desc&limit=1")[0]["slate_id"]
+          since = (dt.datetime.now(dt.timezone.utc) - dt.timedelta(hours=3)).strftime("%Y-%m-%dT%H:%M:%SZ")
+          rows = get(f"slate_projections?select=components&slate_id=eq.{slate}&method=eq.props&updated_at=gte.{since}")
+          n = sum("odds" in ((r.get("components") or {}).get("src") or []) for r in rows)
+          print(f"sportsbook props written in the last 3 h: {n}")
+          sys.exit(0 if n >= 150 else 1)
+          PY
+          then echo "fresh sportsbook props already landed - skipping the paid pull"
+          else python jobs/props.py --source both --force || echo "props skipped"; fi

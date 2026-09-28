@@ -27,10 +27,10 @@ jobs:
           if [ -n "${{ github.event.inputs.seasons }}" ]; then
             python jobs/ingest.py --seasons ${{ github.event.inputs.seasons }}
           else
-            python jobs/ingest.py
+            python jobs/ingest.py || echo "ingest failed - continuing with the last good data"
           fi
       - name: Re-project latest slate (lines / new games)
-        if: ${{ github.event.inputs.seasons == '' }}
+        if: ${{ always() && github.event.inputs.seasons == '' }}
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
