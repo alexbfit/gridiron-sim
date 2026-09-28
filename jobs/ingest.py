@@ -279,7 +279,10 @@ def main():
         live = client.table("games").select("game_id,spread_line,total_line").eq("lines_source", "odds-api").execute().data
     except Exception:
         live = []
-    keep = {r["game_id"]: (r["spread_line"], r["total_line"]) for r in live}
+    # ...but only for games not played yet: for finished games nflverse has the closing line, and an odds-api
+    # value written after kickoff may be a live in-game line (week 3, before odds.py skipped started games)
+    played = set(games.filter(pl.col("home_score").is_not_null())["game_id"].to_list()) if "home_score" in games.columns else set()
+    keep = {r["game_id"]: (r["spread_line"], r["total_line"]) for r in live if r["game_id"] not in played}
     if keep:
         games = games.with_columns([
             pl.col("game_id").map_elements(lambda g: float(keep[g][0]) if g in keep else None, return_dtype=pl.Float64).alias("_s"),

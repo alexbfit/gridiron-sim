@@ -74,7 +74,15 @@ def main():
                       .lte("gameday", (today + dt.timedelta(days=10)).isoformat()), order="game_id")
     by_pair = {(g["home_team"], g["away_team"]): g for g in games}
     updates = []
+    now = dt.datetime.now(dt.timezone.utc)
+    skipped = 0
     for ev in events:
+        # The Odds API keeps returning games in progress with LIVE lines; writing those replaced the week-3
+        # closing lines with in-game numbers (TEN-NYG total 20.0 at 3:15 PM). Only pre-kickoff lines are stored.
+        ct = ev.get("commence_time")
+        if ct and dt.datetime.fromisoformat(ct.replace("Z", "+00:00")) <= now:
+            skipped += 1
+            continue
         h, a = NAME_TO_ABBR.get(ev["home_team"]), NAME_TO_ABBR.get(ev["away_team"])
         g = by_pair.get((h, a))
         if not g:
@@ -91,7 +99,7 @@ def main():
         print(f"  {u['game_id']}: spread {old[0]} -> {u['spread_line']}, total {old[1]} -> {u['total_line']}{'  *moved*' if moved else ''}")
         if not args.dry_run:
             client.table("games").update(u).eq("game_id", u["game_id"]).execute()
-    print(f"{'would update' if args.dry_run else 'updated'} {len(updates)} games")
+    print(f"{'would update' if args.dry_run else 'updated'} {len(updates)} games ({skipped} already kicked off — left alone)")
 
 
 if __name__ == "__main__":
