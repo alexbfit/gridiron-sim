@@ -37,6 +37,9 @@ import numpy as np
 from common import slate_started, chunked, fetch_all, get_client, norm_name
 
 API = "https://api.the-odds-api.com/v4/sports/americanfootball_nfl"
+# Historical snapshots (paid plans): same paths under /historical, plus date=<ISO>; the payload is wrapped in
+# {"timestamp", "previous_timestamp", "next_timestamp", "data": ...}. Costs ~10x the live call per market.
+API_HIST = "https://api.the-odds-api.com/v4/historical/sports/americanfootball_nfl"
 MARKETS = ["player_pass_yds", "player_pass_tds", "player_rush_yds", "player_reception_yds", "player_receptions", "player_anytime_td"]
 TD_DEVIG = 0.88                       # anytime-TD "Yes" prices carry ~12% vig one-sided
 # actual ~= a + b * raw_props, fitted per position on real Sunday 7 AM lines, 2025 wk1-18 (2,656 players who played;
@@ -104,10 +107,21 @@ def calibrated(pos: str, raw: float) -> float:
 
 
 # ------------------------------------------------------------------ sources
-def api_get(path, params):
+def api_get(path, params, as_of: str | None = None):
+    """Live call, or the historical snapshot nearest BEFORE `as_of` (ISO 8601 UTC, e.g. 2026-09-27T11:00:00Z)."""
+    if as_of:
+        params = {**params, "date": as_of}
     q = urllib.parse.urlencode(params)
-    with urllib.request.urlopen(f"{API}/{path}?{q}", timeout=60) as r:
-        return json.load(r), r.headers.get("x-requests-remaining"), r.headers.get("x-requests-used")
+    with urllib.request.urlopen(f"{API_HIST if as_of else API}/{path}?{q}", timeout=60) as r:
+        data = json.load(r)
+        if as_of and isinstance(data, dict) and "data" in data:
+            snap = data.get("timestamp")
+            if snap and api_get.snap != snap:
+                print(f"  historical snapshot {snap} (asked {as_of})")
+                api_get.snap = snap
+            data = data["data"]
+        return data, r.headers.get("x-requests-remaining"), r.headers.get("x-requests-used")
+api_get.snap = None
 
 
 # Count stats (pass TDs, receptions) are quoted at coarse half-points (almost every QB is "1.5 TDs"), so the point alone
@@ -172,9 +186,10 @@ def collect(outcomes_iter):
     return out
 
 
-def from_api(key: str, slate_games: list[dict]):
-    """Per-event player props for the slate's games. Returns ({norm_name: (lines, td_prob)}, {norm_name: team})."""
-    events, remaining, _ = api_get("events", {"apiKey": key})
+def from_api(key: str, slate_games: list[dict], as_of: str | None = None):
+    """Per-event player props for the slate's games. Returns ({norm_name: (lines, td_prob)}, {norm_name: team}).
+    as_of = ISO UTC time: read The Odds API's historical snapshot instead of live lines (restores a lost pull)."""
+    events, remaining, _ = api_get("events", {"apiKey": key}, as_of)
     want = {(g["home_team"], g["away_team"]): g for g in slate_games}
     picked = []
     for ev in events:
@@ -182,12 +197,14 @@ def from_api(key: str, slate_games: list[dict]):
         if (h, a) in want:
             picked.append((ev, h, a))
     print(f"  {len(picked)} of {len(events)} events match the slate · requests remaining: {remaining}")
-    if remaining is not None and int(remaining) < len(picked) * len(MARKETS) + 20:
-        raise SystemExit(f"not enough Odds API credits left ({remaining}) for {len(picked)} events x {len(MARKETS)} markets")
+    need = len(picked) * len(MARKETS) * (10 if as_of else 1) + 20
+    if remaining is not None and int(remaining) < need:
+        raise SystemExit(f"not enough Odds API credits left ({remaining}) for {len(picked)} events x {len(MARKETS)} markets"
+                         + (" at historical rates (~10x)" if as_of else ""))
     outcomes, team_of = [], {}
     for ev, h, a in picked:
         data, remaining, used = api_get(f"events/{ev['id']}/odds",
-                                        {"apiKey": key, "regions": "us", "markets": ",".join(MARKETS), "oddsFormat": "american"})
+                                        {"apiKey": key, "regions": "us", "markets": ",".join(MARKETS), "oddsFormat": "american"}, as_of)
         n_out = 0
         for book in data.get("bookmakers", []):
             for m in book.get("markets", []):
@@ -245,11 +262,21 @@ def main():
     ap.add_argument("--week", type=int, help="week filter for --file")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--force", action="store_true", help="refetch even if props for this slate are < 6 h old")
+    ap.add_argument("--as-of", help="restore a lost pull: ISO UTC time of the snapshot to read from The Odds API's historical "
+                                    "endpoint (e.g. 2026-09-27T11:00:00Z = Sun 7 AM ET). Sportsbooks only (no Kalshi history), "
+                                    "implies --force, costs ~10x a live pull (~800 credits for 13 games). updated_at is set to that time.")
     ap.add_argument("--source", choices=["odds", "kalshi", "both"], default="odds",
                     help="odds = The Odds API sportsbooks (needs ODDS_API_KEY, ~84 credits); kalshi = Kalshi player ladders "
                          "(free, no key); both = average the two where both exist. The workflows call --source kalshi on every "
                          "refresh and --source both on Sunday 7 AM.")
     args = ap.parse_args()
+    if args.as_of:
+        args.force = True
+        if args.source != "odds":
+            print("--as-of reads sportsbook history only; using --source odds")
+            args.source = "odds"
+        if not args.as_of.endswith("Z") and "+" not in args.as_of:
+            args.as_of += "Z"
 
     client = get_client(need_write=not args.dry_run)
     q = client.table("slates").select("*")
@@ -286,7 +313,7 @@ def main():
                 print("ODDS_API_KEY not set — no sportsbook props")
             else:
                 try:
-                    props, _ = from_api(key, games)
+                    props, _ = from_api(key, games, args.as_of)
                 except SystemExit as e:
                     print(f"  sportsbook props skipped: {e}")
                 except Exception as e:
@@ -325,7 +352,7 @@ def main():
                     "method": "props", "mean": round(calibrated(c["position"], raw), 2), "median": round(raw, 2),
                     "components": {"lines": {k.replace("player_", ""): v for k, v in lines.items()}, "td_prob": round(td, 3), "raw": round(raw, 2),
                                    "src": [x for x, names in (("odds", odds_names), ("kalshi", kal_names)) if n in names]},
-                    "updated_at": dt.datetime.now(dt.timezone.utc).isoformat()})
+                    "updated_at": (args.as_of.replace("Z", "+00:00") if args.as_of else dt.datetime.now(dt.timezone.utc).isoformat())})
         matched += 1
     print(f"{slate['slate_key']}: {matched} players with complete props, {partial} skipped (core markets not posted yet), "
           f"{len(unmatched)} names not on the slate" + (f" (e.g. {', '.join(unmatched[:6])})" if unmatched else ""))

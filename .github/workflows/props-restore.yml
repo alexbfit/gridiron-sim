@@ -1,0 +1,42 @@
+name: props-restore
+
+# Put back a lost sportsbook-props pull from The Odds API's historical snapshots (paid plan).
+# Actions -> props-restore -> Run workflow: slate_key = DK-2026-03-main, as_of = 2026-09-27T11:00:00Z (Sun 7 AM ET).
+# Costs ~10x a live pull (~800 credits for a 13-game slate). Writes the rows with updated_at = as_of.
+# resim=true also re-projects + re-sims the slate — only for a slate that has NOT been played yet: on a finished slate the
+# stored sim is the pre-kickoff one that Results/Flashback graded, and a re-sim with today's statuses would overwrite it.
+# Since migration 016 nothing is deleted without a copy in slate_projections_history, so this is for pulls lost before 016.
+on:
+  workflow_dispatch:
+    inputs:
+      slate_key:
+        description: "slate key, e.g. DK-2026-03-main"
+        required: true
+      as_of:
+        description: "snapshot time, ISO UTC, e.g. 2026-09-27T11:00:00Z (Sun 7 AM ET)"
+        required: true
+      resim:
+        description: "re-project + re-sim afterwards — only for a slate that has not kicked off yet (true/false)"
+        required: false
+        default: "false"
+
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r jobs/requirements.txt
+      - name: Restore props from the historical snapshot
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+        run: |
+          python jobs/props.py --slate-key "${{ github.event.inputs.slate_key }}" --as-of "${{ github.event.inputs.as_of }}"
+          if [ "${{ github.event.inputs.resim }}" = "true" ]; then
+            python jobs/project.py --slate-key "${{ github.event.inputs.slate_key }}"
+            python jobs/simulate.py --slate-key "${{ github.event.inputs.slate_key }}"
+          fi
