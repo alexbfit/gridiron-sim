@@ -34,7 +34,7 @@ from collections import Counter, defaultdict
 
 import numpy as np
 
-from common import chunked, fetch_all, get_client, norm_name
+from common import slate_started, chunked, fetch_all, get_client, norm_name
 
 API = "https://api.the-odds-api.com/v4/sports/americanfootball_nfl"
 MARKETS = ["player_pass_yds", "player_pass_tds", "player_rush_yds", "player_reception_yds", "player_receptions", "player_anytime_td"]
@@ -261,11 +261,21 @@ def main():
     sal = fetch_all(client.table("slate_salaries").select("site_player_id,player_id,player_name,position,team,salary")
                     .eq("slate_id", slate["slate_id"]), order="site_player_id")
     if not args.file:
-        existing = client.table("slate_projections").select("updated_at").eq("slate_id", slate["slate_id"]).eq("method", "props").limit(1).execute().data
+        # Once the slate has kicked off, lines move on in-game action and settled Kalshi ladders parse to nothing:
+        # a refresh then wiped the 7 AM sportsbook props (week 3, 9/27). Props are frozen from the first kickoff.
+        if slate_started(client, slate) and not args.force:
+            print(f"{slate['slate_key']} has started — props frozen (use --force to override)")
+            return
+        existing = client.table("slate_projections").select("updated_at,components").eq("slate_id", slate["slate_id"]).eq("method", "props").execute().data
         if existing and not args.force:
-            age = dt.datetime.now(dt.timezone.utc) - dt.datetime.fromisoformat(existing[0]["updated_at"].replace("Z", "+00:00"))
+            newest = max(dt.datetime.fromisoformat(r["updated_at"].replace("Z", "+00:00")) for r in existing)
+            age = dt.datetime.now(dt.timezone.utc) - newest
             if age < dt.timedelta(hours=6):
                 print(f"props for {slate['slate_key']} are {age.seconds // 60} min old — skipping (use --force)")
+                return
+            n_odds = sum("odds" in ((r.get("components") or {}).get("src") or []) for r in existing)
+            if args.source == "kalshi" and n_odds:
+                print(f"{n_odds} sportsbook props already stored for {slate['slate_key']} — a Kalshi-only refresh would replace them; skipping (use --force)")
                 return
         games = fetch_all(client.table("games").select("game_id,home_team,away_team,gameday")
                           .in_("game_id", list(slate.get("game_ids") or [])), order="game_id")
@@ -326,6 +336,9 @@ def main():
         print(f"   {r['position']:3} {r['player_name']:<24} ${r['salary']:<6} props {r['mean']:5.1f}  (raw {r['median']:5.1f}, TD {r['components']['td_prob']:.2f})")
     if args.dry_run:
         print("dry run — no writes")
+        return
+    if not out:
+        print("nothing to write — keeping the stored props")
         return
     client.table("slate_projections").delete().eq("slate_id", slate["slate_id"]).eq("method", "props").execute()
     for batch in chunked(out):
