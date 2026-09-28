@@ -33,6 +33,7 @@ jobs:
         run: |
           python jobs/ingest.py || echo "ingest failed - continuing with the last good data"
           python jobs/inactives.py || echo "inactives skipped"
+          python jobs/fetch_dk_salaries.py --import || echo "dk salaries skipped"
           python jobs/odds.py || echo "odds skipped"
           python jobs/weather.py || echo "weather skipped"
           python jobs/props.py --source kalshi || echo "kalshi props skipped"

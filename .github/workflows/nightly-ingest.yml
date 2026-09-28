@@ -29,6 +29,8 @@ jobs:
           else
             python jobs/ingest.py || echo "ingest failed - continuing with the last good data"
             python jobs/inactives.py || echo "inactives skipped"
+            # next Sunday's DK main slate straight from DraftKings (no CSV drop needed); imports only when new or grown
+            python jobs/fetch_dk_salaries.py --import || echo "dk salaries skipped (manual data/slates/ drop still works)"
           fi
       - name: Re-project latest slate (lines / new games)
         if: ${{ always() && github.event.inputs.seasons == '' }}

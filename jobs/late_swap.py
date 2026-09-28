@@ -50,6 +50,7 @@ import build_lineups as bl
 from common import fetch_all, get_client, norm_name
 
 ET = ZoneInfo("America/New_York")
+STACK_KEEP = 0.7   # quick swap: keep the stack / bring-back when the structural replacement is worth >= this share of the best option
 
 
 def kickoff_et(g):
@@ -180,7 +181,7 @@ def main():
         ps = [byid[i] for i in ids if i in byid]
         if len(ps) != 9:
             report.append({"contest": L["contest"], "idx": L["idx"], "error": "lineup has players not on the board"}); new_sets.append((L, ids)); continue
-        bad = [p for p in ps if p["site_player_id"] in dead]
+        bad = sorted([p for p in ps if p["site_player_id"] in dead], key=lambda p: p["position"] == "QB")   # QB last: it sees what is left of his stack
         swaps = []
         for p in bad:
             if locked(p):
@@ -208,9 +209,36 @@ def main():
             if not cands:
                 swaps.append({"out": p["player_name"], "in": None, "reason": "no eligible replacement under the cap"}); continue
             best = max(cands, key=lambda r: (round(proj(r), 1), p90(r)))
+            # Keep the lineup's structure when the scratched player is part of it (9/28): the QB (-> his team's
+            # backup QB, so the QB+2 pieces stay stacked), a stack piece (-> another pass catcher of the QB's team)
+            # or the lone bring-back (-> another skill player from the QB's opponent). Only when the structural
+            # pick is worth >= STACK_KEEP of the best unconstrained option; otherwise take the best player.
+            qb = next((c for c in cur if c["position"] == "QB" and c["site_player_id"] != p["site_player_id"]), None)
+            want_team, why = None, ""
+            if p["position"] == "QB":
+                mates = [c for c in cur if c["team"] == p["team"] and c["position"] in ("WR", "TE") and c["site_player_id"] != p["site_player_id"]]
+                if len(mates) >= max(1, args.stack):
+                    want_team, why = p["team"], f"keeps the {p['team']} stack"
+            elif qb is not None and p["position"] in ("RB", "WR", "TE"):
+                if p["team"] == qb["team"] and p["position"] in ("WR", "TE"):
+                    left = [c for c in cur if c["team"] == qb["team"] and c["position"] in ("WR", "TE") and c["site_player_id"] != p["site_player_id"]]
+                    if len(left) < args.stack:
+                        want_team, why = qb["team"], f"keeps {qb['player_name']}'s stack"
+                elif p["team"] == qb.get("opponent") and args.bringback:
+                    left = [c for c in cur if c["team"] == qb.get("opponent") and c["position"] in ("RB", "WR", "TE") and c["site_player_id"] != p["site_player_id"]]
+                    if not left:
+                        want_team, why = qb.get("opponent"), "keeps the bring-back"
+            kept_structure = False
+            if want_team:
+                same = [r for r in cands if r["team"] == want_team]
+                if same:
+                    b2 = max(same, key=lambda r: (round(proj(r), 1), p90(r)))
+                    if proj(b2) >= STACK_KEEP * proj(best):
+                        best, kept_structure = b2, True
             ids[ids.index(p["site_player_id"])] = best["site_player_id"]
             swaps.append({"out": p["player_name"], "out_proj": round(proj(p), 1), "in": best["player_name"], "in_proj": round(proj(best), 1),
-                          "in_salary": best["salary"], "salary_left": cap_room - best["salary"]})
+                          "in_salary": best["salary"], "salary_left": cap_room - best["salary"],
+                          **({"note": why} if kept_structure else ({"note": f"structure not kept ({why}: no option worth >= {STACK_KEEP:.0%} of the best)"} if want_team else {}))})
         new_sets.append((L, ids))
         if swaps:
             report.append({"contest": L["contest"], "idx": L["idx"], "swaps": swaps,
@@ -223,7 +251,8 @@ def main():
     for r in report:
         for s in r.get("swaps", []):
             print(f"  #{r['idx']:>2} {r['contest']}: {s['out']} -> {s['in'] or '(none: ' + s.get('reason', '') + ')'}"
-                  + (f"  proj {s['out_proj']} -> {s['in_proj']}, ${int(s['in_salary']):,}" if s.get("in") else ""), file=sys.stderr)
+                  + (f"  proj {s['out_proj']} -> {s['in_proj']}, ${int(s['in_salary']):,}" if s.get("in") else "")
+                  + (f"  [{s['note']}]" if s.get("note") else ""), file=sys.stderr)
     quick_sets = [(L, list(ids)) for L, ids in new_sets]
 
     # ---------------------------------------------------------------- full swap

@@ -715,6 +715,32 @@ def build(args, slate, rows, ext, own_model, matrix, quiet=False):
             break
         if L not in kept and fits(L):
             take(L)
+    # Fill pass: when every remaining candidate carries a player already at the exposure cap (seen 9/28: 47 of 50
+    # with --max-te 1 / .35 / 4), solve the missing lineups directly with the capped players blocked and uniqueness
+    # against the kept set, so the design (stack, min-uniq, cap) holds instead of relaxing --max-exp or --min-uniq.
+    if len(kept) < args.n and not use_ev:
+        short = args.n - len(kept)
+        for _ in range(short * 3):
+            if len(kept) >= args.n:
+                break
+            capped = {i for i, u in used.items() if i not in locks and u >= (qcap if byid[i]["position"] == "QB" else cap)}
+            score = {}
+            for p in pool:
+                m = proj(p)
+                cw, cq = getattr(args, "ceil_weight", 0.4), getattr(args, "ceil_q", "p85")
+                base = 0.8 * m + 0.2 * (p["floor"] or 0) if args.contest == "cash" else (1 - cw) * m + cw * ((p.get(cq) or p["p85"] or m) * (m / max(p["mean"] or 0.1, 0.1)))
+                jit = 1 + (args.rand * random.gauss(0, 1) * ((p["stdev"] or 5) / max(m, 1)) if args.contest == "gpp" else 0)
+                score[p["site_player_id"]] = base * jit - (args.fade * 0.06 * own_map[p["site_player_id"]] if args.contest == "gpp" else 0)
+            ids = solve(pool, score, site, args, [L["ids"] for L in kept], capped, locks, own_map)
+            if not ids:
+                break
+            take(lineup_stats(ids, byid, proj, own_map, matrix))
+        filled = len(kept) - (args.n - short)
+        log(f"fill pass: candidate pool covered {args.n - short}/{args.n}; solved {filled} more with capped players blocked"
+            + ("" if len(kept) >= args.n else f" — still short ({len(kept)}/{args.n}); raise --candidates or lower --min-uniq"))
+        if matrix and len(kept) > args.n - short:
+            key2 = "p50" if args.contest == "cash" else getattr(args, "rank", "p90")
+            kept.sort(key=lambda L: -L.get(key2, L["proj"]))
     lineups = kept
     # leverage = your exposure - projected field ownership. Positive = a stand, negative = a fade.
     exp = {}
