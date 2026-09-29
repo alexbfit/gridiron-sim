@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Simple Mode · GameTime Win</title>
+<meta name="description" content="Drop in your DraftKings entries file, pick two players, and get back a full set of ranked, upload-ready NFL lineups.">
+<script>try{document.documentElement.dataset.theme=localStorage.getItem("gs_theme")||"dark";if(localStorage.getItem("gs_owner")==="1")document.documentElement.classList.add("owner")}catch(e){}</script>
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/ui.css">
+<link rel="stylesheet" href="assets/simple.css">
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="assets/shell.js"></script>
+</head>
+<body class="app simple">
+<header data-shell-header="app"></header>
+
+<main class="sm" data-requires-sub>
+  <ol class="sm-steps" aria-label="Steps">
+    <li data-step="upload" aria-current="step"><b>1</b><span>Upload</span></li>
+    <li data-step="pick"><b>2</b><span>Pick 2</span></li>
+    <li data-step="build"><b>3</b><span>Build</span></li>
+    <li data-step="reveal"><b>4</b><span>Reveal</span></li>
+  </ol>
+
+  <!-- ============================================ 1. upload -->
+  <section class="sm-screen" id="scrUpload">
+    <div class="sm-hero">
+      <p class="sm-kicker">Simple mode</p>
+      <h1>Your lineups in four taps.</h1>
+      <p class="sm-sub">Upload the entries file from DraftKings. We read your contests and build a lineup for every entry from 10,000 simulated games.</p>
+    </div>
+
+    <label class="drop" id="drop" tabindex="0">
+      <input type="file" id="file" accept=".csv,text/csv" hidden>
+      <span class="drop-icon" aria-hidden="true">
+        <svg viewBox="0 0 48 48" width="48" height="48"><path d="M24 31V11m0 0-8 8m8-8 8 8" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 29v6a4 4 0 0 0 4 4h22a4 4 0 0 0 4-4v-6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
+      </span>
+      <b class="drop-title">Drop your DKEntries.csv here</b>
+      <span class="drop-hint">or <u>choose a file</u> · a DKSalaries.csv works too</span>
+    </label>
+    <p class="sm-error" id="uploadError" role="alert" hidden></p>
+
+    <details class="howto">
+      <summary>Where do I get the entries file?</summary>
+      <ol>
+        <li>Enter your NFL Classic contests on DraftKings as usual (empty lineups are fine).</li>
+        <li>Go to <b>My Contests → Upcoming</b>, choose the slate, and click <b>Edit Entries</b>.</li>
+        <li>Click <b>Download CSV</b>. That file is your <code>DKEntries.csv</code> — drop it above.</li>
+      </ol>
+      <p class="muted small">No entries yet? Download the salaries CSV from any contest's lobby (<b>Export to CSV</b>) and drop that instead — you'll choose how many lineups you want.</p>
+    </details>
+  </section>
+
+  <!-- ============================================ 2. pick -->
+  <section class="sm-screen" id="scrPick" hidden>
+    <div class="sm-hero sm-hero-tight">
+      <p class="sm-kicker" id="pickKicker"></p>
+      <h1>Make it yours: tap two players.</h1>
+      <p class="sm-sub">Tap once to <b class="like-t">like</b> a player (more of him), twice to <b class="fade-t">fade</b> him (none of him). DraftKings requires your input on at least two players before any tool builds for you.</p>
+    </div>
+
+    <div class="entries-sum" id="entriesSum"></div>
+
+    <div class="pick-bar">
+      <div class="seg" id="posSeg" role="group" aria-label="Position">
+        <button type="button" data-pos="ALL" aria-pressed="true">Top</button>
+        <button type="button" data-pos="QB" aria-pressed="false">QB</button>
+        <button type="button" data-pos="RB" aria-pressed="false">RB</button>
+        <button type="button" data-pos="WR" aria-pressed="false">WR</button>
+        <button type="button" data-pos="TE" aria-pressed="false">TE</button>
+        <button type="button" data-pos="DST" aria-pressed="false">DST</button>
+      </div>
+      <input class="input" id="pickSearch" type="search" placeholder="Search any player" aria-label="Search players">
+    </div>
+    <div class="pick-grid" id="pickGrid"></div>
+
+    <div class="count-row" id="countRow" hidden>
+      <label for="nWanted">How many lineups?</label>
+      <div class="seg" id="nSeg" role="group" aria-label="Number of lineups">
+        <button type="button" data-n="1">1</button><button type="button" data-n="3">3</button>
+        <button type="button" data-n="20" aria-pressed="true">20</button><button type="button" data-n="50">50</button><button type="button" data-n="150">150</button>
+      </div>
+    </div>
+
+    <div class="build-dock">
+      <div class="dock-picks" id="dockPicks"><span class="muted">No picks yet</span></div>
+      <button class="btn btn-primary btn-lg build-btn" id="buildBtn" disabled>
+        <span id="buildLabel">Pick 2 players</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ============================================ 3. build -->
+  <section class="sm-screen forge" id="scrBuild" hidden aria-live="polite">
+    <div class="forge-bg" aria-hidden="true"><i></i><i></i><i></i></div>
+    <div class="forge-core" aria-hidden="true">
+      <div class="ring r1"></div><div class="ring r2"></div><div class="ring r3"></div>
+      <div class="core-glow"></div>
+      <div class="core-num" id="forgeNum">0</div>
+    </div>
+    <div class="forge-text">
+      <p class="forge-kicker">Simulated games</p>
+      <h2 id="forgeStage">Loading the slate</h2>
+      <div class="forge-bar"><i id="forgeFill"></i></div>
+      <p class="forge-sub" id="forgeSub">&nbsp;</p>
+    </div>
+    <div class="ticker" aria-hidden="true"><div id="ticker"></div></div>
+  </section>
+
+  <!-- ============================================ 4. reveal -->
+  <section class="sm-screen reveal" id="scrReveal" hidden>
+    <div class="pack-stage" id="packStage">
+      <div class="rays" aria-hidden="true"></div>
+      <button class="pack" id="pack" aria-label="Open your pack">
+        <span class="pack-top" aria-hidden="true"></span>
+        <span class="pack-foil" aria-hidden="true"></span>
+        <span class="pack-body">
+          <span class="pack-brand">GameTime<b>Win</b></span>
+          <span class="pack-count" id="packCount">40</span>
+          <span class="pack-label">lineups</span>
+          <span class="pack-week" id="packWeek">Week 5</span>
+        </span>
+      </button>
+      <p class="pack-hint">Tap the pack to open it</p>
+    </div>
+
+    <div class="pull" id="pull" hidden>
+      <p class="pull-label" id="pullLabel">Your best pull</p>
+      <div class="pull-slot" id="pullSlot"></div>
+      <div class="pull-actions">
+        <button class="btn btn-lg" id="pullNext">Next</button>
+        <button class="btn btn-ghost" id="pullSkip">Show all</button>
+      </div>
+    </div>
+
+    <div class="binder" id="binder" hidden>
+      <div class="binder-head">
+        <div>
+          <h2>Your pack</h2>
+          <p class="muted" id="binderSub"></p>
+        </div>
+        <div class="binder-actions">
+          <button class="btn" id="againBtn">Start over</button>
+          <button class="btn btn-primary btn-lg" id="dlBtn">Download for DraftKings</button>
+        </div>
+      </div>
+      <div class="tier-tabs" id="tierTabs" role="group" aria-label="Filter by tier"></div>
+      <div class="upload-note" id="uploadNote"></div>
+      <div class="card-grid" id="cardGrid"></div>
+    </div>
+  </section>
+</main>
+
+<canvas id="fx" class="fx" aria-hidden="true"></canvas>
+<footer data-shell-footer="app"></footer>
+<script type="module" src="simple.js"></script>
+</body>
+</html>

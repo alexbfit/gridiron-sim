@@ -67,6 +67,7 @@
   // ------------------------------------------------------------ header / footer
   const APP_NAV = [
     ["lineups.html", "Lineup Builder"],
+    ["simple.html", "Simple Mode"],
     ["stats.html", "Player Stats"],
     ["results.html", "Track Record"],
     ["backtest.html", "Accuracy"],
@@ -97,7 +98,7 @@
     return `<div class="inner">
       <div><a class="brand" href="index.html">${LOGO}<span>GameTime<b class="brand-win">Win</b></span></a>
         <p style="margin-top:10px;max-width:320px">NFL DFS lineups built from 10,000 simulated games per slate. Now in free beta at gametimewin.com.</p></div>
-      <div><h4>Product</h4><a href="lineups.html">Lineup Builder</a><a href="stats.html">Player Stats</a><a href="results.html">Track Record</a><a href="backtest.html">Accuracy</a></div>
+      <div><h4>Product</h4><a href="lineups.html">Lineup Builder</a><a href="simple.html">Simple Mode</a><a href="stats.html">Player Stats</a><a href="results.html">Track Record</a><a href="backtest.html">Accuracy</a></div>
       <div><h4>Learn</h4><a href="guide.html">Quick-start guide</a><a href="index.html#how">How it works</a><a href="index.html#faq">FAQ</a></div>
       <div><h4>Beta</h4><a href="index.html#join">Join the beta</a><a href="index.html#faq">FAQ</a></div>
       <div class="legal">${legal}</div></div>`;
