@@ -265,6 +265,7 @@ def main():
     ap.add_argument("--as-of", help="restore a lost pull: ISO UTC time of the snapshot to read from The Odds API's historical "
                                     "endpoint (e.g. 2026-09-27T11:00:00Z = Sun 7 AM ET). Sportsbooks only (no Kalshi history), "
                                     "implies --force, costs ~10x a live pull (~800 credits for 13 games). updated_at is set to that time.")
+    ap.add_argument("--no-qb-gap", action="store_true", help="skip the QB SaberSim-gap adjustment (jobs/qbgap.py; on by default since 9/29)")
     ap.add_argument("--source", choices=["odds", "kalshi", "both"], default="odds",
                     help="odds = The Odds API sportsbooks (needs ODDS_API_KEY, ~84 credits); kalshi = Kalshi player ladders "
                          "(free, no key); both = average the two where both exist. The workflows call --source kalshi on every "
@@ -287,6 +288,8 @@ def main():
     slate = slates[0]
     sal = fetch_all(client.table("slate_salaries").select("site_player_id,player_id,player_name,position,team,salary")
                     .eq("slate_id", slate["slate_id"]), order="site_player_id")
+    slate_games = fetch_all(client.table("games").select("game_id,season,week,home_team,away_team,gameday,spread_line,total_line,roof,forecast_wind")
+                            .in_("game_id", list(slate.get("game_ids") or [])), order="game_id")
     if not args.file:
         # Once the slate has kicked off, lines move on in-game action and settled Kalshi ladders parse to nothing:
         # a refresh then wiped the 7 AM sportsbook props (week 3, 9/27). Props are frozen from the first kickoff.
@@ -304,8 +307,7 @@ def main():
             if args.source == "kalshi" and n_odds:
                 print(f"{n_odds} sportsbook props already stored for {slate['slate_key']} — a Kalshi-only refresh would replace them; skipping (use --force)")
                 return
-        games = fetch_all(client.table("games").select("game_id,home_team,away_team,gameday")
-                          .in_("game_id", list(slate.get("game_ids") or [])), order="game_id")
+        games = slate_games
         props = {}
         if args.source in ("odds", "both"):
             key = os.environ.get("ODDS_API_KEY")
@@ -333,6 +335,17 @@ def main():
     idx = defaultdict(list)
     for s in sal:
         idx[norm_name(s["player_name"])].append(s)
+    qb_ctx, qb_hist = {}, {}
+    if not args.no_qb_gap:
+        try:
+            from qbgap import game_context, qb_history
+            qb_ctx = game_context(slate_games)
+            season = slate.get("season") or (slate_games[0]["season"] if slate_games else None)
+            week = slate.get("week") or (slate_games[0]["week"] if slate_games else None)
+            qb_hist = qb_history(client, [s["player_id"] for s in sal if s["position"] == "QB" and s.get("player_id")], int(season), int(week))
+        except Exception as e:
+            print(f"  QB gap context unavailable ({e}) — QBs get the plain props projection")
+            args.no_qb_gap = True
     out, matched, unmatched, partial = [], 0, [], 0
     for n, (lines, td) in props.items():
         cands = idx.get(n)
@@ -347,10 +360,19 @@ def main():
             continue
         lines = fill_receiving(c["position"], lines)
         raw = raw_points(lines, td)
+        mean, gap = calibrated(c["position"], raw), 0.0
+        if c["position"] == "QB" and not args.no_qb_gap:
+            from qbgap import qb_gap
+            g = qb_ctx.get(c["team"], {}); h = qb_hist.get(c.get("player_id"), {})
+            gap = qb_gap(raw, float(c["salary"] or 0), implied=g.get("implied"), spread=g.get("spread"), home=g.get("home"), dome=g.get("dome"),
+                         wind=g.get("wind"), rush_yds_line=lines.get("player_rush_yds"), rush_yds_avg=h.get("rush_yds_avg"),
+                         int_rate=h.get("int_rate"), games_this=h.get("games_this"))
+            mean = max(0.0, mean + gap)
         out.append({"slate_id": slate["slate_id"], "site_player_id": c["site_player_id"], "player_id": c["player_id"],
                     "player_name": c["player_name"], "position": c["position"], "team": c["team"], "salary": c["salary"],
-                    "method": "props", "mean": round(calibrated(c["position"], raw), 2), "median": round(raw, 2),
+                    "method": "props", "mean": round(mean, 2), "median": round(raw, 2),
                     "components": {"lines": {k.replace("player_", ""): v for k, v in lines.items()}, "td_prob": round(td, 3), "raw": round(raw, 2),
+                                   **({"qb_gap": round(gap, 2)} if c["position"] == "QB" and not args.no_qb_gap else {}),
                                    "src": [x for x, names in (("odds", odds_names), ("kalshi", kal_names)) if n in names]},
                     "updated_at": (args.as_of.replace("Z", "+00:00") if args.as_of else dt.datetime.now(dt.timezone.utc).isoformat())})
         matched += 1
@@ -360,7 +382,8 @@ def main():
         print("  WARNING: few complete props — books post receiving lines late in the week; the builder uses the sim for everyone else")
     top = sorted(out, key=lambda r: -r["mean"])[:12]
     for r in top:
-        print(f"   {r['position']:3} {r['player_name']:<24} ${r['salary']:<6} props {r['mean']:5.1f}  (raw {r['median']:5.1f}, TD {r['components']['td_prob']:.2f})")
+        gtxt = f", gap {r['components']['qb_gap']:+.2f}" if "qb_gap" in r["components"] else ""
+        print(f"   {r['position']:3} {r['player_name']:<24} ${r['salary']:<6} props {r['mean']:5.1f}  (raw {r['median']:5.1f}, TD {r['components']['td_prob']:.2f}{gtxt})")
     if args.dry_run:
         print("dry run — no writes")
         return
