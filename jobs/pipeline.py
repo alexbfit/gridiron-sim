@@ -67,8 +67,13 @@ def main():
         # Contest Flashback: our recorded lineups vs the real field across the sims (needs the Lineup column; DK
         # standings exports have it). Milly-style curve at $20 by default — rerun by hand with --fee/--payout
         # for a different contest. Non-fatal: a file without lineups just skips it.
+        # the file name picks the payout curve: *_playaction_* = $3 GPP, *_minimax_* = $0.50 GPP, *_firstdown_* = $1 GPP, else Milly $20
+        stem_k = Path(standings[k]).stem.lower()
+        fee_args = (["--fee", "3", "--payout", "gpp"] if "playaction" in stem_k else
+                    ["--fee", "0.5", "--payout", "gpp"] if "minimax" in stem_k else
+                    ["--fee", "1", "--payout", "gpp"] if "firstdown" in stem_k else [])
         for contest in ("gpp", "cash"):
-            res = subprocess.run([sys.executable, "flashback.py", "--slate-key", k, "--standings", standings[k], "--contest", contest, "--save",
+            res = subprocess.run([sys.executable, "flashback.py", "--slate-key", k, "--standings", standings[k], "--contest", contest, "--save", *fee_args,
                                   "--me", os.environ.get("DK_USERNAME", "ablakes524")],
                                  cwd=HERE, capture_output=True, text=True)
             print(res.stderr if res.returncode == 0 else f"flashback {contest} skipped: {res.stderr.strip().splitlines()[-1] if res.stderr.strip() else res.returncode}")
