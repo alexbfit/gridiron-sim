@@ -96,7 +96,8 @@
         <div class="tile"><div class="k">Cash / top-1% (consensus)</div><div class="v">${pct(c.cash)} / ${c.top1 != null ? (c.top1 * 100).toFixed(1) + "%" : "–"}</div><div class="s">per lineup, on average</div></div>
         <div class="tile"><div class="k">Flashback ROI (model view)</div><div class="v">${roi(m.roi)}</div><div class="s">cash ${pct(m.cash)} · top-1% ${m.top1 != null ? (m.top1 * 100).toFixed(1) + "%" : "–"} · beats ${pct(m.beats_pct)}</div></div>
         <div class="tile"><div class="k">Realized</div><div class="v">${roi(f.real_roi)}</div><div class="s">cash ${pct(f.real_cash)} · best rank ${Number(f.real_best_rank).toLocaleString()} · avg ${f1(f.real_points)} vs field median ${f1(f.field_median_points)}</div></div>`
-        + (f.me ? `<div class="tile"><div class="k">Your real entries</div><div class="v">${roi(f.me.roi)}</div><div class="s">${f.me.entries} entered · best rank ${Number(f.me.best_rank).toLocaleString()} · avg ${f1(f.me.mean_points)} pts</div></div>` : ""); }).join("");
+        + (f.me ? `<div class="tile"><div class="k">Your real entries</div><div class="v">${roi(f.me.roi)}</div><div class="s">${f.me.entries} entered · best rank ${Number(f.me.best_rank).toLocaleString()} · avg ${f1(f.me.mean_points)} pts</div></div>` : "")
+        + (f.dupes ? `<div class="tile"><div class="k" title="exact copies of our lineups among the real entries — a prize is split across copies">Duplicated in the field</div><div class="v">${f.dupes.lineups_with_copy}/${f.n}</div><div class="s">#1–20: ${f.dupes.top20_with_copy} copied (${f.dupes.top20_copies} copies) · winnings lost to splits ${pct(f.dupes.winnings_lost_pct)} · field sample ${pct(f.dupes.bench_with_copy)} duplicated</div></div>` : ""); }).join("");
     }
     // season table across slates
     const agg = {};

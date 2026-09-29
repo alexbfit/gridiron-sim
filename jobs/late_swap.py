@@ -102,6 +102,11 @@ def main():
     ap.add_argument("--no-bringback", dest="bringback", action="store_false")
     ap.add_argument("--max-exp", type=float, default=0.35, help="full: max share of the final lineups any OPEN player may be in")
     ap.add_argument("--min-uniq", type=int, default=4, help="full: final lineups must differ from each other by this many players")
+    ap.add_argument("--keep-recorded", action="store_true", default=True,
+                    help="full: a recorded lineup is only rebuilt when the gain clears --gain; the exposure cap / min-uniq "
+                         "apply to NEW lineups only (default; the recorded set is already entered). --no-keep-recorded restores "
+                         "the old rule that also rebuilt lineups sitting at the cap for tiny gains (week 3: #24/#42, +1.1 / +0.4 p90)")
+    ap.add_argument("--no-keep-recorded", dest="keep_recorded", action="store_false")
     ap.add_argument("--seed", type=int, default=7)
     args = ap.parse_args()
     random.seed(args.seed); np.random.seed(args.seed)
@@ -301,8 +306,9 @@ def main():
                 if kk > best_key:
                     best, best_key = sol, kk
             # keep the original unless the gain is real; the original also has to respect the exposure cap / uniqueness
-            orig_ok = (all(usage.get(i, 0) < cap_exp or i in locks for i in ids)
-                       and all(sum(1 for i in ids if i not in locks and i in f) <= n_open - m_uniq for f in finals))
+            orig_ok = args.keep_recorded or (
+                all(usage.get(i, 0) < cap_exp or i in locks for i in ids)
+                and all(sum(1 for i in ids if i not in locks and i in f) <= n_open - m_uniq for f in finals))
             if best is not ids and (best_key - base_key >= args.gain or not orig_ok):
                 chosen = best
             else:
@@ -322,7 +328,8 @@ def main():
         full_report.sort(key=lambda r: (r["contest"], r["idx"]))
         key_name = "p90 (gpp) / p50 (cash)"
         print(f"full swap: {len(full_report)}/{n_final} lineups rebuilt (gain >= {args.gain:g} {key_name}; {len(open_pool)} open players; "
-              f"exposure cap {cap_exp}/{n_final}; min-uniq {args.min_uniq})", file=sys.stderr)
+              f"exposure cap {cap_exp}/{n_final}; min-uniq {args.min_uniq}; "
+              f"{'recorded lineups kept unless the gain is real' if args.keep_recorded else 'cap/min-uniq may force rebuilds'})", file=sys.stderr)
         for r in full_report:
             print(f"  #{r['idx']:>2} {r['contest']}: -{', '.join(r['out'])}  +{', '.join(r['in'])}  key {r['key_before']} -> {r['key_after']}", file=sys.stderr)
         # exposure delta vs the quick-swapped set

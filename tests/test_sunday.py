@@ -249,3 +249,15 @@ def test_flashback_on_synthetic_standings(db, monkeypatch, tmp_path):
     assert rc == 0
     d = json.load(open(js))
     assert d["summary"]["n"] == 50 and "consensus" in d["summary"] and "model" in d["summary"]
+
+
+def test_full_swap_keeps_recorded_lineups_unless_gain_is_real(db, monkeypatch, tmp_path):
+    """--keep-recorded (default): a recorded lineup sitting at the exposure cap / min-uniq is not rebuilt for a tiny gain
+    (week 3: #24 and #42 were rebuilt for +1.1 / +0.4 p90 only because the cap forced it)."""
+    ss, _ = ext_flags(db, monkeypatch, tmp_path)
+    js = tmp_path / "k.json"
+    rc = run_main("late_swap", ["--contest", "all", "--full", "--stack", "2", "--gain", "99"] + ss + ["--now", "2026-09-27T15:50", "--json", str(js)], monkeypatch)
+    assert rc == 0
+    rep = json.load(open(js))
+    changed = [L for L in rep["lineups"] if set(L["ids"]) != set(L["original_ids"])]
+    assert not changed, f"{len(changed)} lineups rebuilt with an impossible gain bar"

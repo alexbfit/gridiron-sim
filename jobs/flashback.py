@@ -241,7 +241,19 @@ def main():
                     "dups": int(d - 1), "actual": actual, "rank": rank, "prize": prize, "real_roi": prize / args.fee - 1,
                     "players": [byid[i]["player_name"] for i in ids]})
     real_port = float(np.mean([p["real_roi"] for p in per]))
+    # exact copies of our lineups in the real field (round 21: 25-30% of top-1% finishes were duplicated in the backtest;
+    # the live rate is a free diagnostic — a rising rate means the field has converged on the same optimizer consensus)
+    copies = [p["dups"] for p in per]
+    by_rank = sorted(per, key=lambda p: p["idx"])
+    top20 = [p["dups"] for p in by_rank[:20]]
+    prize_full = float(sum(pay([p["rank"]])[0] for p in per))
+    prize_split = float(sum(p["prize"] for p in per))
+    dupes = {"lineups_with_copy": int(sum(1 for c in copies if c > 0)), "copies_total": int(sum(copies)), "max_copies": int(max(copies) if copies else 0),
+             "top20_with_copy": int(sum(1 for c in top20 if c > 0)), "top20_copies": int(sum(top20)),
+             "winnings_lost_pct": (1 - prize_split / prize_full) if prize_full > 0 else 0.0,
+             "bench_with_copy": float(np.mean(bench_dups > 1)) if len(bench_dups) else 0.0}
     summary = {
+        "dupes": dupes,
         "contest": args.contest, "source": args.source, "n": len(per), "entries": n_entries, "fee": args.fee, "payout": args.payout,
         "field_sampled": len(field_ids), "bench": len(bench_ids), "sims": n_sims, "props": args.props,
         "model": model, "consensus": cons,
@@ -264,6 +276,10 @@ def main():
           f"avg {summary['real_points']:.1f} pts vs field median {summary['field_median_points']:.1f}", file=sys.stderr)
     if "me" in summary:
         m = summary["me"]; print(f"  your real entries ({m['entries']}): best rank {m['best_rank']:,}, ROI {m['roi']:+.0%}", file=sys.stderr)
+    d = dupes
+    print(f"  duplicates      {d['lineups_with_copy']}/{len(per)} lineups have an exact copy in the field ({d['copies_total']} copies, max {d['max_copies']}); "
+          f"#1-20: {d['top20_with_copy']} with {d['top20_copies']} copies; winnings lost to splits {d['winnings_lost_pct']:.0%}; "
+          f"field sample duplicated {d['bench_with_copy']:.0%}", file=sys.stderr)
     print(f"{'#':>3} {'proj':>6} {'model':>7} {'cons':>7} {'cash':>5} {'top1%':>6} {'dup':>3} | {'actual':>7} {'rank':>7} {'prize':>7}", file=sys.stderr)
     for p in sorted(per, key=lambda p: -p["fb_roi_cons"]):
         print(f"{p['idx']:>3} {p['proj']:6.1f} {p['fb_roi']:+7.0%} {p['fb_roi_cons']:+7.0%} {p['fb_cash_cons']:5.0%} {p['fb_top1_cons']:6.2%} {p['dups']:>3} | "
