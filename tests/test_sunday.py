@@ -202,21 +202,36 @@ def test_full_swap_leaves_started_games_alone(db, monkeypatch, tmp_path):
     assert not any(n == "save_lineups" for n, _ in db.rpc_calls)   # the 3:50 swap never saves
 
 
-def test_entries_edit_file_keeps_entry_ids(db, monkeypatch, tmp_path):
+def test_entries_edit_file_fills_each_contest_from_lineup_1(db, monkeypatch, tmp_path):
+    """Alex's real week-4 file shape: First Down x20, Millionaire x1, Play-Action x20 (in that order). Every contest must get
+    lineups #1..n in rank order — the Milly gets #1, both 20-max contests get #1-20 — and the instructions rows are skipped."""
     ss, _ = ext_flags(db, monkeypatch, tmp_path)
     ent = tmp_path / "DKEntries.csv"
     with open(ent, "w", newline="") as f:
         w = csv.writer(f)
         w.writerow(["Entry ID", "Contest Name", "Contest ID", "Entry Fee"] + SLOTS + ["", "Instructions"])
         for k in range(20):
-            w.writerow([f"50{k:08d}", "NFL $3 Play-Action [20 Entry Max]", "185000000", "$3"] + [""] * 9 + ["", ""])
+            w.writerow([f"51{k:08d}", "NFL $100K First Down [20 Entry Max]", "196151356", "$1"] + [""] * 9 + ["", "1. Column A lists ..." if k == 0 else ""])
+        w.writerow(["5200000000", "NFL $2.75M Fantasy Football Millionaire [$1M to 1st]", "196151357", "$20"] + [""] * 9 + ["", ""])
+        for k in range(20):
+            w.writerow([f"53{k:08d}", "NFL $700K Play-Action [20 Entry Max]", "196151358", "$3"] + [""] * 9 + ["", ""])
+        w.writerow(["", "", "", "", "", "", "", "", "", "", "", "", "", "", "7. Upload the file"])
     out = tmp_path / "edit.csv"
-    rc = run_main("late_swap", ["--contest", "gpp", "--stack", "2"] + ss + ["--entries", str(ent), "--out", str(out),
+    rc = run_main("late_swap", ["--contest", "all", "--stack", "2"] + ss + ["--entries", str(ent), "--out", str(out),
                                                                            "--now", "2026-09-27T09:40"], monkeypatch)
     assert rc == 0
     rows = list(csv.reader(open(out)))
-    assert [r[0] for r in rows[1:21]] == [f"50{k:08d}" for k in range(20)]
-    assert all(all(c.strip() for c in r[4:13]) for r in rows[1:21]), "an entry was left without a player"
+    assert len(rows) == 42 and [r[0] for r in rows[1:]] == [f"51{k:08d}" for k in range(20)] + ["5200000000"] + [f"53{k:08d}" for k in range(20)]
+    assert all(all(c.strip() for c in r[4:13]) for r in rows[1:]), "an entry was left without a player"
+    fd, milly, pa = [r[4:13] for r in rows[1:21]], rows[21][4:13], [r[4:13] for r in rows[22:42]]
+    assert fd == pa, "both 20-max contests should hold lineups #1-20"
+    assert milly == fd[0], "the single Millionaire entry should be lineup #1"
+    assert len({tuple(r) for r in fd}) == 20, "a lineup was entered twice in the same contest"
+    b = board(db)
+    cash = [L for L in db.rows("slate_lineups") if L["contest"] == "cash"]
+    if cash:
+        cash_names = {b[i]["player_name"] for i in cash[0]["player_ids"]}
+        assert {c.split(" (")[0] for c in milly} != cash_names, "the cash benchmark must never be entered"
 
 
 # ------------------------------------------------------------------ Monday: Flashback

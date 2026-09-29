@@ -356,17 +356,30 @@ def main():
                 hdr = ent[0]
                 w.writerow(hdr)
                 slots_from = next((i for i, h in enumerate(hdr) if h.strip().upper() == "QB"), 4)
-                lineups_iter = iter(new_sets)
+                cid_col = next((i for i, h in enumerate(hdr) if h.strip().lower() == "contest id"), 2)
+                # every contest gets lineups #1..n in rank order (a lineup may sit in several contests, never twice in one);
+                # rows are DK entries (numeric Entry ID) — the instructions column DK appends is skipped
+                per_contest, fills, short = {}, {}, {}
+                gpp_sets = [(L, ids) for L, ids in new_sets if L["contest"] == "gpp"] or new_sets   # the cash line is a benchmark, never entered
                 for row in ent[1:]:
-                    if not row or not row[0].strip():
+                    if not row or not row[0].strip().isdigit():
                         continue
-                    try:
-                        L, ids = next(lineups_iter)
-                    except StopIteration:
-                        break
+                    cid = row[cid_col].strip() if cid_col < len(row) else ""
+                    k = per_contest.get(cid, 0)
+                    per_contest[cid] = k + 1
+                    if k >= len(gpp_sets):
+                        short[cid] = short.get(cid, 0) + 1
+                        w.writerow(row[:slots_from] + [""] * len(keys))      # left blank: fewer lineups than entries
+                        continue
+                    L, ids = gpp_sets[k]
+                    fills[cid] = fills.get(cid, 0) + 1
                     s = bl.assign_slots([byid[i] for i in ids], site)
-                    cells = row[:slots_from] + [f"{s[k]['player_name']} ({s[k]['site_player_id']})" for k in keys]
+                    cells = row[:slots_from] + [f"{s[k2]['player_name']} ({s[k2]['site_player_id']})" for k2 in keys]
                     w.writerow(cells)
+                for cid, n in per_contest.items():
+                    name = next((r[1] for r in ent[1:] if len(r) > cid_col and r[cid_col].strip() == cid), cid)
+                    print(f"  entries: {name} ({cid}) — {fills.get(cid, 0)} entries filled with lineups #1-{fills.get(cid, 0)}"
+                          + (f"; {short[cid]} left blank (only {len(gpp_sets)} lineups)" if cid in short else ""), file=sys.stderr)
             else:
                 w.writerow(site["slots"])
                 for L, ids in new_sets:
