@@ -25,20 +25,25 @@ jobs:
         with:
           python-version: "3.11"
       - run: pip install -r jobs/requirements.txt
+      - name: Run log (start)
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: python jobs/runlog.py --task gameday-refresh --status started
       - name: Refresh data + re-sim
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
         run: |
-          python jobs/ingest.py || echo "ingest failed - continuing with the last good data"
-          python jobs/inactives.py || echo "inactives skipped"
-          python jobs/fetch_dk_salaries.py --import || echo "dk salaries skipped"
-          python jobs/odds.py || echo "odds skipped"
-          python jobs/weather.py || echo "weather skipped"
-          python jobs/props.py --source kalshi || echo "kalshi props skipped"
-          python jobs/project.py --latest || echo "no slate"
-          python jobs/simulate.py --latest || echo "no slate"
+          python jobs/ingest.py || { echo "ingest failed - continuing with the last good data"; echo ingest >> "$RUNNER_TEMP/failed_steps"; }
+          python jobs/inactives.py || { echo "inactives skipped"; echo inactives >> "$RUNNER_TEMP/failed_steps"; }
+          python jobs/fetch_dk_salaries.py --import || { echo "dk salaries skipped"; echo fetch_dk_salaries >> "$RUNNER_TEMP/failed_steps"; }
+          python jobs/odds.py || { echo "odds skipped"; echo odds >> "$RUNNER_TEMP/failed_steps"; }
+          python jobs/weather.py || { echo "weather skipped"; echo weather >> "$RUNNER_TEMP/failed_steps"; }
+          python jobs/props.py --source kalshi || { echo "kalshi props skipped"; echo props >> "$RUNNER_TEMP/failed_steps"; }
+          python jobs/project.py --latest || { echo "no slate"; echo project >> "$RUNNER_TEMP/failed_steps"; }
+          python jobs/simulate.py --latest || { echo "no slate"; echo simulate >> "$RUNNER_TEMP/failed_steps"; }
       - name: Sportsbook player props merged with Kalshi (Sunday 7 AM ET, or on request)
         if: ${{ always() && (github.event.schedule == '0 11 * * 0' || github.event.inputs.props == 'true') }}
         env:
@@ -62,4 +67,24 @@ jobs:
           sys.exit(0 if n >= 150 else 1)
           PY
           then echo "fresh sportsbook props already landed - skipping the paid pull"
-          else python jobs/props.py --source both --force || echo "props skipped"; fi
+          else python jobs/props.py --source both --force || { echo "props skipped"; echo props >> "$RUNNER_TEMP/failed_steps"; }; fi
+      - name: Pre-lock checklist (Sunday 7 AM run) — fails this job loudly if the 9:30 build's inputs are missing
+        if: ${{ always() && (github.event.schedule == '0 11 * * 0' || github.event.inputs.props == 'true') }}
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          if [ "$(TZ=America/New_York date +%u)" != "7" ]; then echo "not Sunday - checklist skipped"; exit 0; fi
+          python jobs/preflight.py --mode sun --skip news --skip tasks --log preflight-7am
+      - name: Run log (finish)
+        if: ${{ always() }}
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          FAILED=$(sort -u "$RUNNER_TEMP/failed_steps" 2>/dev/null | tr '\n' ' ' | sed 's/ *$//')
+          WHY="$GITHUB_EVENT_NAME${{ github.event.schedule && format(' {0}', github.event.schedule) || '' }}"
+          if [ "${{ job.status }}" != "success" ]; then S=failed; M="job ${{ job.status }}${FAILED:+ - soft-failed: $FAILED}"
+          elif [ -n "$FAILED" ]; then S=warn; M="soft-failed: $FAILED"
+          else S=ok; M="all steps ok"; fi
+          python jobs/runlog.py --task gameday-refresh --status $S --summary "$M ($WHY)"

@@ -29,6 +29,11 @@ jobs:
         with:
           python-version: "3.11"
       - run: pip install -r jobs/requirements.txt
+      - name: Run log (start)
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: python jobs/runlog.py --task props-restore --status started
       - name: Restore props from the historical snapshot
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -40,3 +45,15 @@ jobs:
             python jobs/project.py --slate-key "${{ github.event.inputs.slate_key }}"
             python jobs/simulate.py --slate-key "${{ github.event.inputs.slate_key }}"
           fi
+      - name: Run log (finish)
+        if: ${{ always() }}
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          FAILED=$(sort -u "$RUNNER_TEMP/failed_steps" 2>/dev/null | tr '\n' ' ' | sed 's/ *$//')
+          WHY="$GITHUB_EVENT_NAME${{ github.event.schedule && format(' {0}', github.event.schedule) || '' }}"
+          if [ "${{ job.status }}" != "success" ]; then S=failed; M="job ${{ job.status }}${FAILED:+ - soft-failed: $FAILED}"
+          elif [ -n "$FAILED" ]; then S=warn; M="soft-failed: $FAILED"
+          else S=ok; M="all steps ok"; fi
+          python jobs/runlog.py --task props-restore --status $S --summary "$M ($WHY)"

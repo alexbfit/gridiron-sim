@@ -18,6 +18,10 @@ jobs/weather.py                      kickoff forecasts (Open-Meteo, one call) ->
 supabase/migrations/010_news.sql     news_notes + upset_picks tables and the save_news RPC used by the news-sweep task
 supabase/migrations/011_flashback.sql fb_* / real_rank columns on slate_lineups and slates.flashback (Contest Flashback)
 jobs/late_swap.py                    quick swap (ruled-out players) and --full swap (re-solve open slots on the fresh board) of the recorded lineups (11:35 AM / 3:50 PM ET tasks)
+jobs/preflight.py                    pre-lock checklist: slate, sim, sportsbook props, lines, weather, injuries, news sweeps, saved lineups, task runs — PASS/WARN/FAIL with the fix; exit 1 on any FAIL (Sun 7 AM GitHub step + Sat 9:30 PM / Sun 8:50 / 10:50 AM Claude tasks)
+jobs/ext_projections.py              picks the Sunday projection setup (SaberSim file > sportsbook props > sim) and writes the RB-adjusted file; prints the builder flags ($SS) the three Sunday tasks use
+jobs/runlog.py                       run log for every scheduled job (task_runs via log_task_run, supabase/pending/017_task_runs.sql); --show lists recent runs; web/status.html shows them
+tests/                               smoke tests on every push (.github/workflows/tests.yml): the exact Sunday commands on the frozen week-3 slate (tests/fixtures/wk3), every workflow command's arguments, the checklist, web JS; `pytest` locally
 jobs/flashback.py                    Contest Flashback: recorded lineups vs the REAL field (standings export lineups) across the sims -> expected ROI, model and consensus views; runs from the slate-pipeline on a standings push
 jobs/kalshi.py                       Kalshi player ladders (free, no key) -> prop-style lines, merged by props.py; runs every refresh
 jobs/props.py                        sportsbook player props -> slate_projections method 'props' (Sun 7 AM ET; build_lineups --props blends them in)

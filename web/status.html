@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<script>try{document.documentElement.dataset.theme=localStorage.getItem("gs_theme")||"dark";if(localStorage.getItem("gs_owner")==="1")document.documentElement.classList.add("owner")}catch(e){}</script>
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/ui.css">
+<title>System Status · GameTime Win</title>
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="assets/shell.js"></script>
+<style>
+  .tile .when { font-size: 12px; color: var(--muted); margin-top: 6px; }
+  .tile .sum { font-size: 12.5px; color: var(--text-2); margin-top: 6px; line-height: 1.35; overflow-wrap: anywhere; }
+  .tile.stale { border-color: var(--danger); }
+  td.sum { max-width: 620px; white-space: normal; }
+</style>
+</head>
+<body>
+<header data-shell-header="app"></header>
+<main class="page" style="max-width:1400px">
+  <div class="page-head">
+    <div><h1>System status</h1><p>Every scheduled job writes a start and a finish here: the Claude tasks (news sweeps, the 9:30 build, both late swaps, the pre-lock checklists) and the GitHub refreshes. A job stuck on <b>started</b> died mid-run; a red card missed its schedule.</p></div>
+  </div>
+  <div id="cards" class="tiles"></div>
+  <div class="table-wrap" style="margin-top:18px">
+    <table class="data"><thead><tr><th class="left">Started (ET)</th><th class="left">Job</th><th class="left">Status</th><th class="left">Source</th><th>Took</th><th class="left">Summary</th></tr></thead><tbody id="rows"></tbody></table>
+  </div>
+  <p id="status" class="status-line" style="margin-top:10px">Loading…</p>
+</main>
+<footer data-shell-footer="site"></footer>
+<script>
+(function () {
+  const cfg = window.GRIDIRON_CONFIG || {};
+  const $ = (id) => document.getElementById(id);
+  const esc = (v) => String(v ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  // name, label, how often it should run (hours) — a card turns red when the last start is older than that
+  const JOBS = [
+    ["nightly-ingest", "Nightly ingest (5 AM)", 26],
+    ["gameday-refresh", "Gameday refresh", 24 * 8],
+    ["preflight-sat", "Checklist · Sat 9:30 PM", 24 * 8],
+    ["news-sat", "News sweep · Sat 7 PM", 24 * 8],
+    ["preflight-7am", "Checklist · Sun 7 AM", 24 * 8],
+    ["news-sun", "News sweep · Sun 8:15", 24 * 8],
+    ["preflight-sun", "Checklist · Sun 8:50", 24 * 8],
+    ["sunday-build", "Lineup build · Sun 9:30", 24 * 8],
+    ["preflight-lineups", "Checklist · Sun 10:50", 24 * 8],
+    ["swap-1pm", "Late swap · 11:48", 24 * 8],
+    ["swap-4pm", "Late swap · 3:50 PM", 24 * 8],
+    ["slate-pipeline", "Slate pipeline (on push)", null],
+    ["tests", "Tests (on push)", null],
+  ];
+  const BADGE = { ok: "ok", warn: "warn", failed: "danger", started: "info", skipped: "", "died mid-run": "danger" };
+  const fmt = (t) => t ? new Date(t).toLocaleString("en-US", { timeZone: "America/New_York", weekday: "short", month: "numeric", day: "numeric", hour: "numeric", minute: "2-digit" }) : "–";
+  const ago = (t) => { const h = (Date.now() - new Date(t)) / 36e5; return h < 1 ? `${Math.round(h * 60)} min ago` : h < 48 ? `${Math.round(h)} h ago` : `${Math.round(h / 24)} days ago`; };
+  const took = (r) => r.finished_at ? Math.max(0, Math.round((new Date(r.finished_at) - new Date(r.started_at)) / 60000)) + " min" : "–";
+
+  async function load() {
+    if (!cfg.SUPABASE_URL || !window.supabase) { $("status").textContent = "Supabase not configured"; return; }
+    const supa = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY);
+    const { data, error } = await supa.from("task_runs").select("task,status,source,summary,started_at,finished_at").order("started_at", { ascending: false }).limit(300);
+    if (error) {
+      $("status").textContent = /task_runs|does not exist|schema cache/i.test(error.message) ? "The run log table isn't there yet — run supabase/pending/017_task_runs.sql in Supabase." : "Could not load: " + error.message;
+      $("status").classList.add("error");
+      return;
+    }
+    const last = {};
+    data.forEach(r => { if (!last[r.task]) last[r.task] = r; });
+    const known = new Set(JOBS.map(j => j[0]));
+    const extra = [...new Set(data.map(r => r.task))].filter(t => !known.has(t)).map(t => [t, t, null]);
+    $("cards").innerHTML = JOBS.concat(extra).map(([task, label, every]) => {
+      const r = last[task];
+      const stale = every && (!r || (Date.now() - new Date(r.started_at)) / 36e5 > every);
+      const dead = r && r.status === "started" && (Date.now() - new Date(r.started_at)) / 36e5 > 3;
+      const st = r ? (dead ? "died mid-run" : r.status) : "never";
+      return `<div class="tile${stale || dead ? " stale" : ""}"><div class="k">${esc(label)}</div>
+        <div style="margin-top:8px"><span class="badge ${BADGE[st] ?? ""}">${esc(st)}</span>${stale ? ' <span class="badge danger">overdue</span>' : ""}</div>
+        <div class="when">${r ? `${fmt(r.started_at)} · ${ago(r.started_at)}` : "no run logged"}</div>
+        ${r && r.summary ? `<div class="sum">${esc(r.summary)}</div>` : ""}</div>`;
+    }).join("");
+    $("rows").innerHTML = data.slice(0, 120).map(r => `<tr><td class="left nowrap">${fmt(r.started_at)}</td><td class="left">${esc(r.task)}</td>
+      <td class="left"><span class="badge ${BADGE[r.status] ?? ""}">${esc(r.status)}</span></td><td class="left">${esc(r.source)}</td>
+      <td>${took(r)}</td><td class="left sum">${esc(r.summary || "")}</td></tr>`).join("") || `<tr><td colspan="6" class="left">No runs logged yet.</td></tr>`;
+    $("status").textContent = `${data.length} runs · refreshed ${fmt(new Date())}`;
+  }
+  load();
+  setInterval(load, 60000);
+})();
+</script>
+</body>
+</html>

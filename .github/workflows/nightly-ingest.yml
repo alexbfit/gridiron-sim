@@ -19,6 +19,11 @@ jobs:
         with:
           python-version: "3.11"
       - run: pip install -r jobs/requirements.txt
+      - name: Run log (start)
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: python jobs/runlog.py --task nightly-ingest --status started
       - name: Run ingest
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -27,10 +32,10 @@ jobs:
           if [ -n "${{ github.event.inputs.seasons }}" ]; then
             python jobs/ingest.py --seasons ${{ github.event.inputs.seasons }}
           else
-            python jobs/ingest.py || echo "ingest failed - continuing with the last good data"
-            python jobs/inactives.py || echo "inactives skipped"
+            python jobs/ingest.py || { echo "ingest failed - continuing with the last good data"; echo ingest >> "$RUNNER_TEMP/failed_steps"; }
+            python jobs/inactives.py || { echo "inactives skipped"; echo inactives >> "$RUNNER_TEMP/failed_steps"; }
             # next Sunday's DK main slate straight from DraftKings (no CSV drop needed); imports only when new or grown
-            python jobs/fetch_dk_salaries.py --import || echo "dk salaries skipped (manual data/slates/ drop still works)"
+            python jobs/fetch_dk_salaries.py --import || { echo "dk salaries skipped (manual data/slates/ drop still works)"; echo fetch_dk_salaries >> "$RUNNER_TEMP/failed_steps"; }
           fi
       - name: Re-project latest slate (lines / new games)
         if: ${{ always() && github.event.inputs.seasons == '' }}
@@ -39,10 +44,22 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
         run: |
-          python jobs/odds.py || echo "odds skipped"
-          python jobs/weather.py || echo "weather skipped"
-          python jobs/props.py --source kalshi || echo "kalshi props skipped"
-          python jobs/project.py --latest || echo "no slate yet"
-          python jobs/simulate.py --latest || echo "no slate yet"
-          python jobs/results.py --all || echo "results skipped"
-          python jobs/fit_ownership.py || echo "fit skipped"
+          python jobs/odds.py || { echo "odds skipped"; echo odds >> "$RUNNER_TEMP/failed_steps"; }
+          python jobs/weather.py || { echo "weather skipped"; echo weather >> "$RUNNER_TEMP/failed_steps"; }
+          python jobs/props.py --source kalshi || { echo "kalshi props skipped"; echo props >> "$RUNNER_TEMP/failed_steps"; }
+          python jobs/project.py --latest || { echo "no slate yet"; echo project >> "$RUNNER_TEMP/failed_steps"; }
+          python jobs/simulate.py --latest || { echo "no slate yet"; echo simulate >> "$RUNNER_TEMP/failed_steps"; }
+          python jobs/results.py --all || { echo "results skipped"; echo results >> "$RUNNER_TEMP/failed_steps"; }
+          python jobs/fit_ownership.py || { echo "fit skipped"; echo fit_ownership >> "$RUNNER_TEMP/failed_steps"; }
+      - name: Run log (finish)
+        if: ${{ always() }}
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          FAILED=$(sort -u "$RUNNER_TEMP/failed_steps" 2>/dev/null | tr '\n' ' ' | sed 's/ *$//')
+          WHY="$GITHUB_EVENT_NAME${{ github.event.schedule && format(' {0}', github.event.schedule) || '' }}"
+          if [ "${{ job.status }}" != "success" ]; then S=failed; M="job ${{ job.status }}${FAILED:+ - soft-failed: $FAILED}"
+          elif [ -n "$FAILED" ]; then S=warn; M="soft-failed: $FAILED"
+          else S=ok; M="all steps ok"; fi
+          python jobs/runlog.py --task nightly-ingest --status $S --summary "$M ($WHY)"

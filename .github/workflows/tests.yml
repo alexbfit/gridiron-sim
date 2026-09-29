@@ -1,0 +1,37 @@
+name: tests
+
+# Smoke tests on every push: the exact Sunday commands (9:30 build, 11:48 quick swap, 3:50 full swap, entries edit
+# file, Flashback) run against the frozen week-3 slate in tests/fixtures/wk3, every workflow command's arguments are
+# checked against the script's argparse, every job compiles, the pre-lock checklist is exercised, and the web JS parses.
+# No secrets, no database: tests/fakedb.py stands in for Supabase. A red run here means a Sunday task would break.
+# GitHub emails the pusher when this fails. Run locally: pip install -r jobs/requirements.txt pytest && pytest
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: jobs/requirements.txt
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: pip install -r jobs/requirements.txt pytest pyyaml
+      - name: Tests
+        run: python -m pytest -q --durations=5
+      - name: Run log
+        if: ${{ always() && github.ref == 'refs/heads/main' }}
+        run: |
+          S=$([ "${{ job.status }}" = "success" ] && echo ok || echo failed)
+          SHORT="${GITHUB_SHA::7}"
+          MSG="$(git log -1 --format=%s | cut -c1-120)"
+          python jobs/runlog.py --task tests --status $S --summary "tests $S on $SHORT: $MSG"
