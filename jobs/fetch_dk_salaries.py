@@ -59,7 +59,10 @@ def list_groups() -> list[dict]:
 
 
 def pick_main(groups: list[dict], now: dt.datetime | None = None) -> dict | None:
-    """Classic slate, next Sunday 1:00 PM ET, most games (ties: lowest id = the original group)."""
+    """Classic slate, next Sunday 1:00 PM ET. The main slate is the group with NO start-time suffix (DraftKings labels the
+    others "(Early Only)", "(Sun-Mon)", "(Afternoon Only)" ...) — usually tagged "Featured". Ties: most games, then lowest id.
+    Never pick by game count alone: on 9/30/2026 DraftKings added a 14-game "(Sun-Mon)" group mid-week and the old
+    most-games rule replaced the 12-game main slate (and every player id) with it."""
     now = now or dt.datetime.now(ET)
     cands = [g for g in groups if g["contest_type"] == 21 and g["start"] and now < g["start"] <= now + dt.timedelta(days=7)
              and g["start"].weekday() == 6 and g["start"].hour == 13 and g["games"] >= 6]
@@ -67,8 +70,31 @@ def pick_main(groups: list[dict], now: dt.datetime | None = None) -> dict | None
         return None
     first_sunday = min(g["start"].date() for g in cands)
     cands = [g for g in cands if g["start"].date() == first_sunday]
-    cands.sort(key=lambda g: (-g["games"], g["id"]))
+    plain = [g for g in cands if not g["suffix"]]
+    if plain:
+        cands = plain
+    cands.sort(key=lambda g: (0 if "featured" in g["tag"].lower() else 1, -g["games"], g["id"]))
     return cands[0]
+
+
+def board_overlap(client, slate_key: str, ids: set[str]) -> tuple[int, int]:
+    """(matching ids, board size) between the CSV and the slate already stored under this key."""
+    try:
+        s = client.table("slates").select("slate_id").eq("slate_key", slate_key).execute().data
+        if not s:
+            return 0, 0
+        rows, start = [], 0
+        while True:
+            page = client.table("slate_board").select("site_player_id").eq("slate_id", s[0]["slate_id"]).range(start, start + 999).execute().data
+            rows += page
+            if len(page) < 1000:
+                break
+            start += 1000
+        have = {str(r["site_player_id"]) for r in rows}
+        return len(have & ids), len(have)
+    except Exception as e:  # noqa: BLE001
+        print(f"  (could not read the stored board: {e})", file=sys.stderr)
+        return -1, -1
 
 
 def main():
@@ -136,7 +162,15 @@ def main():
         if (e.get("n_players") or 0) == n_players:
             print(f"{slate_key} already imported ({e['n_players']} players, {e['imported_at'][:16]}) — nothing to do (use --force to re-import)")
             return
-        print(f"{slate_key} exists with {e.get('n_players')} players, DraftKings now lists {n_players} — re-importing")
+        # Same key, different player set: only re-import when it is the SAME draft group (DK added/removed a few players).
+        # A different group (other games, all-new ids) would replace the board Alex's contests and entries file point at.
+        ids = {str(p.get("site_player_id") or p.get("id") or "") for p in players}
+        match, have = board_overlap(client, slate_key, ids)
+        if have > 0 and match < 0.5 * have:
+            print(f"{slate_key} exists with {have} players but only {match} of them are in draft group {g['id']} — this is a DIFFERENT "
+                  f"draft group (other games / new player ids). Not replacing it. Use --group <id> --force if that is really wanted.", file=sys.stderr)
+            sys.exit(3)
+        print(f"{slate_key} exists with {e.get('n_players')} players, DraftKings now lists {n_players} (same draft group, {match}/{have} ids match) — re-importing")
     cmd = [sys.executable, str(HERE / "import_salaries.py"), str(out), "--slate-type", args.slate_type]
     print("+", " ".join(cmd), flush=True)
     res = subprocess.run(cmd, cwd=HERE, text=True, capture_output=True)

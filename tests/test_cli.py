@@ -191,3 +191,25 @@ def test_preflight_logs_its_result(db, monkeypatch, capsys):
     run_main("preflight", ["--slate-key", "DK-2026-03-main", "--at", "2026-09-27T09:00", "--mode", "sun", "--skip", "tasks",
                            "--log", "preflight-sun"], monkeypatch)
     assert got and got[0][0] == "preflight-sun" and got[0][1] in ("ok", "warn")
+
+
+def test_fetch_dk_picks_the_featured_main_slate_not_the_biggest_group():
+    """9/30/2026: DraftKings added a 14-game '(Sun-Mon)' group mid-week; the old most-games rule imported it over the
+    12-game main slate and every player id changed. The main slate is the plain (no suffix) Sunday 1 PM group."""
+    import datetime as dt
+    import fetch_dk_salaries as f
+    now = dt.datetime(2026, 9, 30, 5, 0, tzinfo=f.ET)
+    sun = dt.datetime(2026, 10, 4, 13, 0, tzinfo=f.ET)
+    groups = [
+        {"id": 154077, "contest_type": 21, "start": dt.datetime(2026, 10, 1, 20, 15, tzinfo=f.ET), "games": 16, "tag": "", "suffix": "(Thu-Mon)"},
+        {"id": 154078, "contest_type": 21, "start": sun, "games": 12, "tag": "Featured", "suffix": ""},
+        {"id": 154079, "contest_type": 21, "start": sun, "games": 8, "tag": "", "suffix": "(Early Only)"},
+        {"id": 154080, "contest_type": 21, "start": sun, "games": 14, "tag": "", "suffix": "(Sun-Mon)"},
+        {"id": 154090, "contest_type": 96, "start": sun, "games": 1, "tag": "", "suffix": ""},
+    ]
+    assert f.pick_main(groups, now)["id"] == 154078
+    # without any plain group (lobby not fully posted yet) fall back to the biggest Sunday 1 PM classic group
+    assert f.pick_main([g for g in groups if g["id"] != 154078], now)["id"] == 154080
+    # next week's Sunday is ignored while this week's exists
+    nxt = dict(groups[1], id=155000, start=sun + dt.timedelta(days=7), games=15)
+    assert f.pick_main(groups + [nxt], now)["id"] == 154078
