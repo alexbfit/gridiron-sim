@@ -1,10 +1,11 @@
 /* GameTime Win — Simple mode.
-   Upload a DraftKings entries file (or a salaries file) → pick two players (DraftKings' user-input rule) →
+   Pick a sport → upload a DraftKings entries file (or a salaries file) → pick two players (DraftKings' user-input rule) →
    build with the backtested Sunday settings → reveal the lineups as a card pack → download an upload-ready CSV.
    The optimizer is the same GLPK model as the full Lineup Builder (lineups.js), fixed to the settings that won the
    2024–25 contest backtests: props blend 55%, QB + 2 pass catchers + bring-back, no TE in FLEX, max exposure 35%,
    3 unique players between lineups, candidates ranked by simulated 90th-percentile score. */
 import GLPK from "https://cdn.jsdelivr.net/npm/glpk.js@4.0.2/dist/index.js";
+import * as SP from "./sports.js";
 
 const cfg = window.GRIDIRON_CONFIG || {};
 const GS = window.GS;
@@ -27,6 +28,9 @@ const TIERS = [
 const tierInfo = (t) => TIERS.find(x => x.t === t);
 
 let supa = null, glpk = null;
+let sport = "NFL";               // NFL = the site's own slate + sim; anything else = sports.js engine from a projections CSV
+let dk = null, projFile = null;  // non-NFL: parsed DK file (players + entries) and whether projections are loaded
+let spSim = null;
 let file = null;                 // parsed upload
 let slate = null, players = [], byId = new Map(), props = new Map(), sim = null, simPromise = null;
 let likes = new Set(), fades = new Set();
@@ -58,7 +62,7 @@ function parseDK(text, name) {
   const rows = parseCSV(text.replace(/^﻿/, "")).filter(r => r.some(c => c.trim() !== ""));
   if (!rows.length) throw new Error("That file is empty.");
   const H = rows[0].map(s => s.trim());
-  if (H.includes("CPT")) throw new Error("That's a Showdown file. Simple mode builds NFL Classic lineups (QB, RB, RB, WR, WR, WR, TE, FLEX, DST).");
+  if (H.includes("CPT")) throw new Error("That's a Showdown file. Simple mode builds Classic lineups.");
 
   let pl = null;
   for (let i = 0; i < rows.length && !pl; i++) {
@@ -204,7 +208,40 @@ function buildLP(pool, score, prior, blocked) {
 }
 function gauss() { let u = 0, v = 0; while (!u) u = Math.random(); while (!v) v = Math.random(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
 
+async function generateSport(n, onProgress) {
+  const R = SP.RULES[sport], ns = R.slots.length;
+  const maxExp = n <= 3 ? 1 : 0.5;
+  const pool = players.filter(p => !fades.has(p.site_player_id) && proj(p) > 0);
+  onProgress(0, 1, "sim");
+  spSim = SP.simulate(sport, pool.map(p => ({ ...p, proj: proj(p) })), 3000);
+  const nCand = Math.min(CONF.maxCand, Math.max(n + 6, n * 3)), cand = [], seen = new Set();
+  const W = [0, 0.35, 0.7, 1.0];
+  for (let k = 0; k < nCand; k++) {
+    onProgress(k, nCand);
+    const w = W[k % W.length];
+    const score = (p) => { const m = proj(p); return (m + w * (Math.max(p.p85, m) - m)) * (1 + CONF.rand * 0.5 * gauss()); };
+    const res = await glpk.solve(SP.buildLP(glpk, sport, pool, score, cand.map(L => L.ids), new Set(), { minUniq: CONF.minUniq }), { msglev: glpk.GLP_MSG_OFF, tmlim: 20 });
+    if (![glpk.GLP_OPT, glpk.GLP_FEAS].includes(res.result.status)) break;
+    const ids = Object.entries(res.result.vars).filter(([nm, v]) => nm[0] === "x" && v > 0.5).map(([nm]) => nm.slice(1)).sort();
+    const key = ids.join("|"); if (seen.has(key)) continue; seen.add(key);
+    cand.push({ ids });
+    await sleep(0);
+  }
+  onProgress(nCand, nCand, "rank");
+  cand.forEach(L => { const q = SP.lineupQuantiles(spSim, L.ids); L.sim = q; L.proj = q.mean; L.key = q.p90; });
+  cand.sort((a, b) => b.key - a.key);
+  const capN = Math.max(1, Math.ceil(maxExp * n)), used = new Map(), kept = [];
+  for (const L of cand) {
+    if (kept.length >= n) break;
+    if (L.ids.every(id => (used.get(id) || 0) < capN) && kept.every(o => o.ids.filter(id => L.ids.includes(id)).length <= ns - CONF.minUniq)) { kept.push(L); L.ids.forEach(id => used.set(id, (used.get(id) || 0) + 1)); }
+  }
+  for (const L of cand) { if (kept.length >= n) break; if (!kept.includes(L)) kept.push(L); }
+  kept.sort((a, b) => b.key - a.key);
+  return kept.map((L, i) => finishLineup(L, i, kept));
+}
+
 async function generate(n, onProgress) {
+  if (sport !== "NFL") return generateSport(n, onProgress);
   const maxExp = n <= 3 ? 1 : n <= 20 ? 0.4 : 0.35;
   const pool = players.filter(p => !fades.has(p.site_player_id) && proj(p) > 0);
   const nCand = Math.min(CONF.maxCand, Math.max(n + 10, n * CONF.poolMult));
@@ -259,6 +296,15 @@ function finishLineup(L, i, all) {
   const tier = TIERS.find(x => r < x.upto).t;
   const keys = all.map(x => x.key), hi = Math.max(...keys), lo = Math.min(...keys);
   const rating = N <= 1 || hi === lo ? 99 : Math.round(72 + 27 * (L.key - lo) / (hi - lo));
+  if (sport !== "NFL") {
+    // headline = the biggest stack (or the top projected player when the sport has no teams)
+    const byTeam = new Map(); ps.forEach(p => { if (p.team) byTeam.set(p.team, (byTeam.get(p.team) || []).concat(p)); });
+    const big = [...byTeam.values()].sort((a, b) => b.length - a.length)[0] || [];
+    const lead = (big.length > 1 ? big : ps.slice().sort((a, b) => proj(b) - proj(a))).slice().sort((a, b) => b.salary - a.salary);
+    const qb = lead[0], mates = lead.slice(1, 4).map(p => lastName(p.player_name));
+    const slots = SP.assignSlots(sport, ps).map(([slot, p]) => [slot, byId.get(p.id)]);
+    return { ...L, rank: i + 1, tier, rating, qb, mates, headline: big.length > 1 ? `${big[0].team} ×${big.length}` : "", slots, salary: ps.reduce((s, p) => s + p.salary, 0), uses: [] };
+  }
   const qb = ps.find(p => p.position === "QB");
   const mates = ps.filter(p => p.team === qb.team && p !== qb && p.position !== "DST").map(p => lastName(p.player_name));
   return { ...L, rank: i + 1, tier, rating, qb, mates, slots: assignSlots(ps), salary: ps.reduce((s, p) => s + p.salary, 0), uses: [] };
@@ -286,7 +332,8 @@ function downloadCSV() {
     text = [head, ...body].map(r => r.map(csvCell).join(",")).join("\r\n") + "\r\n";
     fname = "DKEntries_GameTimeWin_" + (slate.slate_key || "week" + slate.week) + ".csv";
   } else {
-    text = [SLOTS, ...lineups.map(L => L.slots.map(([, p]) => p.site_player_id))].map(r => r.join(",")).join("\r\n") + "\r\n";
+    const slots = sport === "NFL" ? SLOTS : SP.RULES[sport].slots.map(s => s[0]);
+    text = [slots, ...lineups.map(L => L.slots.map(([, p]) => p.site_player_id))].map(r => r.join(",")).join("\r\n") + "\r\n";
     fname = "GameTimeWin_" + (slate.slate_key || "week" + slate.week) + "_" + lineups.length + ".csv";
   }
   const a = document.createElement("a");
@@ -297,10 +344,10 @@ function downloadCSV() {
 
 // ============================================================ UI: steps
 function step(name) {
-  const order = ["upload", "pick", "build", "reveal"], at = order.indexOf(name);
+  const order = ["sport", "upload", "pick", "build", "reveal"], at = order.indexOf(name);
   document.querySelectorAll(".sm-steps li").forEach(li => { const i = order.indexOf(li.dataset.step);
     li.toggleAttribute("aria-current", i === at); if (i === at) li.setAttribute("aria-current", "step"); li.classList.toggle("done", i < at); });
-  $("scrUpload").hidden = name !== "upload"; $("scrPick").hidden = name !== "pick"; $("scrBuild").hidden = name !== "build"; $("scrReveal").hidden = name !== "reveal";
+  $("scrSport").hidden = name !== "sport"; $("scrUpload").hidden = name !== "upload"; $("scrPick").hidden = name !== "pick"; $("scrBuild").hidden = name !== "build"; $("scrReveal").hidden = name !== "reveal";
   window.scrollTo({ top: 0, behavior: REDUCED ? "auto" : "smooth" });
 }
 
@@ -311,6 +358,7 @@ async function handleFile(f) {
   const drop = $("drop"); drop.classList.add("busy"); $("drop").querySelector(".drop-title").textContent = "Reading your file…";
   try {
     if (f.size > 20e6) throw new Error("That file is too large to be a DraftKings CSV.");
+    if (sport !== "NFL") { drop.querySelector(".drop-title").textContent = "Reading your file…"; await handleSportFile(f); return; }
     file = parseDK(await f.text(), f.name);
     drop.querySelector(".drop-title").textContent = "Finding your slate…";
     if (!supa && !FIXTURE) throw new Error("The site isn't connected to its database right now. Try again in a minute.");
@@ -322,15 +370,59 @@ async function handleFile(f) {
   } catch (e) {
     console.error(e); err.textContent = e.message || String(e); err.hidden = false;
   } finally {
-    drop.classList.remove("busy"); drop.querySelector(".drop-title").textContent = "Drop your DKEntries.csv here";
+    drop.classList.remove("busy"); if (sport === "NFL") drop.querySelector(".drop-title").textContent = "Drop your DKEntries.csv here";
     $("file").value = "";
   }
 }
 
+// non-NFL: the DK file gives the player list, the projections CSV the numbers; build locally with sports.js
+async function handleSportFile(f) {
+  const rows = parseCSV((await f.text()).replace(/^\ufeff/, "")).filter(r => r.some(c => c.trim() !== ""));
+  if (!rows.length) throw new Error("That file is empty.");
+  dk = SP.parseDKSport(rows, sport);
+  projFile = false;
+  file = { kind: dk.entries ? "entries" : "salaries", name: f.name, ids: new Set(dk.players.map(p => p.id)), entries: dk.entries || [], H: dk.H, slotCols: dk.slotCols, lastCol: dk.lastCol, contests: [] };
+  if (dk.entries) { const c = new Map(); dk.entries.forEach(e => { const k = e.contestId || e.contest; if (!c.has(k)) c.set(k, { key: k, name: e.contest, fee: e.fee, n: 0 }); c.get(k).n++; }); file.contests = [...c.values()]; }
+  const dz = $("drop"); dz.classList.add("ok"); dz.querySelector(".drop-title").textContent = `${SP.SPORT_NAMES[sport]} · ${dk.players.length} players${dk.entries ? ` · ${dk.entries.length} entries` : ""} ✓`;
+  $("dropProj").hidden = false; $("dropProj").focus();
+}
+async function handleProjFile(f) {
+  if (!f || !dk) return;
+  const err = $("uploadError"); err.hidden = true;
+  try {
+    const rows = parseCSV((await f.text()).replace(/^\ufeff/, "")).filter(r => r.some(c => c.trim() !== ""));
+    const n = SP.applyProjections(sport, dk.players, rows);
+    if (n < SP.RULES[sport].slots.length * 2) throw new Error(`Only ${n} of the ${dk.players.length} DraftKings players matched a name in that projections file.`);
+    players = dk.players.filter(p => p.proj > 0).map(p => ({ ...p, site_player_id: p.id, player_name: p.name, position: p.posStr.split("/")[0], mean: p.proj, p85: p.q[3], stdev: Math.max(0.1, (p.q[2] - p.q[0]) / 1.35), game_id: p.game, opponent: p.opp }));
+    byId = new Map(players.map(p => [p.site_player_id, p]));
+    props = new Map(); sim = null; simPromise = Promise.resolve();
+    slate = { week: "", slate_key: `${sport}_${new Date().toISOString().slice(0, 10)}`, label: SP.SPORT_NAMES[sport] };
+    projFile = true;
+    $("dropProj").classList.add("ok"); $("dropProj").querySelector(".drop-title").textContent = `${n} players projected ✓`;
+    likes = new Set(); fades = new Set();
+    nWanted = file.kind === "entries" ? Math.max(...file.contests.map(c => c.n)) : 20;
+    renderPick(); step("pick");
+  } catch (e) { console.error(e); err.textContent = e.message || String(e); err.hidden = false; }
+  finally { $("fileProj").value = ""; }
+}
+function resetUpload() {
+  dk = null; projFile = false; spSim = null;
+  const dz = $("drop"); dz.classList.remove("ok"); dz.querySelector(".drop-title").textContent = "Drop your DKEntries.csv here";
+  const pz = $("dropProj"); pz.hidden = true; pz.classList.remove("ok"); pz.querySelector(".drop-title").textContent = "Now drop your projections CSV";
+  $("uploadError").hidden = true;
+}
+
 // ============================================================ UI: pick
+function posTabs() {
+  const seg = $("posSeg");
+  const list = sport === "NFL" ? ["QB", "RB", "WR", "TE", "DST"] : SP.RULES[sport].positions;
+  seg.innerHTML = `<button type="button" data-pos="ALL" aria-pressed="true">Top</button>` + list.map(p => `<button type="button" data-pos="${p}" aria-pressed="false">${p}</button>`).join("");
+  pickPos = "ALL"; seg.hidden = !list.length;
+}
 function renderPick() {
+  posTabs();
   const games = new Set(players.map(p => p.game_id).filter(Boolean)).size;
-  $("pickKicker").textContent = `DraftKings · Week ${slate.week} · ${games} games`;
+  $("pickKicker").textContent = sport === "NFL" ? `DraftKings · Week ${slate.week} · ${games} games` : `DraftKings · ${SP.SPORT_NAMES[sport]} · ${games ? games + " games · " : ""}${players.length} players`;
   if (file.kind === "entries") {
     const totalE = file.entries.length;
     $("entriesSum").innerHTML = file.contests.map(c => `<span class="chip-c">${esc(shortContest(c.name))} <b>${c.n}</b> ${c.n === 1 ? "entry" : "entries"}</span>`).join("")
@@ -348,7 +440,15 @@ function pickList() {
   const q = $("pickSearch").value.trim().toLowerCase();
   const byProj = (a, b) => proj(b) - proj(a);
   if (q) return players.filter(p => p.player_name.toLowerCase().includes(q) || String(p.team).toLowerCase() === q).sort(byProj).slice(0, 36);
-  if (pickPos !== "ALL") return players.filter(p => p.position === pickPos).sort(byProj).slice(0, 24);
+  const hasPos = (p, pos) => sport === "NFL" ? p.position === pos : p.pos.has(pos);
+  if (pickPos !== "ALL") return players.filter(p => hasPos(p, pickPos)).sort(byProj).slice(0, 24);
+  if (sport !== "NFL") {
+    const list = SP.RULES[sport].positions;
+    if (!list.length) return players.slice().sort(byProj).slice(0, 24);
+    const seen = new Set(), out = [];
+    list.forEach(pos => players.filter(p => hasPos(p, pos)).sort(byProj).slice(0, Math.ceil(24 / list.length)).forEach(p => { if (!seen.has(p.site_player_id)) { seen.add(p.site_player_id); out.push(p); } }));
+    return out;
+  }
   const take = { QB: 4, RB: 6, WR: 8, TE: 3, DST: 3 };
   return Object.entries(take).flatMap(([pos, k]) => players.filter(p => p.position === pos).sort(byProj).slice(0, k));
 }
@@ -357,10 +457,11 @@ function renderGrid() {
   $("pickGrid").innerHTML = list.length ? list.map(p => {
     const id = p.site_player_id, st = likes.has(id) ? "like" : fades.has(id) ? "fade" : "";
     const init = p.position === "DST" ? p.team : p.player_name.split(" ").map(w => w[0]).join("").slice(0, 2);
-    return `<button type="button" class="pk ${st}" data-id="${esc(id)}" style="--pc:var(--pos-${p.position === "DST" ? "dst" : p.position.toLowerCase()})" aria-pressed="${st ? "true" : "false"}" aria-label="${esc(p.player_name)}, ${esc(p.position)}, ${st || "no pick"}">
+    const pc = sport === "NFL" ? `var(--pos-${p.position === "DST" ? "dst" : p.position.toLowerCase()})` : "var(--accent)";
+    return `<button type="button" class="pk ${st}" data-id="${esc(id)}" style="--pc:${pc}" aria-pressed="${st ? "true" : "false"}" aria-label="${esc(p.player_name)}, ${esc(p.position)}, ${st || "no pick"}">
       <span class="av">${esc(init)}</span><span class="nm">${esc(p.player_name)}</span>
       <span class="pj">${f1(proj(p))}<small>pts</small></span>
-      <span class="mt">${esc(p.position)} · ${esc(p.team)} · $${(p.salary / 1000).toFixed(1)}K</span>
+      <span class="mt">${esc(sport === "NFL" ? p.position : p.posStr)}${p.team ? " · " + esc(p.team) : ""} · $${(p.salary / 1000).toFixed(1)}K</span>
       <span class="st">${st === "like" ? "LIKE" : st === "fade" ? "FADE" : ""}</span></button>`;
   }).join("") : `<div class="pick-empty">No players match that search.</div>`;
 }
@@ -383,7 +484,7 @@ function renderDock() {
 const STAGES = [
   [0.00, "Loading 10,000 simulated games"],
   [0.06, "Blending Vegas lines and player props"],
-  [0.18, "Stacking quarterbacks with their receivers"],
+  [0.18, "Stacking the lineups"],
   [0.45, "Hunting for tournament ceilings"],
   [0.75, "Balancing exposure across your entries"],
   [0.97, "Ranking every lineup by its ceiling"],
@@ -447,7 +548,7 @@ function showPack() {
   $("packStage").hidden = false; $("pull").hidden = true; $("binder").hidden = true;
   const pk = $("pack"); pk.className = "pack"; pk.disabled = false;
   $("packCount").textContent = lineups.length;
-  $("packWeek").textContent = `Week ${slate.week} · ${new Set(lineups.map(L => L.tier)).has("S") ? "Legendary inside" : "Fresh pack"}`;
+  $("packWeek").textContent = `${sport === "NFL" ? "Week " + slate.week : SP.SPORT_NAMES[sport]} · ${new Set(lineups.map(L => L.tier)).has("S") ? "Legendary inside" : "Fresh pack"}`;
 }
 async function openPack() {
   const pk = $("pack"); if (pk.disabled) return; pk.disabled = true;
@@ -498,7 +599,7 @@ function showBinder() {
   $("pull").hidden = true; $("binder").hidden = false;
   const counts = Object.fromEntries(TIERS.map(t => [t.t, lineups.filter(L => L.tier === t.t).length]));
   const avgSal = lineups.reduce((s, L) => s + L.salary, 0) / lineups.length;
-  $("binderSub").textContent = `${lineups.length} lineups · Week ${slate.week} · average salary ${money(avgSal)} · ranked by simulated ceiling`;
+  $("binderSub").textContent = `${lineups.length} lineups · ${sport === "NFL" ? "Week " + slate.week : SP.SPORT_NAMES[sport]} · average salary ${money(avgSal)} · ranked by simulated ceiling`;
   $("tierTabs").innerHTML = [["ALL", "All", lineups.length], ...TIERS.map(t => [t.t, t.name, counts[t.t]])].filter(([, , c]) => c > 0)
     .map(([t, nm, c]) => `<button type="button" data-t="${t}" aria-pressed="${t === tierFilter}">${t === "ALL" ? "" : `<i>${t}</i>`}${nm} <small>${c}</small></button>`).join("");
   $("uploadNote").innerHTML = file.kind === "entries"
@@ -513,10 +614,10 @@ function renderCards() {
 
 function cardHTML(L, facedown, i = 0) {
   const info = tierInfo(L.tier);
-  const rows = L.slots.map(([slot, p]) => `<li class="${likes.has(p.site_player_id) ? "liked" : ""}"><span class="pos ${p.position === "DST" ? "DST" : p.position}">${slot}</span>
+  const rows = L.slots.map(([slot, p]) => `<li class="${likes.has(p.site_player_id) ? "liked" : ""}"><span class="pos ${sport === "NFL" ? (p.position === "DST" ? "DST" : p.position) : "X"}">${slot}</span>
     <span class="nm">${esc(p.player_name)}<small>${esc(p.team)}</small></span><span class="sal">${money(p.salary)}</span></li>`).join("");
   const uses = L.uses.length ? `<div class="lc-uses">Plays in ${L.uses.map(u => `${esc(u.name)}${u.n > 1 ? " ×" + u.n : ""}`).join(" · ")}</div>` : "";
-  const stack = `${lastName(L.qb.player_name)}${L.mates.length ? " + " + L.mates.join(", ") : ""}`;
+  const stack = `${lastName(L.qb.player_name)}${L.mates.length ? " + " + L.mates.join(", ") : ""}${L.headline ? " · " + L.headline : ""}`;
   return `<article class="lcard${facedown ? " facedown" : ""}" data-tier="${L.tier}" style="--i:${Math.min(i, 30)}" aria-label="Lineup ${L.rank}, ${info.name} tier">
     <div class="lc-back" aria-hidden="true"></div>
     <div class="lc-front">
@@ -570,20 +671,29 @@ function wire() {
   ["dragleave", "drop"].forEach(ev => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.remove("over"); }));
   drop.addEventListener("drop", (e) => handleFile(e.dataTransfer.files[0]));
   window.addEventListener("dragover", (e) => e.preventDefault());
-  window.addEventListener("drop", (e) => { e.preventDefault(); if (!$("scrUpload").hidden) handleFile(e.dataTransfer.files[0]); });
+  window.addEventListener("drop", (e) => { e.preventDefault(); if (!$("scrUpload").hidden) (dk && !projFile ? handleProjFile : handleFile)(e.dataTransfer.files[0]); });
 
   $("pickGrid").addEventListener("click", (e) => { const b = e.target.closest(".pk"); if (b) cyclePick(b.dataset.id); });
   $("posSeg").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; pickPos = b.dataset.pos; pressed("posSeg", "pos", pickPos); $("pickSearch").value = ""; renderGrid(); });
   $("pickSearch").addEventListener("input", renderGrid);
   $("nSeg").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; nWanted = +b.dataset.n; pressed("nSeg", "n", b.dataset.n); renderDock(); });
   $("buildBtn").addEventListener("click", build);
+  $("sportGrid").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; sport = b.dataset.sport; pressed("sportGrid", "sport", sport);
+    resetUpload(); $("scrUpload").querySelector(".drop-hint").innerHTML = sport === "NFL" ? "or <u>choose a file</u> · a DKSalaries.csv works too" : `or <u>choose a file</u> · the ${esc(SP.SPORT_NAMES[sport])} Classic entries or salaries CSV`; step("upload"); });
+  const dropP = $("dropProj"), inputP = $("fileProj");
+  dropP.addEventListener("click", () => inputP.click());
+  dropP.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); inputP.click(); } });
+  inputP.addEventListener("change", () => handleProjFile(inputP.files[0]));
+  ["dragenter", "dragover"].forEach(ev => dropP.addEventListener(ev, (e) => { e.preventDefault(); e.stopPropagation(); dropP.classList.add("over"); }));
+  ["dragleave", "drop"].forEach(ev => dropP.addEventListener(ev, (e) => { e.preventDefault(); e.stopPropagation(); dropP.classList.remove("over"); }));
+  dropP.addEventListener("drop", (e) => handleProjFile(e.dataTransfer.files[0]));
 
   $("pack").addEventListener("click", openPack);
   $("pullNext").addEventListener("click", nextPull);
   $("pullSkip").addEventListener("click", showBinder);
   $("tierTabs").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; tierFilter = b.dataset.t; pressed("tierTabs", "t", tierFilter); renderCards(); });
   $("dlBtn").addEventListener("click", downloadCSV);
-  $("againBtn").addEventListener("click", () => { lineups = []; file = null; tierFilter = "ALL"; step("upload"); });
+  $("againBtn").addEventListener("click", () => { lineups = []; file = null; tierFilter = "ALL"; resetUpload(); step("sport"); });
   window.addEventListener("resize", () => { const c = $("fx"); c.width = 0; });
 }
 

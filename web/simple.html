@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Simple Mode · GameTime Win</title>
-<meta name="description" content="Drop in your DraftKings entries file, pick two players, and get back a full set of ranked, upload-ready NFL lineups.">
+<meta name="description" content="Pick your sport, drop in your DraftKings entries file, pick two players, and get back a full set of ranked, upload-ready lineups.">
 <script>try{document.documentElement.dataset.theme=localStorage.getItem("gs_theme")||"dark";if(localStorage.getItem("gs_owner")==="1")document.documentElement.classList.add("owner")}catch(e){}</script>
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,14 +20,37 @@
 
 <main class="sm" data-requires-sub>
   <ol class="sm-steps" aria-label="Steps">
-    <li data-step="upload" aria-current="step"><b>1</b><span>Upload</span></li>
-    <li data-step="pick"><b>2</b><span>Pick 2</span></li>
-    <li data-step="build"><b>3</b><span>Build</span></li>
-    <li data-step="reveal"><b>4</b><span>Reveal</span></li>
+    <li data-step="sport" aria-current="step"><b>1</b><span>Sport</span></li>
+    <li data-step="upload"><b>2</b><span>Upload</span></li>
+    <li data-step="pick"><b>3</b><span>Pick 2</span></li>
+    <li data-step="build"><b>4</b><span>Build</span></li>
+    <li data-step="reveal"><b>5</b><span>Reveal</span></li>
   </ol>
 
+  <!-- ============================================ 0. sport -->
+  <section class="sm-screen" id="scrSport">
+    <div class="sm-hero">
+      <p class="sm-kicker">Simple mode</p>
+      <h1>What are you playing today?</h1>
+      <p class="sm-sub">Pick the sport, drop in your DraftKings file, and get back a pack of ranked, upload-ready lineups.</p>
+    </div>
+    <div class="sport-grid" id="sportGrid" role="group" aria-label="Sport">
+      <button type="button" data-sport="NFL"><b>NFL</b><span>Live projections · main slate</span></button>
+      <button type="button" data-sport="NBA"><b>NBA</b><span>Game stacks · ceiling ranked</span></button>
+      <button type="button" data-sport="MLB"><b>MLB</b><span>5-3 hitter stacks</span></button>
+      <button type="button" data-sport="NHL"><b>NHL</b><span>Line stacks · goalie rule</span></button>
+      <button type="button" data-sport="WNBA"><b>WNBA</b><span>Game stacks</span></button>
+      <button type="button" data-sport="CFB"><b>College football</b><span>QB + 2 stacks</span></button>
+      <button type="button" data-sport="TEN"><b>Tennis</b><span>Never both sides of a match</span></button>
+      <button type="button" data-sport="GOLF"><b>Golf</b><span>Full-tournament slates</span></button>
+      <button type="button" data-sport="NASCAR"><b>NASCAR</b><span>Cup Series</span></button>
+      <button type="button" data-sport="MMA"><b>MMA</b><span>Fight cards</span></button>
+    </div>
+    <p class="muted small sport-note">NFL uses the site's own simulations. Other sports build from a projections CSV you drop in with your DraftKings file (SaberSim export or any <code>name, proj</code> file); the sport's roster rules, stacks and backtested settings are built in.</p>
+  </section>
+
   <!-- ============================================ 1. upload -->
-  <section class="sm-screen" id="scrUpload">
+  <section class="sm-screen" id="scrUpload" hidden>
     <div class="sm-hero">
       <p class="sm-kicker">Simple mode</p>
       <h1>Your lineups in four taps.</h1>
@@ -42,12 +65,20 @@
       <b class="drop-title">Drop your DKEntries.csv here</b>
       <span class="drop-hint">or <u>choose a file</u> · a DKSalaries.csv works too</span>
     </label>
+    <label class="drop drop-proj" id="dropProj" tabindex="0" hidden>
+      <input type="file" id="fileProj" accept=".csv,text/csv" hidden>
+      <span class="drop-icon" aria-hidden="true">
+        <svg viewBox="0 0 48 48" width="48" height="48"><path d="M10 12h28M10 24h28M10 36h18" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/></svg>
+      </span>
+      <b class="drop-title">Now drop your projections CSV</b>
+      <span class="drop-hint" id="projHint">a <code>name, proj</code> file — SaberSim exports work as-is</span>
+    </label>
     <p class="sm-error" id="uploadError" role="alert" hidden></p>
 
     <details class="howto">
       <summary>Where do I get the entries file?</summary>
       <ol>
-        <li>Enter your NFL Classic contests on DraftKings as usual (empty lineups are fine).</li>
+        <li>Enter your Classic contests on DraftKings as usual (empty lineups are fine).</li>
         <li>Go to <b>My Contests → Upcoming</b>, choose the slate, and click <b>Edit Entries</b>.</li>
         <li>Click <b>Download CSV</b>. That file is your <code>DKEntries.csv</code> — drop it above.</li>
       </ol>
