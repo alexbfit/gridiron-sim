@@ -7,6 +7,9 @@ so the weekly "download DKSalaries.csv, drop it in data/slates/, push" step is n
   python jobs/fetch_dk_salaries.py --import --force   # re-import even if the slate exists (DK added players, salary fixes)
   python jobs/fetch_dk_salaries.py --group 154078  # a specific DraftGroupId (e.g. an early-only or Sunday-Monday slate)
   python jobs/fetch_dk_salaries.py --dry-run       # just say which draft group would be used
+  python jobs/fetch_dk_salaries.py --sport NBA [--date 2026-10-21] [--dry-run]
+                                                   # NBA main Classic slate of that evening -> data/slates/DKSalaries_NBA_<date>.csv
+                                                   # (jobs/sports/fetch_dk.py does the work; NFL below is untouched)
 
 How the main slate is picked: DraftKings' public lobby feed (https://www.draftkings.com/lobby/getcontests?sport=NFL)
 lists every draft group. The main slate is the Classic (ContestTypeId 21) group that starts on the next Sunday at
@@ -32,7 +35,7 @@ from zoneinfo import ZoneInfo
 
 HERE = Path(__file__).parent
 ET = ZoneInfo("America/New_York")
-LOBBY = "https://www.draftkings.com/lobby/getcontests?sport=NFL"
+LOBBY = "https://www.draftkings.com/lobby/getcontests?sport={sport}"
 CSV = "https://www.draftkings.com/lineup/getavailableplayerscsv?contestTypeId={ct}&draftGroupId={dg}"
 # DraftKings returns 403 to unusual User-Agent strings (like ESPN); a plain browser UA is fine.
 UA = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0 Safari/537.36", "Accept": "*/*"}
@@ -44,8 +47,13 @@ def fetch(url: str, timeout: int = 60) -> bytes:
         return r.read()
 
 
-def list_groups() -> list[dict]:
-    data = json.loads(fetch(LOBBY))
+def lobby(sport: str = "NFL") -> dict:
+    """The raw lobby JSON for a sport (DraftGroups, GameTypes, Contests, ...)."""
+    return json.loads(fetch(LOBBY.format(sport=sport)))
+
+
+def list_groups(sport: str = "NFL", data: dict | None = None) -> list[dict]:
+    data = data if data is not None else lobby(sport)
     out = []
     for g in data.get("DraftGroups", []):
         st = g.get("StartDateEst")
@@ -99,6 +107,8 @@ def board_overlap(client, slate_key: str, ids: set[str]) -> tuple[int, int]:
 
 def main():
     ap = argparse.ArgumentParser()
+    ap.add_argument("--sport", default="NFL", help="NFL (default, the weekly main slate below) or NBA (jobs/sports/fetch_dk.py)")
+    ap.add_argument("--date", help="--sport NBA: slate date (ET), default today")
     ap.add_argument("--group", type=int, help="DraftGroupId (default: the next Sunday 1 PM main slate)")
     ap.add_argument("--slate-type", default="main")
     ap.add_argument("--out-dir", default=str(HERE.parent / "data" / "slates"))
@@ -106,6 +116,10 @@ def main():
     ap.add_argument("--force", action="store_true", help="with --import: re-import an existing slate key")
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args()
+    if args.sport.upper() != "NFL":
+        sys.path.insert(0, str(HERE))
+        from sports.fetch_dk import run as run_sport  # noqa: E402
+        return run_sport(args.sport.upper(), date=args.date, group=args.group, out_dir=args.out_dir, dry_run=args.dry_run)
 
     # Never on a Sunday (ET) without --group: after 1 PM the "next Sunday" is next week's slate, and importing it
     # would make it the latest slate while the late-swap tasks are still working today's.

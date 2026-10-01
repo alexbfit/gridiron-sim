@@ -23,6 +23,7 @@ jobs/ext_projections.py              picks the Sunday projection setup (SaberSim
 jobs/runlog.py                       run log for every scheduled job (task_runs via log_task_run, supabase/pending/017_task_runs.sql); --show lists recent runs; web/status.html shows them
 tests/                               smoke tests on every push (.github/workflows/tests.yml): the exact Sunday commands on the frozen week-3 slate (tests/fixtures/wk3), every workflow command's arguments, the checklist, web JS; `pytest` locally
 jobs/flashback.py                    Contest Flashback: recorded lineups vs the REAL field (standings export lineups) across the sims -> expected ROI, model and consensus views; runs from the slate-pipeline on a standings push
+jobs/sports/nba_daily.py             NBA slate day in one command: DK main-slate salaries (fetch_dk_salaries.py --sport NBA) -> props (Odds API + Kalshi, props_nba.py) -> correlated per-stat MC projections -> 20 DK lineups under data/sports/nba/<date>/; workflow nba-daily (cron commented out until the season); docs/nba.md
 jobs/kalshi.py                       Kalshi player ladders (free, no key) -> prop-style lines, merged by props.py; runs every refresh
 jobs/props.py                        sportsbook player props -> slate_projections method 'props' (Sun 7 AM ET; build_lineups --props blends them in)
 jobs/contest_backtest.py             replay past slates vs real contest standings (see data/contests/contest_backtest_2020.md)

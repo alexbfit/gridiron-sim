@@ -1,0 +1,16677 @@
+{
+"note": "synthetic Odds API-style outcomes [player, market, label, price, point, bookmaker] for the fixture slate",
+"outcomes": [
+[
+"Austin Kennard",
+"player_points",
+"Over",
+-120,
+24.5,
+"draftkings"
+],
+[
+"Austin Kennard",
+"player_points",
+"Under",
+-110,
+24.5,
+"draftkings"
+],
+[
+"Austin Kennard",
+"player_points",
+"Over",
+-125,
+24.5,
+"fanduel"
+],
+[
+"Austin Kennard",
+"player_points",
+"Under",
+-95,
+24.5,
+"fanduel"
+],
+[
+"Austin Kennard",
+"player_rebounds",
+"Over",
+-125,
+4.5,
+"draftkings"
+],
+[
+"Austin Kennard",
+"player_rebounds",
+"Under",
+-100,
+4.5,
+"draftkings"
+],
+[
+"AUSTIN KENNARD",
+"player_rebounds",
+"Over",
+-125,
+4.5,
+"fanduel"
+],
+[
+"AUSTIN KENNARD",
+"player_rebounds",
+"Under",
+-95,
+4.5,
+"fanduel"
+],
+[
+"Austin Kennard",
+"player_assists",
+"Over",
+-105,
+7.5,
+"draftkings"
+],
+[
+"Austin Kennard",
+"player_assists",
+"Under",
+-115,
+7.5,
+"draftkings"
+],
+[
+"Austin Kennard",
+"player_assists",
+"Over",
+-110,
+7.5,
+"fanduel"
+],
+[
+"Austin Kennard",
+"player_assists",
+"Under",
+-120,
+7.5,
+"fanduel"
+],
+[
+"Austin Kennard",
+"player_threes",
+"Over",
+-110,
+2.5,
+"draftkings"
+],
+[
+"Austin Kennard",
+"player_threes",
+"Under",
+-120,
+2.5,
+"draftkings"
+],
+[
+"Austin Kennard",
+"player_threes",
+"Over",
+-120,
+2.5,
+"fanduel"
+],
+[
+"Austin Kennard",
+"player_threes",
+"Under",
+-105,
+2.5,
+"fanduel"
+],
+[
+"Austin Kennard",
+"player_steals",
+"Over",
+-125,
+1.5,
+"draftkings"
+],
+[
+"Austin Kennard",
+"player_steals",
+"Under",
+-105,
+1.5,
+"draftkings"
+],
+[
+"AUSTIN KENNARD",
+"player_steals",
+"Over",
+-115,
+1.5,
+"fanduel"
+],
+[
+"AUSTIN KENNARD",
+"player_steals",
+"Under",
+-115,
+1.5,
+"fanduel"
+],
+[
+"Austin Kennard",
+"player_blocks",
+"Over",
+-125,
+0.5,
+"draftkings"
+],
+[
+"Austin Kennard",
+"player_blocks",
+"Under",
+-95,
+0.5,
+"draftkings"
+],
+[
+"Austin Kennard",
+"player_blocks",
+"Over",
+-110,
+0.5,
+"fanduel"
+],
+[
+"Austin Kennard",
+"player_blocks",
+"Under",
+-110,
+0.5,
+"fanduel"
+],
+[
+"Austin Kennard",
+"player_turnovers",
+"Over",
+-110,
+3.5,
+"draftkings"
+],
+[
+"Austin Kennard",
+"player_turnovers",
+"Under",
+-115,
+3.5,
+"draftkings"
+],
+[
+"Austin Kennard",
+"player_turnovers",
+"Over",
+-105,
+3.5,
+"fanduel"
+],
+[
+"Austin Kennard",
+"player_turnovers",
+"Under",
+-120,
+3.5,
+"fanduel"
+],
+[
+"Austin Kennard",
+"player_points_rebounds_assists",
+"Over",
+-110,
+37.0,
+"draftkings"
+],
+[
+"Austin Kennard",
+"player_points_rebounds_assists",
+"Under",
+-110,
+37.0,
+"draftkings"
+],
+[
+"Derrick Pritchard",
+"player_points",
+"Over",
+-110,
+18.5,
+"draftkings"
+],
+[
+"Derrick Pritchard",
+"player_points",
+"Under",
+-120,
+18.5,
+"draftkings"
+],
+[
+"Derrick Pritchard",
+"player_points",
+"Over",
+-110,
+18.5,
+"fanduel"
+],
+[
+"Derrick Pritchard",
+"player_points",
+"Under",
+-115,
+18.5,
+"fanduel"
+],
+[
+"Derrick Pritchard",
+"player_rebounds",
+"Over",
+-120,
+3.5,
+"draftkings"
+],
+[
+"Derrick Pritchard",
+"player_rebounds",
+"Under",
+-110,
+3.5,
+"draftkings"
+],
+[
+"Derrick Pritchard",
+"player_rebounds",
+"Over",
+-110,
+3.5,
+"fanduel"
+],
+[
+"Derrick Pritchard",
+"player_rebounds",
+"Under",
+-120,
+3.5,
+"fanduel"
+],
+[
+"Derrick Pritchard",
+"player_assists",
+"Over",
+-125,
+2.5,
+"draftkings"
+],
+[
+"Derrick Pritchard",
+"player_assists",
+"Under",
+-100,
+2.5,
+"draftkings"
+],
+[
+"Derrick Pritchard",
+"player_assists",
+"Over",
+-110,
+2.5,
+"fanduel"
+],
+[
+"Derrick Pritchard",
+"player_assists",
+"Under",
+-110,
+2.5,
+"fanduel"
+],
+[
+"Derrick Pritchard",
+"player_threes",
+"Over",
+-110,
+2.5,
+"draftkings"
+],
+[
+"Derrick Pritchard",
+"player_threes",
+"Under",
+-115,
+2.5,
+"draftkings"
+],
+[
+"Derrick Pritchard",
+"player_threes",
+"Over",
+-110,
+2.5,
+"fanduel"
+],
+[
+"Derrick Pritchard",
+"player_threes",
+"Under",
+-115,
+2.5,
+"fanduel"
+],
+[
+"Derrick Pritchard",
+"player_steals",
+"Over",
+-110,
+0.5,
+"draftkings"
+],
+[
+"Derrick Pritchard",
+"player_steals",
+"Under",
+-110,
+0.5,
+"draftkings"
+],
+[
+"Derrick Pritchard",
+"player_steals",
+"Over",
+-115,
+0.5,
+"fanduel"
+],
+[
+"Derrick Pritchard",
+"player_steals",
+"Under",
+-105,
+0.5,
+"fanduel"
+],
+[
+"Derrick Pritchard",
+"player_blocks",
+"Over",
+-120,
+0.5,
+"draftkings"
+],
+[
+"Derrick Pritchard",
+"player_blocks",
+"Under",
+-105,
+0.5,
+"draftkings"
+],
+[
+"Derrick Pritchard",
+"player_blocks",
+"Over",
+-110,
+0.5,
+"fanduel"
+],
+[
+"Derrick Pritchard",
+"player_blocks",
+"Under",
+-120,
+0.5,
+"fanduel"
+],
+[
+"Derrick Pritchard",
+"player_turnovers",
+"Over",
+-105,
+1.5,
+"draftkings"
+],
+[
+"Derrick Pritchard",
+"player_turnovers",
+"Under",
+-120,
+1.5,
+"draftkings"
+],
+[
+"Derrick Pritchard",
+"player_turnovers",
+"Over",
+-110,
+1.5,
+"fanduel"
+],
+[
+"Derrick Pritchard",
+"player_turnovers",
+"Under",
+-115,
+1.5,
+"fanduel"
+],
+[
+"Derrick Pritchard",
+"player_points_rebounds_assists",
+"Over",
+-110,
+26.0,
+"draftkings"
+],
+[
+"Derrick Pritchard",
+"player_points_rebounds_assists",
+"Under",
+-110,
+26.0,
+"draftkings"
+],
+[
+"Jordan Haliburton",
+"player_points",
+"Over",
+-120,
+16.5,
+"draftkings"
+],
+[
+"Jordan Haliburton",
+"player_points",
+"Under",
+-105,
+16.5,
+"draftkings"
+],
+[
+"Jordan Haliburton",
+"player_points",
+"Over",
+-115,
+16.5,
+"fanduel"
+],
+[
+"Jordan Haliburton",
+"player_points",
+"Under",
+-115,
+16.5,
+"fanduel"
+],
+[
+"Jordan Haliburton",
+"player_rebounds",
+"Over",
+-120,
+5.5,
+"draftkings"
+],
+[
+"Jordan Haliburton",
+"player_rebounds",
+"Under",
+-110,
+5.5,
+"draftkings"
+],
+[
+"Jordan Haliburton",
+"player_rebounds",
+"Over",
+-115,
+5.5,
+"fanduel"
+],
+[
+"Jordan Haliburton",
+"player_rebounds",
+"Under",
+-115,
+5.5,
+"fanduel"
+],
+[
+"Jordan Haliburton",
+"player_assists",
+"Over",
+-120,
+2.5,
+"draftkings"
+],
+[
+"Jordan Haliburton",
+"player_assists",
+"Under",
+-110,
+2.5,
+"draftkings"
+],
+[
+"Jordan Haliburton",
+"player_assists",
+"Over",
+-120,
+2.5,
+"fanduel"
+],
+[
+"Jordan Haliburton",
+"player_assists",
+"Under",
+-100,
+2.5,
+"fanduel"
+],
+[
+"Jordan Haliburton",
+"player_threes",
+"Over",
+-110,
+1.5,
+"draftkings"
+],
+[
+"Jordan Haliburton",
+"player_threes",
+"Under",
+-115,
+1.5,
+"draftkings"
+],
+[
+"Jordan Haliburton",
+"player_threes",
+"Over",
+-125,
+1.5,
+"fanduel"
+],
+[
+"Jordan Haliburton",
+"player_threes",
+"Under",
+-100,
+1.5,
+"fanduel"
+],
+[
+"Jordan Haliburton",
+"player_steals",
+"Over",
+-115,
+1.5,
+"draftkings"
+],
+[
+"Jordan Haliburton",
+"player_steals",
+"Under",
+-110,
+1.5,
+"draftkings"
+],
+[
+"Jordan Haliburton",
+"player_steals",
+"Over",
+-125,
+1.5,
+"fanduel"
+],
+[
+"Jordan Haliburton",
+"player_steals",
+"Under",
+-105,
+1.5,
+"fanduel"
+],
+[
+"Jordan Haliburton",
+"player_blocks",
+"Over",
+-110,
+0.5,
+"draftkings"
+],
+[
+"Jordan Haliburton",
+"player_blocks",
+"Under",
+-110,
+0.5,
+"draftkings"
+],
+[
+"Jordan Haliburton",
+"player_blocks",
+"Over",
+-115,
+0.5,
+"fanduel"
+],
+[
+"Jordan Haliburton",
+"player_blocks",
+"Under",
+-110,
+0.5,
+"fanduel"
+],
+[
+"Jordan Haliburton",
+"player_turnovers",
+"Over",
+-125,
+1.5,
+"draftkings"
+],
+[
+"Jordan Haliburton",
+"player_turnovers",
+"Under",
+-100,
+1.5,
+"draftkings"
+],
+[
+"JORDAN HALIBURTON",
+"player_turnovers",
+"Over",
+-105,
+1.5,
+"fanduel"
+],
+[
+"JORDAN HALIBURTON",
+"player_turnovers",
+"Under",
+-120,
+1.5,
+"fanduel"
+],
+[
+"Jordan Haliburton",
+"player_points_rebounds_assists",
+"Over",
+-110,
+24.5,
+"draftkings"
+],
+[
+"Jordan Haliburton",
+"player_points_rebounds_assists",
+"Under",
+-110,
+24.5,
+"draftkings"
+],
+[
+"Devin White",
+"player_points",
+"Over",
+-125,
+16.5,
+"draftkings"
+],
+[
+"Devin White",
+"player_points",
+"Under",
+-100,
+16.5,
+"draftkings"
+],
+[
+"Devin White",
+"player_points",
+"Over",
+-105,
+16.5,
+"fanduel"
+],
+[
+"Devin White",
+"player_points",
+"Under",
+-125,
+16.5,
+"fanduel"
+],
+[
+"Devin White",
+"player_rebounds",
+"Over",
+-120,
+7.5,
+"draftkings"
+],
+[
+"Devin White",
+"player_rebounds",
+"Under",
+-110,
+7.5,
+"draftkings"
+],
+[
+"Devin White",
+"player_rebounds",
+"Over",
+-115,
+7.5,
+"fanduel"
+],
+[
+"Devin White",
+"player_rebounds",
+"Under",
+-110,
+7.5,
+"fanduel"
+],
+[
+"Devin White",
+"player_assists",
+"Over",
+-115,
+2.5,
+"draftkings"
+],
+[
+"Devin White",
+"player_assists",
+"Under",
+-110,
+2.5,
+"draftkings"
+],
+[
+"Devin White",
+"player_assists",
+"Over",
+-115,
+2.5,
+"fanduel"
+],
+[
+"Devin White",
+"player_assists",
+"Under",
+-115,
+2.5,
+"fanduel"
+],
+[
+"Devin White",
+"player_threes",
+"Over",
+-125,
+1.5,
+"draftkings"
+],
+[
+"Devin White",
+"player_threes",
+"Under",
+-95,
+1.5,
+"draftkings"
+],
+[
+"Devin White",
+"player_threes",
+"Over",
+-120,
+1.5,
+"fanduel"
+],
+[
+"Devin White",
+"player_threes",
+"Under",
+-105,
+1.5,
+"fanduel"
+],
+[
+"Devin White",
+"player_steals",
+"Over",
+-120,
+0.5,
+"draftkings"
+],
+[
+"Devin White",
+"player_steals",
+"Under",
+-100,
+0.5,
+"draftkings"
+],
+[
+"DEVIN WHITE",
+"player_steals",
+"Over",
+-110,
+0.5,
+"fanduel"
+],
+[
+"DEVIN WHITE",
+"player_steals",
+"Under",
+-110,
+0.5,
+"fanduel"
+],
+[
+"Devin White",
+"player_blocks",
+"Over",
+-115,
+0.5,
+"draftkings"
+],
+[
+"Devin White",
+"player_blocks",
+"Under",
+-115,
+0.5,
+"draftkings"
+],
+[
+"Devin White",
+"player_blocks",
+"Over",
+-120,
+0.5,
+"fanduel"
+],
+[
+"Devin White",
+"player_blocks",
+"Under",
+-105,
+0.5,
+"fanduel"
+],
+[
+"Devin White",
+"player_turnovers",
+"Over",
+-125,
+1.5,
+"draftkings"
+],
+[
+"Devin White",
+"player_turnovers",
+"Under",
+-100,
+1.5,
+"draftkings"
+],
+[
+"Devin White",
+"player_turnovers",
+"Over",
+-105,
+1.5,
+"fanduel"
+],
+[
+"Devin White",
+"player_turnovers",
+"Under",
+-125,
+1.5,
+"fanduel"
+],
+[
+"Devin White",
+"player_points_rebounds_assists",
+"Over",
+-110,
+27.5,
+"draftkings"
+],
+[
+"Devin White",
+"player_points_rebounds_assists",
+"Under",
+-110,
+27.5,
+"draftkings"
+],
+[
+"Devin Brown",
+"player_points",
+"Over",
+-125,
+12.5,
+"draftkings"
+],
+[
+"Devin Brown",
+"player_points",
+"Under",
+-95,
+12.5,
+"draftkings"
+],
+[
+"Devin Brown",
+"player_points",
+"Over",
+-105,
+12.5,
+"fanduel"
+],
+[
+"Devin Brown",
+"player_points",
+"Under",
+-115,
+12.5,
+"fanduel"
+],
+[
+"Devin Brown",
+"player_rebounds",
+"Over",
+-110,
+9.5,
+"draftkings"
+],
+[
+"Devin Brown",
+"player_rebounds",
+"Under",
+-110,
+9.5,
+"draftkings"
+],
+[
+"Devin Brown",
+"player_rebounds",
+"Over",
+-105,
+9.5,
+"fanduel"
+],
+[
+"Devin Brown",
+"player_rebounds",
+"Under",
+-120,
+9.5,
+"fanduel"
+],
+[
+"Devin Brown",
+"player_assists",
+"Over",
+-115,
+2.5,
+"draftkings"
+],
+[
+"Devin Brown",
+"player_assists",
+"Under",
+-110,
+2.5,
+"draftkings"
+],
+[
+"Devin Brown",
+"player_assists",
+"Over",
+-105,
+2.5,
+"fanduel"
+],
+[
+"Devin Brown",
+"player_assists",
+"Under",
+-125,
+2.5,
+"fanduel"
+],
+[
+"Devin Brown",
+"player_threes",
+"Over",
+-115,
+0.5,
+"draftkings"
+],
+[
+"Devin Brown",
+"player_threes",
+"Under",
+-105,
+0.5,
+"draftkings"
+],
+[
+"Devin Brown",
+"player_threes",
+"Over",
+-105,
+0.5,
+"fanduel"
+],
+[
+"Devin Brown",
+"player_threes",
+"Under",
+-115,
+0.5,
+"fanduel"
+],
+[
+"Devin Brown",
+"player_steals",
+"Over",
+-105,
+0.5,
+"draftkings"
+],
+[
+"Devin Brown",
+"player_steals",
+"Under",
+-125,
+0.5,
+"draftkings"
+],
+[
+"Devin Brown",
+"player_steals",
+"Over",
+-125,
+0.5,
+"fanduel"
+],
+[
+"Devin Brown",
+"player_steals",
+"Under",
+-105,
+0.5,
+"fanduel"
+],
+[
+"Devin Brown",
+"player_blocks",
+"Over",
+-125,
+1.5,
+"draftkings"
+],
+[
+"Devin Brown",
+"player_blocks",
+"Under",
+-95,
+1.5,
+"draftkings"
+],
+[
+"Devin Brown",
+"player_blocks",
+"Over",
+-110,
+1.5,
+"fanduel"
+],
+[
+"Devin Brown",
+"player_blocks",
+"Under",
+-115,
+1.5,
+"fanduel"
+],
+[
+"Devin Brown",
+"player_turnovers",
+"Over",
+-105,
+1.5,
+"draftkings"
+],
+[
+"Devin Brown",
+"player_turnovers",
+"Under",
+-115,
+1.5,
+"draftkings"
+],
+[
+"Devin Brown",
+"player_turnovers",
+"Over",
+-110,
+1.5,
+"fanduel"
+],
+[
+"Devin Brown",
+"player_turnovers",
+"Under",
+-120,
+1.5,
+"fanduel"
+],
+[
+"Devin Brown",
+"player_points_rebounds_assists",
+"Over",
+-110,
+24.5,
+"draftkings"
+],
+[
+"Devin Brown",
+"player_points_rebounds_assists",
+"Under",
+-110,
+24.5,
+"draftkings"
+],
+[
+"Grant Booker",
+"player_points",
+"Over",
+-110,
+11.5,
+"draftkings"
+],
+[
+"Grant Booker",
+"player_points",
+"Under",
+-115,
+11.5,
+"draftkings"
+],
+[
+"Grant Booker",
+"player_points",
+"Over",
+-125,
+11.5,
+"fanduel"
+],
+[
+"Grant Booker",
+"player_points",
+"Under",
+-100,
+11.5,
+"fanduel"
+],
+[
+"Grant Booker",
+"player_rebounds",
+"Over",
+-115,
+2.5,
+"draftkings"
+],
+[
+"Grant Booker",
+"player_rebounds",
+"Under",
+-110,
+2.5,
+"draftkings"
+],
+[
+"Grant Booker",
+"player_rebounds",
+"Over",
+-105,
+2.5,
+"fanduel"
+],
+[
+"Grant Booker",
+"player_rebounds",
+"Under",
+-115,
+2.5,
+"fanduel"
+],
+[
+"Grant Booker",
+"player_assists",
+"Over",
+-120,
+2.5,
+"draftkings"
+],
+[
+"Grant Booker",
+"player_assists",
+"Under",
+-100,
+2.5,
+"draftkings"
+],
+[
+"GRANT BOOKER",
+"player_assists",
+"Over",
+-120,
+2.5,
+"fanduel"
+],
+[
+"GRANT BOOKER",
+"player_assists",
+"Under",
+-110,
+2.5,
+"fanduel"
+],
+[
+"Grant Booker",
+"player_threes",
+"Over",
+-120,
+1.5,
+"draftkings"
+],
+[
+"Grant Booker",
+"player_threes",
+"Under",
+-105,
+1.5,
+"draftkings"
+],
+[
+"Grant Booker",
+"player_threes",
+"Over",
+-125,
+1.5,
+"fanduel"
+],
+[
+"Grant Booker",
+"player_threes",
+"Under",
+-95,
+1.5,
+"fanduel"
+],
+[
+"Grant Booker",
+"player_steals",
+"Over",
+-110,
+1.5,
+"draftkings"
+],
+[
+"Grant Booker",
+"player_steals",
+"Under",
+-115,
+1.5,
+"draftkings"
+],
+[
+"Grant Booker",
+"player_steals",
+"Over",
+-120,
+1.5,
+"fanduel"
+],
+[
+"Grant Booker",
+"player_steals",
+"Under",
+-110,
+1.5,
+"fanduel"
+],
+[
+"Grant Booker",
+"player_blocks",
+"Over",
+-125,
+0.5,
+"draftkings"
+],
+[
+"Grant Booker",
+"player_blocks",
+"Under",
+-100,
+0.5,
+"draftkings"
+],
+[
+"Grant Booker",
+"player_blocks",
+"Over",
+-120,
+0.5,
+"fanduel"
+],
+[
+"Grant Booker",
+"player_blocks",
+"Under",
+-105,
+0.5,
+"fanduel"
+],
+[
+"Grant Booker",
+"player_turnovers",
+"Over",
+-110,
+1.5,
+"draftkings"
+],
+[
+"Grant Booker",
+"player_turnovers",
+"Under",
+-120,
+1.5,
+"draftkings"
+],
+[
+"Grant Booker",
+"player_turnovers",
+"Over",
+-125,
+1.5,
+"fanduel"
+],
+[
+"Grant Booker",
+"player_turnovers",
+"Under",
+-95,
+1.5,
+"fanduel"
+],
+[
+"Grant Booker",
+"player_points_rebounds_assists",
+"Over",
+-110,
+18.0,
+"draftkings"
+],
+[
+"Grant Booker",
+"player_points_rebounds_assists",
+"Under",
+-110,
+18.0,
+"draftkings"
+],
+[
+"Devin Williams",
+"player_points",
+"Over",
+-110,
+7.5,
+"draftkings"
+],
+[
+"Devin Williams",
+"player_points",
+"Under",
+-115,
+7.5,
+"draftkings"
+],
+[
+"Devin Williams",
+"player_points",
+"Over",
+-125,
+7.5,
+"fanduel"
+],
+[
+"Devin Williams",
+"player_points",
+"Under",
+-105,
+7.5,
+"fanduel"
+],
+[
+"Devin Williams",
+"player_rebounds",
+"Over",
+-105,
+3.5,
+"draftkings"
+],
+[
+"Devin Williams",
+"player_rebounds",
+"Under",
+-115,
+3.5,
+"draftkings"
+],
+[
+"Devin Williams",
+"player_rebounds",
+"Over",
+-105,
+3.5,
+"fanduel"
+],
+[
+"Devin Williams",
+"player_rebounds",
+"Under",
+-120,
+3.5,
+"fanduel"
+],
+[
+"Devin Williams",
+"player_assists",
+"Over",
+-125,
+1.5,
+"draftkings"
+],
+[
+"Devin Williams",
+"player_assists",
+"Under",
+-95,
+1.5,
+"draftkings"
+],
+[
+"Devin Williams",
+"player_assists",
+"Over",
+-125,
+1.5,
+"fanduel"
+],
+[
+"Devin Williams",
+"player_assists",
+"Under",
+-95,
+1.5,
+"fanduel"
+],
+[
+"Devin Williams",
+"player_threes",
+"Over",
+-120,
+1.5,
+"draftkings"
+],
+[
+"Devin Williams",
+"player_threes",
+"Under",
+-105,
+1.5,
+"draftkings"
+],
+[
+"Devin Williams",
+"player_threes",
+"Over",
+-115,
+1.5,
+"fanduel"
+],
+[
+"Devin Williams",
+"player_threes",
+"Under",
+-110,
+1.5,
+"fanduel"
+],
+[
+"Devin Williams",
+"player_steals",
+"Over",
+-105,
+0.5,
+"draftkings"
+],
+[
+"Devin Williams",
+"player_steals",
+"Under",
+-115,
+0.5,
+"draftkings"
+],
+[
+"Devin Williams",
+"player_steals",
+"Over",
+-120,
+0.5,
+"fanduel"
+],
+[
+"Devin Williams",
+"player_steals",
+"Under",
+-100,
+0.5,
+"fanduel"
+],
+[
+"Devin Williams",
+"player_blocks",
+"Over",
+-120,
+0.5,
+"draftkings"
+],
+[
+"Devin Williams",
+"player_blocks",
+"Under",
+-100,
+0.5,
+"draftkings"
+],
+[
+"Devin Williams",
+"player_blocks",
+"Over",
+-125,
+0.5,
+"fanduel"
+],
+[
+"Devin Williams",
+"player_blocks",
+"Under",
+-100,
+0.5,
+"fanduel"
+],
+[
+"Devin Williams",
+"player_turnovers",
+"Over",
+-105,
+1.5,
+"draftkings"
+],
+[
+"Devin Williams",
+"player_turnovers",
+"Under",
+-115,
+1.5,
+"draftkings"
+],
+[
+"Devin Williams",
+"player_turnovers",
+"Over",
+-110,
+1.5,
+"fanduel"
+],
+[
+"Devin Williams",
+"player_turnovers",
+"Under",
+-115,
+1.5,
+"fanduel"
+],
+[
+"Devin Williams",
+"player_points_rebounds_assists",
+"Over",
+-110,
+13.0,
+"draftkings"
+],
+[
+"Devin Williams",
+"player_points_rebounds_assists",
+"Under",
+-110,
+13.0,
+"draftkings"
+],
+[
+"Tyrese Reaves",
+"player_points",
+"Over",
+-120,
+7.5,
+"draftkings"
+],
+[
+"Tyrese Reaves",
+"player_points",
+"Under",
+-110,
+7.5,
+"draftkings"
+],
+[
+"Tyrese Reaves",
+"player_points",
+"Over",
+-125,
+7.5,
+"fanduel"
+],
+[
+"Tyrese Reaves",
+"player_points",
+"Under",
+-100,
+7.5,
+"fanduel"
+],
+[
+"Tyrese Reaves",
+"player_rebounds",
+"Over",
+-125,
+4.5,
+"draftkings"
+],
+[
+"Tyrese Reaves",
+"player_rebounds",
+"Under",
+-100,
+4.5,
+"draftkings"
+],
+[
+"Tyrese Reaves",
+"player_rebounds",
+"Over",
+-105,
+4.5,
+"fanduel"
+],
+[
+"Tyrese Reaves",
+"player_rebounds",
+"Under",
+-115,
+4.5,
+"fanduel"
+],
+[
+"Tyrese Reaves",
+"player_assists",
+"Over",
+-125,
+1.5,
+"draftkings"
+],
+[
+"Tyrese Reaves",
+"player_assists",
+"Under",
+-95,
+1.5,
+"draftkings"
+],
+[
+"Tyrese Reaves",
+"player_assists",
+"Over",
+-105,
+1.5,
+"fanduel"
+],
+[
+"Tyrese Reaves",
+"player_assists",
+"Under",
+-125,
+1.5,
+"fanduel"
+],
+[
+"Tyrese Reaves",
+"player_threes",
+"Over",
+-125,
+0.5,
+"draftkings"
+],
+[
+"Tyrese Reaves",
+"player_threes",
+"Under",
+-95,
+0.5,
+"draftkings"
+],
+[
+"Tyrese Reaves",
+"player_threes",
+"Over",
+-115,
+0.5,
+"fanduel"
+],
+[
+"Tyrese Reaves",
+"player_threes",
+"Under",
+-110,
+0.5,
+"fanduel"
+],
+[
+"Tyrese Reaves",
+"player_steals",
+"Over",
+-110,
+0.5,
+"draftkings"
+],
+[
+"Tyrese Reaves",
+"player_steals",
+"Under",
+-115,
+0.5,
+"draftkings"
+],
+[
+"Tyrese Reaves",
+"player_steals",
+"Over",
+-115,
+0.5,
+"fanduel"
+],
+[
+"Tyrese Reaves",
+"player_steals",
+"Under",
+-105,
+0.5,
+"fanduel"
+],
+[
+"Tyrese Reaves",
+"player_blocks",
+"Over",
+-110,
+0.5,
+"draftkings"
+],
+[
+"Tyrese Reaves",
+"player_blocks",
+"Under",
+-115,
+0.5,
+"draftkings"
+],
+[
+"Tyrese Reaves",
+"player_blocks",
+"Over",
+-110,
+0.5,
+"fanduel"
+],
+[
+"Tyrese Reaves",
+"player_blocks",
+"Under",
+-120,
+0.5,
+"fanduel"
+],
+[
+"Tyrese Reaves",
+"player_turnovers",
+"Over",
+-105,
+0.5,
+"draftkings"
+],
+[
+"Tyrese Reaves",
+"player_turnovers",
+"Under",
+-115,
+0.5,
+"draftkings"
+],
+[
+"Tyrese Reaves",
+"player_turnovers",
+"Over",
+-115,
+0.5,
+"fanduel"
+],
+[
+"Tyrese Reaves",
+"player_turnovers",
+"Under",
+-105,
+0.5,
+"fanduel"
+],
+[
+"Tyrese Reaves",
+"player_points_rebounds_assists",
+"Over",
+-110,
+14.5,
+"draftkings"
+],
+[
+"Tyrese Reaves",
+"player_points_rebounds_assists",
+"Under",
+-110,
+14.5,
+"draftkings"
+],
+[
+"Josh Davis",
+"player_points",
+"Over",
+-125,
+7.5,
+"draftkings"
+],
+[
+"Josh Davis",
+"player_points",
+"Under",
+-105,
+7.5,
+"draftkings"
+],
+[
+"Josh Davis",
+"player_points",
+"Over",
+-110,
+7.5,
+"fanduel"
+],
+[
+"Josh Davis",
+"player_points",
+"Under",
+-110,
+7.5,
+"fanduel"
+],
+[
+"Josh Davis",
+"player_rebounds",
+"Over",
+-105,
+2.5,
+"draftkings"
+],
+[
+"Josh Davis",
+"player_rebounds",
+"Under",
+-125,
+2.5,
+"draftkings"
+],
+[
+"Josh Davis",
+"player_rebounds",
+"Over",
+-125,
+2.5,
+"fanduel"
+],
+[
+"Josh Davis",
+"player_rebounds",
+"Under",
+-105,
+2.5,
+"fanduel"
+],
+[
+"Josh Davis",
+"player_assists",
+"Over",
+-115,
+1.5,
+"draftkings"
+],
+[
+"Josh Davis",
+"player_assists",
+"Under",
+-110,
+1.5,
+"draftkings"
+],
+[
+"Josh Davis",
+"player_assists",
+"Over",
+-115,
+1.5,
+"fanduel"
+],
+[
+"Josh Davis",
+"player_assists",
+"Under",
+-105,
+1.5,
+"fanduel"
+],
+[
+"Josh Davis",
+"player_threes",
+"Over",
+-120,
+0.5,
+"draftkings"
+],
+[
+"Josh Davis",
+"player_threes",
+"Under",
+-100,
+0.5,
+"draftkings"
+],
+[
+"Josh Davis",
+"player_threes",
+"Over",
+-120,
+0.5,
+"fanduel"
+],
+[
+"Josh Davis",
+"player_threes",
+"Under",
+-105,
+0.5,
+"fanduel"
+],
+[
+"Josh Davis",
+"player_steals",
+"Over",
+-110,
+0.5,
+"draftkings"
+],
+[
+"Josh Davis",
+"player_steals",
+"Under",
+-115,
+0.5,
+"draftkings"
+],
+[
+"Josh Davis",
+"player_steals",
+"Over",
+-125,
+0.5,
+"fanduel"
+],
+[
+"Josh Davis",
+"player_steals",
+"Under",
+-105,
+0.5,
+"fanduel"
+],
+[
+"Josh Davis",
+"player_blocks",
+"Over",
+-105,
+0.5,
+"draftkings"
+],
+[
+"Josh Davis",
+"player_blocks",
+"Under",
+-120,
+0.5,
+"draftkings"
+],
+[
+"Josh Davis",
+"player_blocks",
+"Over",
+-105,
+0.5,
+"fanduel"
+],
+[
+"Josh Davis",
+"player_blocks",
+"Under",
+-125,
+0.5,
+"fanduel"
+],
+[
+"Josh Davis",
+"player_turnovers",
+"Over",
+-110,
+0.5,
+"draftkings"
+],
+[
+"Josh Davis",
+"player_turnovers",
+"Under",
+-120,
+0.5,
+"draftkings"
+],
+[
+"Josh Davis",
+"player_turnovers",
+"Over",
+-110,
+0.5,
+"fanduel"
+],
+[
+"Josh Davis",
+"player_turnovers",
+"Under",
+-110,
+0.5,
+"fanduel"
+],
+[
+"Josh Davis",
+"player_points_rebounds_assists",
+"Over",
+-110,
+12.0,
+"draftkings"
+],
+[
+"Josh Davis",
+"player_points_rebounds_assists",
+"Under",
+-110,
+12.0,
+"draftkings"
+],
+[
+"Isaiah Hart",
+"player_points",
+"Over",
+-105,
+24.5,
+"draftkings"
+],
+[
+"Isaiah Hart",
+"player_points",
+"Under",
+-125,
+24.5,
+"draftkings"
+],
+[
+"Isaiah Hart",
+"player_points",
+"Over",
+-110,
+24.5,
+"fanduel"
+],
+[
+"Isaiah Hart",
+"player_points",
+"Under",
+-110,
+24.5,
+"fanduel"
+],
+[
+"Isaiah Hart",
+"player_rebounds",
+"Over",
+-125,
+4.5,
+"draftkings"
+],
+[
+"Isaiah Hart",
+"player_rebounds",
+"Under",
+-100,
+4.5,
+"draftkings"
+],
+[
+"Isaiah Hart",
+"player_rebounds",
+"Over",
+-105,
+4.5,
+"fanduel"
+],
+[
+"Isaiah Hart",
+"player_rebounds",
+"Under",
+-120,
+4.5,
+"fanduel"
+],
+[
+"Isaiah Hart",
+"player_assists",
+"Over",
+-110,
+8.5,
+"draftkings"
+],
+[
+"Isaiah Hart",
+"player_assists",
+"Under",
+-115,
+8.5,
+"draftkings"
+],
+[
+"Isaiah Hart",
+"player_assists",
+"Over",
+-110,
+8.5,
+"fanduel"
+],
+[
+"Isaiah Hart",
+"player_assists",
+"Under",
+-110,
+8.5,
+"fanduel"
+],
+[
+"Isaiah Hart",
+"player_threes",
+"Over",
+-115,
+2.5,
+"draftkings"
+],
+[
+"Isaiah Hart",
+"player_threes",
+"Under",
+-110,
+2.5,
+"draftkings"
+],
+[
+"Isaiah Hart",
+"player_threes",
+"Over",
+-115,
+2.5,
+"fanduel"
+],
+[
+"Isaiah Hart",
+"player_threes",
+"Under",
+-115,
+2.5,
+"fanduel"
+],
+[
+"Isaiah Hart",
+"player_steals",
+"Over",
+-125,
+1.5,
+"draftkings"
+],
+[
+"Isaiah Hart",
+"player_steals",
+"Under",
+-105,
+1.5,
+"draftkings"
+],
+[
+"Isaiah Hart",
+"player_steals",
+"Over",
+-120,
+1.5,
+"fanduel"
+],
+[
+"Isaiah Hart",
+"player_steals",
+"Under",
+-105,
+1.5,
+"fanduel"
+],
+[
+"Isaiah Hart",
+"player_blocks",
+"Over",
+-110,
+0.5,
+"draftkings"
+],
+[
+"Isaiah Hart",
+"player_blocks",
+"Under",
+-110,
+0.5,
+"draftkings"
+],
+[
+"Isaiah Hart",
+"player_blocks",
+"Over",
+-120,
+0.5,
+"fanduel"
+],
+[
+"Isaiah Hart",
+"player_blocks",
+"Under",
+-110,
+0.5,
+"fanduel"
+],
+[
+"Isaiah Hart",
+"player_turnovers",
+"Over",
+-125,
+2.5,
+"draftkings"
+],
+[
+"Isaiah Hart",
+"player_turnovers",
+"Under",
+-105,
+2.5,
+"draftkings"
+],
+[
+"Isaiah Hart",
+"player_turnovers",
+"Over",
+-115,
+2.5,
+"fanduel"
+],
+[
+"Isaiah Hart",
+"player_turnovers",
+"Under",
+-115,
+2.5,
+"fanduel"
+],
+[
+"Isaiah Hart",
+"player_points_rebounds_assists",
+"Over",
+-110,
+37.5,
+"draftkings"
+],
+[
+"Isaiah Hart",
+"player_points_rebounds_assists",
+"Under",
+-110,
+37.5,
+"draftkings"
+],
+[
+"Luke Hart",
+"player_points",
+"Over",
+-125,
+18.5,
+"draftkings"
+],
+[
+"Luke Hart",
+"player_points",
+"Under",
+-95,
+18.5,
+"draftkings"
+],
+[
+"Luke Hart",
+"player_points",
+"Over",
+-105,
+18.5,
+"fanduel"
+],
+[
+"Luke Hart",
+"player_points",
+"Under",
+-115,
+18.5,
+"fanduel"
+],
+[
+"Luke Hart",
+"player_rebounds",
+"Over",
+-125,
+3.5,
+"draftkings"
+],
+[
+"Luke Hart",
+"player_rebounds",
+"Under",
+-100,
+3.5,
+"draftkings"
+],
+[
+"Luke Hart",
+"player_rebounds",
+"Over",
+-115,
+3.5,
+"fanduel"
+],
+[
+"Luke Hart",
+"player_rebounds",
+"Under",
+-110,
+3.5,
+"fanduel"
+],
+[
+"Luke Hart",
+"player_assists",
+"Over",
+-125,
+3.5,
+"draftkings"
+],
+[
+"Luke Hart",
+"player_assists",
+"Under",
+-95,
+3.5,
+"draftkings"
+],
+[
+"LUKE HART",
+"player_assists",
+"Over",
+-125,
+3.5,
+"fanduel"
+],
+[
+"LUKE HART",
+"player_assists",
+"Under",
+-100,
+3.5,
+"fanduel"
+],
+[
+"Luke Hart",
+"player_threes",
+"Over",
+-110,
+2.5,
+"draftkings"
+],
+[
+"Luke Hart",
+"player_threes",
+"Under",
+-120,
+2.5,
+"draftkings"
+],
+[
+"Luke Hart",
+"player_threes",
+"Over",
+-120,
+2.5,
+"fanduel"
+],
+[
+"Luke Hart",
+"player_threes",
+"Under",
+-110,
+2.5,
+"fanduel"
+],
+[
+"Luke Hart",
+"player_steals",
+"Over",
+-120,
+0.5,
+"draftkings"
+],
+[
+"Luke Hart",
+"player_steals",
+"Under",
+-100,
+0.5,
+"draftkings"
+],
+[
+"Luke Hart",
+"player_steals",
+"Over",
+-115,
+0.5,
+"fanduel"
+],
+[
+"Luke Hart",
+"player_steals",
+"Under",
+-105,
+0.5,
+"fanduel"
+],
+[
+"Luke Hart",
+"player_blocks",
+"Over",
+-120,
+0.5,
+"draftkings"
+],
+[
+"Luke Hart",
+"player_blocks",
+"Under",
+-105,
+0.5,
+"draftkings"
+],
+[
+"Luke Hart",
+"player_blocks",
+"Over",
+-120,
+0.5,
+"fanduel"
+],
+[
+"Luke Hart",
+"player_blocks",
+"Under",
+-105,
+0.5,
+"fanduel"
+],
+[
+"Luke Hart",
+"player_turnovers",
+"Over",
+-120,
+1.5,
+"draftkings"
+],
+[
+"Luke Hart",
+"player_turnovers",
+"Under",
+-100,
+1.5,
+"draftkings"
+],
+[
+"Luke Hart",
+"player_turnovers",
+"Over",
+-105,
+1.5,
+"fanduel"
+],
+[
+"Luke Hart",
+"player_turnovers",
+"Under",
+-120,
+1.5,
+"fanduel"
+],
+[
+"Luke Hart",
+"player_points_rebounds_assists",
+"Over",
+-110,
+26.5,
+"draftkings"
+],
+[
+"Luke Hart",
+"player_points_rebounds_assists",
+"Under",
+-110,
+26.5,
+"draftkings"
+],
+[
+"Grant Pritchard",
+"player_points",
+"Over",
+-105,
+16.5,
+"draftkings"
+],
+[
+"Grant Pritchard",
+"player_points",
+"Under",
+-115,
+16.5,
+"draftkings"
+],
+[
+"Grant Pritchard",
+"player_points",
+"Over",
+-110,
+16.5,
+"fanduel"
+],
+[
+"Grant Pritchard",
+"player_points",
+"Under",
+-110,
+16.5,
+"fanduel"
+],
+[
+"Grant Pritchard",
+"player_rebounds",
+"Over",
+-115,
+5.5,
+"draftkings"
+],
+[
+"Grant Pritchard",
+"player_rebounds",
+"Under",
+-105,
+5.5,
+"draftkings"
+],
+[
+"Grant Pritchard",
+"player_rebounds",
+"Over",
+-105,
+5.5,
+"fanduel"
+],
+[
+"Grant Pritchard",
+"player_rebounds",
+"Under",
+-120,
+5.5,
+"fanduel"
+],
+[
+"Grant Pritchard",
+"player_assists",
+"Over",
+-120,
+3.5,
+"draftkings"
+],
+[
+"Grant Pritchard",
+"player_assists",
+"Under",
+-100,
+3.5,
+"draftkings"
+],
+[
+"Grant Pritchard",
+"player_assists",
+"Over",
+-120,
+3.5,
+"fanduel"
+],
+[
+"Grant Pritchard",
+"player_assists",
+"Under",
+-110,
+3.5,
+"fanduel"
+],
+[
+"Grant Pritchard",
+"player_threes",
+"Over",
+-125,
+1.5,
+"draftkings"
+],
+[
+"Grant Pritchard",
+"player_threes",
+"Under",
+-100,
+1.5,
+"draftkings"
+],
+[
+"Grant Pritchard",
+"player_threes",
+"Over",
+-115,
+1.5,
+"fanduel"
+],
+[
+"Grant Pritchard",
+"player_threes",
+"Under",
+-115,
+1.5,
+"fanduel"
+],
+[
+"Grant Pritchard",
+"player_steals",
+"Over",
+-120,
+1.5,
+"draftkings"
+],
+[
+"Grant Pritchard",
+"player_steals",
+"Under",
+-110,
+1.5,
+"draftkings"
+],
+[
+"Grant Pritchard",
+"player_steals",
+"Over",
+-120,
+1.5,
+"fanduel"
+],
+[
+"Grant Pritchard",
+"player_steals",
+"Under",
+-110,
+1.5,
+"fanduel"
+],
+[
+"Grant Pritchard",
+"player_blocks",
+"Over",
+-125,
+0.5,
+"draftkings"
+],
+[
+"Grant Pritchard",
+"player_blocks",
+"Under",
+-95,
+0.5,
+"draftkings"
+],
+[
+"Grant Pritchard",
+"player_blocks",
+"Over",
+-125,
+0.5,
+"fanduel"
+],
+[
+"Grant Pritchard",
+"player_blocks",
+"Under",
+-105,
+0.5,
+"fanduel"
+],
+[
+"Grant Pritchard",
+"player_turnovers",
+"Over",
+-115,
+1.5,
+"draftkings"
+],
+[
+"Grant Pritchard",
+"player_turnovers",
+"Under",
+-115,
+1.5,
+"draftkings"
+],
+[
+"Grant Pritchard",
+"player_turnovers",
+"Over",
+-125,
+1.5,
+"fanduel"
+],
+[
+"Grant Pritchard",
+"player_turnovers",
+"Under",
+-105,
+1.5,
+"fanduel"
+],
+[
+"Grant Pritchard",
+"player_points_rebounds_assists",
+"Over",
+-110,
+26.0,
+"draftkings"
+],
+[
+"Grant Pritchard",
+"player_points_rebounds_assists",
+"Under",
+-110,
+26.0,
+"draftkings"
+],
+[
+"Cam Beasley",
+"player_points",
+"Over",
+-115,
+18.5,
+"draftkings"
+],
+[
+"Cam Beasley",
+"player_points",
+"Under",
+-105,
+18.5,
+"draftkings"
+],
+[
+"Cam Beasley",
+"player_points",
+"Over",
+-115,
+18.5,
+"fanduel"
+],
+[
+"Cam Beasley",
+"player_points",
+"Under",
+-105,
+18.5,
+"fanduel"
+],
+[
+"Cam Beasley",
+"player_rebounds",
+"Over",
+-110,
+9.5,
+"draftkings"
+],
+[
+"Cam Beasley",
+"player_rebounds",
+"Under",
+-115,
+9.5,
+"draftkings"
+],
+[
+"Cam Beasley",
+"player_rebounds",
+"Over",
+-120,
+9.5,
+"fanduel"
+],
+[
+"Cam Beasley",
+"player_rebounds",
+"Under",
+-100,
+9.5,
+"fanduel"
+],
+[
+"Cam Beasley",
+"player_assists",
+"Over",
+-125,
+2.5,
+"draftkings"
+],
+[
+"Cam Beasley",
+"player_assists",
+"Under",
+-105,
+2.5,
+"draftkings"
+],
+[
+"Cam Beasley",
+"player_assists",
+"Over",
+-115,
+2.5,
+"fanduel"
+],
+[
+"Cam Beasley",
+"player_assists",
+"Under",
+-105,
+2.5,
+"fanduel"
+],
+[
+"Cam Beasley",
+"player_threes",
+"Over",
+-110,
+1.5,
+"draftkings"
+],
+[
+"Cam Beasley",
+"player_threes",
+"Under",
+-110,
+1.5,
+"draftkings"
+],
+[
+"Cam Beasley",
+"player_threes",
+"Over",
+-115,
+1.5,
+"fanduel"
+],
+[
+"Cam Beasley",
+"player_threes",
+"Under",
+-115,
+1.5,
+"fanduel"
+],
+[
+"Cam Beasley",
+"player_steals",
+"Over",
+-105,
+0.5,
+"draftkings"
+],
+[
+"Cam Beasley",
+"player_steals",
+"Under",
+-115,
+0.5,
+"draftkings"
+],
+[
+"Cam Beasley",
+"player_steals",
+"Over",
+-125,
+0.5,
+"fanduel"
+],
+[
+"Cam Beasley",
+"player_steals",
+"Under",
+-105,
+0.5,
+"fanduel"
+],
+[
+"Cam Beasley",
+"player_blocks",
+"Over",
+-115,
+0.5,
+"draftkings"
+],
+[
+"Cam Beasley",
+"player_blocks",
+"Under",
+-105,
+0.5,
+"draftkings"
+],
+[
+"CAM BEASLEY",
+"player_blocks",
+"Over",
+-120,
+0.5,
+"fanduel"
+],
+[
+"CAM BEASLEY",
+"player_blocks",
+"Under",
+-100,
+0.5,
+"fanduel"
+],
+[
+"Cam Beasley",
+"player_turnovers",
+"Over",
+-125,
+1.5,
+"draftkings"
+],
+[
+"Cam Beasley",
+"player_turnovers",
+"Under",
+-105,
+1.5,
+"draftkings"
+],
+[
+"Cam Beasley",
+"player_turnovers",
+"Over",
+-125,
+1.5,
+"fanduel"
+],
+[
+"Cam Beasley",
+"player_turnovers",
+"Under",
+-105,
+1.5,
+"fanduel"
+],
+[
+"Cam Beasley",
+"player_points_rebounds_assists",
+"Over",
+-110,
+30.0,
+"draftkings"
+],
+[
+"Cam Beasley",
+"player_points_rebounds_assists",
+"Under",
+-110,
+30.0,
+"draftkings"
+],
+[
+"Derrick Davis",
+"player_points",
+"Over",
+-115,
+12.5,
+"draftkings"
+],
+[
+"Derrick Davis",
+"player_points",
+"Under",
+-110,
+12.5,
+"draftkings"
+],
+[
+"DERRICK DAVIS",
+"player_points",
+"Over",
+-110,
+12.5,
+"fanduel"
+],
+[
+"DERRICK DAVIS",
+"player_points",
+"Under",
+-120,
+12.5,
+"fanduel"
+],
+[
+"Derrick Davis",
+"player_rebounds",
+"Over",
+-120,
+8.5,
+"draftkings"
+],
+[
+"Derrick Davis",
+"player_rebounds",
+"Under",
+-100,
+8.5,
+"draftkings"
+],
+[
+"Derrick Davis",
+"player_rebounds",
+"Over",
+-110,
+8.5,
+"fanduel"
+],
+[
+"Derrick Davis",
+"player_rebounds",
+"Under",
+-115,
+8.5,
+"fanduel"
+],
+[
+"Derrick Davis",
+"player_assists",
+"Over",
+-105,
+2.5,
+"draftkings"
+],
+[
+"Derrick Davis",
+"player_assists",
+"Under",
+-120,
+2.5,
+"draftkings"
+],
+[
+"Derrick Davis",
+"player_assists",
+"Over",
+-115,
+2.5,
+"fanduel"
+],
+[
+"Derrick Davis",
+"player_assists",
+"Under",
+-115,
+2.5,
+"fanduel"
+],
+[
+"Derrick Davis",
+"player_threes",
+"Over",
+-110,
+0.5,
+"draftkings"
+],
+[
+"Derrick Davis",
+"player_threes",
+"Under",
+-110,
+0.5,
+"draftkings"
+],
+[
+"Derrick Davis",
+"player_threes",
+"Over",
+-115,
+0.5,
+"fanduel"
+],
+[
+"Derrick Davis",
+"player_threes",
+"Under",
+-110,
+0.5,
+"fanduel"
+],
+[
+"Derrick Davis",
+"player_steals",
+"Over",
+-105,
+0.5,
+"draftkings"
+],
+[
+"Derrick Davis",
+"player_steals",
+"Under",
+-120,
+0.5,
+"draftkings"
+],
+[
+"Derrick Davis",
+"player_steals",
+"Over",
+-115,
+0.5,
+"fanduel"
+],
+[
+"Derrick Davis",
+"player_steals",
+"Under",
+-115,
+0.5,
+"fanduel"
+],
+[
+"Derrick Davis",
+"player_blocks",
+"Over",
+-110,
+0.5,
+"draftkings"
+],
+[
+"Derrick Davis",
+"player_blocks",
+"Under",
+-115,
+0.5,
+"draftkings"
+],
+[
+"Derrick Davis",
+"player_blocks",
+"Over",
+-110,
+0.5,
+"fanduel"
+],
+[
+"Derrick Davis",
+"player_blocks",
+"Under",
+-120,
+0.5,
+"fanduel"
+],
+[
+"Derrick Davis",
+"player_turnovers",
+"Over",
+-120,
+1.5,
+"draftkings"
+],
+[
+"Derrick Davis",
+"player_turnovers",
+"Under",
+-110,
+1.5,
+"draftkings"
+],
+[
+"Derrick Davis",
+"player_turnovers",
+"Over",
+-125,
+1.5,
+"fanduel"
+],
+[
+"Derrick Davis",
+"player_turnovers",
+"Under",
+-95,
+1.5,
+"fanduel"
+],
+[
+"Derrick Davis",
+"player_points_rebounds_assists",
+"Over",
+-110,
+23.5,
+"draftkings"
+],
+[
+"Derrick Davis",
+"player_points_rebounds_assists",
+"Under",
+-110,
+23.5,
+"draftkings"
+],
+[
+"Josh Haliburton",
+"player_points",
+"Over",
+-120,
+11.5,
+"draftkings"
+],
+[
+"Josh Haliburton",
+"player_points",
+"Under",
+-100,
+11.5,
+"draftkings"
+],
+[
+"Josh Haliburton",
+"player_points",
+"Over",
+-105,
+11.5,
+"fanduel"
+],
+[
+"Josh Haliburton",
+"player_points",
+"Under",
+-125,
+11.5,
+"fanduel"
+],
+[
+"Josh Haliburton",
+"player_rebounds",
+"Over",
+-120,
+2.5,
+"draftkings"
+],
+[
+"Josh Haliburton",
+"player_rebounds",
+"Under",
+-100,
+2.5,
+"draftkings"
+],
+[
+"Josh Haliburton",
+"player_rebounds",
+"Over",
+-120,
+2.5,
+"fanduel"
+],
+[
+"Josh Haliburton",
+"player_rebounds",
+"Under",
+-100,
+2.5,
+"fanduel"
+],
+[
+"Josh Haliburton",
+"player_assists",
+"Over",
+-105,
+3.5,
+"draftkings"
+],
+[
+"Josh Haliburton",
+"player_assists",
+"Under",
+-120,
+3.5,
+"draftkings"
+],
+[
+"JOSH HALIBURTON",
+"player_assists",
+"Over",
+-120,
+3.5,
+"fanduel"
+],
+[
+"JOSH HALIBURTON",
+"player_assists",
+"Under",
+-100,
+3.5,
+"fanduel"
+],
+[
+"Josh Haliburton",
+"player_threes",
+"Over",
+-105,
+1.5,
+"draftkings"
+],
+[
+"Josh Haliburton",
+"player_threes",
+"Under",
+-125,
+1.5,
+"draftkings"
+],
+[
+"Josh Haliburton",
+"player_threes",
+"Over",
+-125,
+1.5,
+"fanduel"
+],
+[
+"Josh Haliburton",
+"player_threes",
+"Under",
+-95,
+1.5,
+"fanduel"
+],
+[
+"Josh Haliburton",
+"player_steals",
+"Over",
+-105,
+0.5,
+"draftkings"
+],
+[
+"Josh Haliburton",
+"player_steals",
+"Under",
+-120,
+0.5,
+"draftkings"
+],
+[
+"Josh Haliburton",
+"player_steals",
+"Over",
+-115,
+0.5,
+"fanduel"
+],
+[
+"Josh Haliburton",
+"player_steals",
+"Under",
+-115,
+0.5,
+"fanduel"
+],
+[
+"Josh Haliburton",
+"player_blocks",
+"Over",
+-110,
+0.5,
+"draftkings"
+],
+[
+"Josh Haliburton",
+"player_blocks",
+"Under",
+-115,
+0.5,
+"draftkings"
+],
+[
+"Josh Haliburton",
+"player_blocks",
+"Over",
+-125,
+0.5,
+"fanduel"
+],
+[
+"Josh Haliburton",
+"player_blocks",
+"Under",
+-100,
+0.5,
+"fanduel"
+],
+[
+"Josh Haliburton",
+"player_turnovers",
+"Over",
+-110,
+1.5,
+"draftkings"
+],
+[
+"Josh Haliburton",
+"player_turnovers",
+"Under",
+-115,
+1.5,
+"draftkings"
+],
+[
+"Josh Haliburton",
+"player_turnovers",
+"Over",
+-125,
+1.5,
+"fanduel"
+],
+[
+"Josh Haliburton",
+"player_turnovers",
+"Under",
+-95,
+1.5,
+"fanduel"
+],
+[
+"Josh Haliburton",
+"player_points_rebounds_assists",
+"Over",
+-110,
+18.0,
+"draftkings"
+],
+[
+"Josh Haliburton",
+"player_points_rebounds_assists",
+"Under",
+-110,
+18.0,
+"draftkings"
+],
+[
+"Tyrese Johnson",
+"player_points",
+"Over",
+-110,
+8.5,
+"draftkings"
+],
+[
+"Tyrese Johnson",
+"player_points",
+"Under",
+-110,
+8.5,
+"draftkings"
+],
+[
+"TYRESE JOHNSON",
+"player_points",
+"Over",
+-120,
+8.5,
+"fanduel"
+],
+[
+"TYRESE JOHNSON",
+"player_points",
+"Under",
+-100,
+8.5,
+"fanduel"
+],
+[
+"Tyrese Johnson",
+"player_rebounds",
+"Over",
+-105,
+3.5,
+"draftkings"
+],
+[
+"Tyrese Johnson",
+"player_rebounds",
+"Under",
+-120,
+3.5,
+"draftkings"
+],
+[
+"Tyrese Johnson",
+"player_rebounds",
+"Over",
+-105,
+3.5,
+"fanduel"
+],
+[
+"Tyrese Johnson",
+"player_rebounds",
+"Under",
+-125,
+3.5,
+"fanduel"
+],
+[
+"Tyrese Johnson",
+"player_assists",
+"Over",
+-120,
+1.5,
+"draftkings"
+],
+[
+"Tyrese Johnson",
+"player_assists",
+"Under",
+-110,
+1.5,
+"draftkings"
+],
+[
+"Tyrese Johnson",
+"player_assists",
+"Over",
+-125,
+1.5,
+"fanduel"
+],
+[
+"Tyrese Johnson",
+"player_assists",
+"Under",
+-95,
+1.5,
+"fanduel"
+],
+[
+"Tyrese Johnson",
+"player_threes",
+"Over",
+-110,
+0.5,
+"draftkings"
+],
+[
+"Tyrese Johnson",
+"player_threes",
+"Under",
+-120,
+0.5,
+"draftkings"
+],
+[
+"Tyrese Johnson",
+"player_threes",
+"Over",
+-125,
+0.5,
+"fanduel"
+],
+[
+"Tyrese Johnson",
+"player_threes",
+"Under",
+-105,
+0.5,
+"fanduel"
+],
+[
+"Tyrese Johnson",
+"player_steals",
+"Over",
+-110,
+0.5,
+"draftkings"
+],
+[
+"Tyrese Johnson",
+"player_steals",
+"Under",
+-115,
+0.5,
+"draftkings"
+],
+[
+"Tyrese Johnson",
+"player_steals",
+"Over",
+-115,
+0.5,
+"fanduel"
+],
+[
+"Tyrese Johnson",
+"player_steals",
+"Under",
+-110,
+0.5,
+"fanduel"
+],
+[
+"Tyrese Johnson",
+"player_blocks",
+"Over",
+-115,
+0.5,
+"draftkings"
+],
+[
+"Tyrese Johnson",
+"player_blocks",
+"Under",
+-110,
+0.5,
+"draftkings"
+],
+[
+"Tyrese Johnson",
+"player_blocks",
+"Over",
+-125,
+0.5,
+"fanduel"
+],
+[
+"Tyrese Johnson",
+"player_blocks",
+"Under",
+-105,
+0.5,
+"fanduel"
+],
+[
+"Tyrese Johnson",
+"player_turnovers",
+"Over",
+-120,
+1.5,
+"draftkings"
+],
+[
+"Tyrese Johnson",
+"player_turnovers",
+"Under",
+-105,
+1.5,
+"draftkings"
+],
+[
+"Tyrese Johnson",
+"player_turnovers",
+"Over",
+-105,
+1.5,
+"fanduel"
+],
+[
+"Tyrese Johnson",
+"player_turnovers",
+"Under",
+-125,
+1.5,
+"fanduel"
+],
+[
+"Tyrese Johnson",
+"player_points_rebounds_assists",
+"Over",
+-110,
+14.0,
+"draftkings"
+],
+[
+"Tyrese Johnson",
+"player_points_rebounds_assists",
+"Under",
+-110,
+14.0,
+"draftkings"
+],
+[
+"Kyle Beasley",
+"player_points",
+"Over",
+-105,
+8.5,
+"draftkings"
+],
+[
+"Kyle Beasley",
+"player_points",
+"Under",
+-125,
+8.5,
+"draftkings"
+],
+[
+"KYLE BEASLEY",
+"player_points",
+"Over",
+-105,
+8.5,
+"fanduel"
+],
+[
+"KYLE BEASLEY",
+"player_points",
+"Under",
+-115,
+8.5,
+"fanduel"
+],
+[
+"Kyle Beasley",
+"player_rebounds",
+"Over",
+-110,
+5.5,
+"draftkings"
+],
+[
+"Kyle Beasley",
+"player_rebounds",
+"Under",
+-120,
+5.5,
+"draftkings"
+],
+[
+"Kyle Beasley",
+"player_rebounds",
+"Over",
+-115,
+5.5,
+"fanduel"
+],
+[
+"Kyle Beasley",
+"player_rebounds",
+"Under",
+-110,
+5.5,
+"fanduel"
+],
+[
+"Kyle Beasley",
+"player_assists",
+"Over",
+-105,
+1.5,
+"draftkings"
+],
+[
+"Kyle Beasley",
+"player_assists",
+"Under",
+-125,
+1.5,
+"draftkings"
+],
+[
+"Kyle Beasley",
+"player_assists",
+"Over",
+-120,
+1.5,
+"fanduel"
+],
+[
+"Kyle Beasley",
+"player_assists",
+"Under",
+-100,
+1.5,
+"fanduel"
+],
+[
+"Kyle Beasley",
+"player_threes",
+"Over",
+-105,
+0.5,
+"draftkings"
+],
+[
+"Kyle Beasley",
+"player_threes",
+"Under",
+-115,
+0.5,
+"draftkings"
+],
+[
+"Kyle Beasley",
+"player_threes",
+"Over",
+-115,
+0.5,
+"fanduel"
+],
+[
+"Kyle Beasley",
+"player_threes",
+"Under",
+-110,
+0.5,
+"fanduel"
+],
+[
+"Kyle Beasley",
+"player_steals",
+"Over",
+-105,
+0.5,
+"draftkings"
+],
+[
+"Kyle Beasley",
+"player_steals",
+"Under",
+-115,
+0.5,
+"draftkings"
+],
+[
+"KYLE BEASLEY",
+"player_steals",
+"Over",
+-110,
+0.5,
+"fanduel"
+],
+[
+"KYLE BEASLEY",
+"player_steals",
+"Under",
+-120,
+0.5,
+"fanduel"
+],
+[
+"Kyle Beasley",
+"player_blocks",
+"Over",
+-120,
+0.5,
+"draftkings"
+],
+[
+"Kyle Beasley",
+"player_blocks",
+"Under",
+-100,
+0.5,
+"draftkings"
+],
+[
+"Kyle Beasley",
+"player_blocks",
+"Over",
+-115,
+0.5,
+"fanduel"
+],
+[
+"Kyle Beasley",
+"player_blocks",
+"Under",
+-115,
+0.5,
+"fanduel"
+],
+[
+"Kyle Beasley",
+"player_turnovers",
+"Over",
+-120,
+1.5,
+"draftkings"
+],
+[
+"Kyle Beasley",
+"player_turnovers",
+"Under",
+-105,
+1.5,
+"draftkings"
+],
+[
+"Kyle Beasley",
+"player_turnovers",
+"Over",
+-110,
+1.5,
+"fanduel"
+],
+[
+"Kyle Beasley",
+"player_turnovers",
+"Under",
+-110,
+1.5,
+"fanduel"
+],
+[
+"Kyle Beasley",
+"player_points_rebounds_assists",
+"Over",
+-110,
+14.5,
+"draftkings"
+],
+[
+"Kyle Beasley",
+"player_points_rebounds_assists",
+"Under",
+-110,
+14.5,
+"draftkings"
+],
+[
+"Malik Pritchard",
+"player_points",
+"Over",
+-115,
+6.5,
+"draftkings"
+],
+[
+"Malik Pritchard",
+"player_points",
+"Under",
+-115,
+6.5,
+"draftkings"
+],
+[
+"Malik Pritchard",
+"player_points",
+"Over",
+-120,
+6.5,
+"fanduel"
+],
+[
+"Malik Pritchard",
+"player_points",
+"Under",
+-105,
+6.5,
+"fanduel"
+],
+[
+"Malik Pritchard",
+"player_rebounds",
+"Over",
+-120,
+1.5,
+"draftkings"
+],
+[
+"Malik Pritchard",
+"player_rebounds",
+"Under",
+-105,
+1.5,
+"draftkings"
+],
+[
+"Malik Pritchard",
+"player_rebounds",
+"Over",
+-125,
+1.5,
+"fanduel"
+],
+[
+"Malik Pritchard",
+"player_rebounds",
+"Under",
+-95,
+1.5,
+"fanduel"
+],
+[
+"Malik Pritchard",
+"player_assists",
+"Over",
+-115,
+0.5,
+"draftkings"
+],
+[
+"Malik Pritchard",
+"player_assists",
+"Under",
+-110,
+0.5,
+"draftkings"
+],
+[
+"Malik Pritchard",
+"player_assists",
+"Over",
+-110,
+0.5,
+"fanduel"
+],
+[
+"Malik Pritchard",
+"player_assists",
+"Under",
+-120,
+0.5,
+"fanduel"
+],
+[
+"Malik Pritchard",
+"player_threes",
+"Over",
+-125,
+0.5,
+"draftkings"
+],
+[
+"Malik Pritchard",
+"player_threes",
+"Under",
+-100,
+0.5,
+"draftkings"
+],
+[
+"Malik Pritchard",
+"player_threes",
+"Over",
+-105,
+0.5,
+"fanduel"
+],
+[
+"Malik Pritchard",
+"player_threes",
+"Under",
+-120,
+0.5,
+"fanduel"
+],
+[
+"Malik Pritchard",
+"player_steals",
+"Over",
+-125,
+0.5,
+"draftkings"
+],
+[
+"Malik Pritchard",
+"player_steals",
+"Under",
+-105,
+0.5,
+"draftkings"
+],
+[
+"Malik Pritchard",
+"player_steals",
+"Over",
+-125,
+0.5,
+"fanduel"
+],
+[
+"Malik Pritchard",
+"player_steals",
+"Under",
+-95,
+0.5,
+"fanduel"
+],
+[
+"Malik Pritchard",
+"player_blocks",
+"Over",
+-115,
+0.5,
+"draftkings"
+],
+[
+"Malik Pritchard",
+"player_blocks",
+"Under",
+-105,
+0.5,
+"draftkings"
+],
+[
+"Malik Pritchard",
+"player_blocks",
+"Over",
+-125,
+0.5,
+"fanduel"
+],
+[
+"Malik Pritchard",
+"player_blocks",
+"Under",
+-105,
+0.5,
+"fanduel"
+],
+[
+"Malik Pritchard",
+"player_turnovers",
+"Over",
+-110,
+0.5,
+"draftkings"
+],
+[
+"Malik Pritchard",
+"player_turnovers",
+"Under",
+-120,
+0.5,
+"draftkings"
+],
+[
+"Malik Pritchard",
+"player_turnovers",
+"Over",
+-110,
+0.5,
+"fanduel"
+],
+[
+"Malik Pritchard",
+"player_turnovers",
+"Under",
+-110,
+0.5,
+"fanduel"
+],
+[
+"Malik Pritchard",
+"player_points_rebounds_assists",
+"Over",
+-110,
+10.0,
+"draftkings"
+],
+[
+"Malik Pritchard",
+"player_points_rebounds_assists",
+"Under",
+-110,
+10.0,
+"draftkings"
+],
+[
+"Devin Booker",
+"player_points",
+"Over",
+-115,
+24.5,
+"draftkings"
+],
+[
+"Devin Booker",
+"player_points",
+"Under",
+-115,
+24.5,
+"draftkings"
+],
+[
+"Devin Booker",
+"player_points",
+"Over",
+-105,
+24.5,
+"fanduel"
+],
+[
+"Devin Booker",
+"player_points",
+"Under",
+-120,
+24.5,
+"fanduel"
+],
+[
+"Devin Booker",
+"player_rebounds",
+"Over",
+-115,
+4.5,
+"draftkings"
+],
+[
+"Devin Booker",
+"player_rebounds",
+"Under",
+-110,
+4.5,
+"draftkings"
+],
+[
+"Devin Booker",
+"player_rebounds",
+"Over",
+-105,
+4.5,
+"fanduel"
+],
+[
+"Devin Booker",
+"player_rebounds",
+"Under",
+-120,
+4.5,
+"fanduel"
+],
+[
+"Devin Booker",
+"player_assists",
+"Over",
+-110,
+7.5,
+"draftkings"
+],
+[
+"Devin Booker",
+"player_assists",
+"Under",
+-110,
+7.5,
+"draftkings"
+],
+[
+"Devin Booker",
+"player_assists",
+"Over",
+-120,
+7.5,
+"fanduel"
+],
+[
+"Devin Booker",
+"player_assists",
+"Under",
+-110,
+7.5,
+"fanduel"
+],
+[
+"Devin Booker",
+"player_threes",
+"Over",
+-120,
+2.5,
+"draftkings"
+],
+[
+"Devin Booker",
+"player_threes",
+"Under",
+-105,
+2.5,
+"draftkings"
+],
+[
+"Devin Booker",
+"player_threes",
+"Over",
+-105,
+2.5,
+"fanduel"
+],
+[
+"Devin Booker",
+"player_threes",
+"Under",
+-120,
+2.5,
+"fanduel"
+],
+[
+"Devin Booker",
+"player_steals",
+"Over",
+-105,
+1.5,
+"draftkings"
+],
+[
+"Devin Booker",
+"player_steals",
+"Under",
+-115,
+1.5,
+"draftkings"
+],
+[
+"Devin Booker",
+"player_steals",
+"Over",
+-125,
+1.5,
+"fanduel"
+],
+[
+"Devin Booker",
+"player_steals",
+"Under",
+-100,
+1.5,
+"fanduel"
+],
+[
+"Devin Booker",
+"player_blocks",
+"Over",
+-115,
+0.5,
+"draftkings"
+],
+[
+"Devin Booker",
+"player_blocks",
+"Under",
+-110,
+0.5,
+"draftkings"
+],
+[
+"DEVIN BOOKER",
+"player_blocks",
+"Over",
+-105,
+0.5,
+"fanduel"
+],
+[
+"DEVIN BOOKER",
+"player_blocks",
+"Under",
+-125,
+0.5,
+"fanduel"
+],
+[
+"Devin Booker",
+"player_turnovers",
+"Over",
+-110,
+2.5,
+"draftkings"
+],
+[
+"Devin Booker",
+"player_turnovers",
+"Under",
+-120,
+2.5,
+"draftkings"
+],
+[
+"Devin Booker",
+"player_turnovers",
+"Over",
+-110,
+2.5,
+"fanduel"
+],
+[
+"Devin Booker",
+"player_turnovers",
+"Under",
+-115,
+2.5,
+"fanduel"
+],
+[
+"Devin Booker",
+"player_points_rebounds_assists",
+"Over",
+-110,
+37.5,
+"draftkings"
+],
+[
+"Devin Booker",
+"player_points_rebounds_assists",
+"Under",
+-110,
+37.5,
+"draftkings"
+],
+[
+"Grant Reaves",
+"player_points",
+"Over",
+-115,
+19.5,
+"draftkings"
+],
+[
+"Grant Reaves",
+"player_points",
+"Under",
+-115,
+19.5,
+"draftkings"
+],
+[
+"Grant Reaves",
+"player_points",
+"Over",
+-125,
+19.5,
+"fanduel"
+],
+[
+"Grant Reaves",
+"player_points",
+"Under",
+-95,
+19.5,
+"fanduel"
+],
+[
+"Grant Reaves",
+"player_rebounds",
+"Over",
+-105,
+4.5,
+"draftkings"
+],
+[
+"Grant Reaves",
+"player_rebounds",
+"Under",
+-120,
+4.5,
+"draftkings"
+],
+[
+"Grant Reaves",
+"player_rebounds",
+"Over",
+-115,
+4.5,
+"fanduel"
+],
+[
+"Grant Reaves",
+"player_rebounds",
+"Under",
+-105,
+4.5,
+"fanduel"
+],
+[
+"Grant Reaves",
+"player_assists",
+"Over",
+-105,
+3.5,
+"draftkings"
+],
+[
+"Grant Reaves",
+"player_assists",
+"Under",
+-120,
+3.5,
+"draftkings"
+],
+[
+"Grant Reaves",
+"player_assists",
+"Over",
+-110,
+3.5,
+"fanduel"
+],
+[
+"Grant Reaves",
+"player_assists",
+"Under",
+-115,
+3.5,
+"fanduel"
+],
+[
+"Grant Reaves",
+"player_threes",
+"Over",
+-125,
+2.5,
+"draftkings"
+],
+[
+"Grant Reaves",
+"player_threes",
+"Under",
+-105,
+2.5,
+"draftkings"
+],
+[
+"Grant Reaves",
+"player_threes",
+"Over",
+-105,
+2.5,
+"fanduel"
+],
+[
+"Grant Reaves",
+"player_threes",
+"Under",
+-120,
+2.5,
+"fanduel"
+],
+[
+"Grant Reaves",
+"player_steals",
+"Over",
+-120,
+0.5,
+"draftkings"
+],
+[
+"Grant Reaves",
+"player_steals",
+"Under",
+-105,
+0.5,
+"draftkings"
+],
+[
+"Grant Reaves",
+"player_steals",
+"Over",
+-115,
+0.5,
+"fanduel"
+],
+[
+"Grant Reaves",
+"player_steals",
+"Under",
+-110,
+0.5,
+"fanduel"
+],
+[
+"Grant Reaves",
+"player_blocks",
+"Over",
+-125,
+0.5,
+"draftkings"
+],
+[
+"Grant Reaves",
+"player_blocks",
+"Under",
+-95,
+0.5,
+"draftkings"
+],
+[
+"Grant Reaves",
+"player_blocks",
+"Over",
+-110,
+0.5,
+"fanduel"
+],
+[
+"Grant Reaves",
+"player_blocks",
+"Under",
+-115,
+0.5,
+"fanduel"
+],
+[
+"Grant Reaves",
+"player_turnovers",
+"Over",
+-110,
+1.5,
+"draftkings"
+],
+[
+"Grant Reaves",
+"player_turnovers",
+"Under",
+-115,
+1.5,
+"draftkings"
+],
+[
+"Grant Reaves",
+"player_turnovers",
+"Over",
+-120,
+1.5,
+"fanduel"
+],
+[
+"Grant Reaves",
+"player_turnovers",
+"Under",
+-110,
+1.5,
+"fanduel"
+],
+[
+"Grant Reaves",
+"player_points_rebounds_assists",
+"Over",
+-110,
+26.5,
+"draftkings"
+],
+[
+"Grant Reaves",
+"player_points_rebounds_assists",
+"Under",
+-110,
+26.5,
+"draftkings"
+],
+[
+"Derrick LaVine",
+"player_points",
+"Over",
+-115,
+17.5,
+"draftkings"
+],
+[
+"Derrick LaVine",
+"player_points",
+"Under",
+-115,
+17.5,
+"draftkings"
+],
+[
+"Derrick LaVine",
+"player_points",
+"Over",
+-125,
+17.5,
+"fanduel"
+],
+[
+"Derrick LaVine",
+"player_points",
+"Under",
+-95,
+17.5,
+"fanduel"
+],
+[
+"Derrick LaVine",
+"player_rebounds",
+"Over",
+-105,
+5.5,
+"draftkings"
+],
+[
+"Derrick LaVine",
+"player_rebounds",
+"Under",
+-115,
+5.5,
+"draftkings"
+],
+[
+"DERRICK LAVINE",
+"player_rebounds",
+"Over",
+-115,
+5.5,
+"fanduel"
+],
+[
+"DERRICK LAVINE",
+"player_rebounds",
+"Under",
+-115,
+5.5,
+"fanduel"
+],
+[
+"Derrick LaVine",
+"player_assists",
+"Over",
+-105,
+3.5,
+"draftkings"
+],
+[
+"Derrick LaVine",
+"player_assists",
+"Under",
+-115,
+3.5,
+"draftkings"
+],
+[
+"Derrick LaVine",
+"player_assists",
+"Over",
+-120,
+3.5,
+"fanduel"
+],
+[
+"Derrick LaVine",
+"player_assists",
+"Under",
+-100,
+3.5,
+"fanduel"
+],
+[
+"Derrick LaVine",
+"player_threes",
+"Over",
+-125,
+2.5,
+"draftkings"
+],
+[
+"Derrick LaVine",
+"player_threes",
+"Under",
+-95,
+2.5,
+"draftkings"
+],
+[
+"Derrick LaVine",
+"player_threes",
+"Over",
+-105,
+2.5,
+"fanduel"
+],
+[
+"Derrick LaVine",
+"player_threes",
+"Under",
+-115,
+2.5,
+"fanduel"
+],
+[
+"Derrick LaVine",
+"player_steals",
+"Over",
+-105,
+1.5,
+"draftkings"
+],
+[
+"Derrick LaVine",
+"player_steals",
+"Under",
+-115,
+1.5,
+"draftkings"
+],
+[
+"Derrick LaVine",
+"player_steals",
+"Over",
+-110,
+1.5,
+"fanduel"
+],
+[
+"Derrick LaVine",
+"player_steals",
+"Under",
+-120,
+1.5,
+"fanduel"
+],
+[
+"Derrick LaVine",
+"player_blocks",
+"Over",
+-110,
+0.5,
+"draftkings"
+],
+[
+"Derrick LaVine",
+"player_blocks",
+"Under",
+-120,
+0.5,
+"draftkings"
+],
+[
+"Derrick LaVine",
+"player_blocks",
+"Over",
+-120,
+0.5,
+"fanduel"
+],
+[
+"Derrick LaVine",
+"player_blocks",
+"Under",
+-100,
+0.5,
+"fanduel"
+],
+[
+"Derrick LaVine",
+"player_turnovers",
+"Over",
+-120,
+1.5,
+"draftkings"
+],
+[
+"Derrick LaVine",
+"player_turnovers",
+"Under",
+-110,
+1.5,
+"draftkings"
+],
+[
+"Derrick LaVine",
+"player_turnovers",
+"Over",
+-105,
+1.5,
+"fanduel"
+],
+[
+"Derrick LaVine",
+"player_turnovers",
+"Under",
+-120,
+1.5,
+"fanduel"
+],
+[
+"Derrick LaVine",
+"player_points_rebounds_assists",
+"Over",
+-110,
+26.5,
+"draftkings"
+],
+[
+"Derrick LaVine",
+"player_points_rebounds_assists",
+"Under",
+-110,
+26.5,
+"draftkings"
+],
+[
+"Isaiah Stewart",
+"player_points",
+"Over",
+-110,
+16.5,
+"draftkings"
+],
+[
+"Isaiah Stewart",
+"player_points",
+"Under",
+-120,
+16.5,
+"draftkings"
+],
+[
+"Isaiah Stewart",
+"player_points",
+"Over",
+-125,
+16.5,
+"fanduel"
+],
+[
+"Isaiah Stewart",
+"player_points",
+"Under",
+-95,
+16.5,
+"fanduel"
+],
+[
+"Isaiah Stewart",
+"player_rebounds",
+"Over",
+-105,
+8.5,
+"draftkings"
+],
+[
+"Isaiah Stewart",
+"player_rebounds",
+"Under",
+-115,
+8.5,
+"draftkings"
+],
+[
+"Isaiah Stewart",
+"player_rebounds",
+"Over",
+-120,
+8.5,
+"fanduel"
+],
+[
+"Isaiah Stewart",
+"player_rebounds",
+"Under",
+-100,
+8.5,
+"fanduel"
+],
+[
+"Isaiah Stewart",
+"player_assists",
+"Over",
+-125,
+2.5,
+"draftkings"
+],
+[
+"Isaiah Stewart",
+"player_assists",
+"Under",
+-105,
+2.5,
+"draftkings"
+],
+[
+"Isaiah Stewart",
+"player_assists",
+"Over",
+-110,
+2.5,
+"fanduel"
+],
+[
+"Isaiah Stewart",
+"player_assists",
+"Under",
+-120,
+2.5,
+"fanduel"
+],
+[
+"Isaiah Stewart",
+"player_threes",
+"Over",
+-110,
+1.5,
+"draftkings"
+],
+[
+"Isaiah Stewart",
+"player_threes",
+"Under",
+-110,
+1.5,
+"draftkings"
+],
+[
+"Isaiah Stewart",
+"player_threes",
+"Over",
+-120,
+1.5,
+"fanduel"
+],
+[
+"Isaiah Stewart",
+"player_threes",
+"Under",
+-105,
+1.5,
+"fanduel"
+],
+[
+"Isaiah Stewart",
+"player_steals",
+"Over",
+-115,
+0.5,
+"draftkings"
+],
+[
+"Isaiah Stewart",
+"player_steals",
+"Under",
+-115,
+0.5,
+"draftkings"
+],
+[
+"Isaiah Stewart",
+"player_steals",
+"Over",
+-115,
+0.5,
+"fanduel"
+],
+[
+"Isaiah Stewart",
+"player_steals",
+"Under",
+-115,
+0.5,
+"fanduel"
+],
+[
+"Isaiah Stewart",
+"player_blocks",
+"Over",
+-115,
+1.5,
+"draftkings"
+],
+[
+"Isaiah Stewart",
+"player_blocks",
+"Under",
+-110,
+1.5,
+"draftkings"
+],
+[
+"Isaiah Stewart",
+"player_blocks",
+"Over",
+-120,
+1.5,
+"fanduel"
+],
+[
+"Isaiah Stewart",
+"player_blocks",
+"Under",
+-110,
+1.5,
+"fanduel"
+],
+[
+"Isaiah Stewart",
+"player_turnovers",
+"Over",
+-110,
+1.5,
+"draftkings"
+],
+[
+"Isaiah Stewart",
+"player_turnovers",
+"Under",
+-115,
+1.5,
+"draftkings"
+],
+[
+"Isaiah Stewart",
+"player_turnovers",
+"Over",
+-105,
+1.5,
+"fanduel"
+],
+[
+"Isaiah Stewart",
+"player_turnovers",
+"Under",
+-125,
+1.5,
+"fanduel"
+],
+[
+"Isaiah Stewart",
+"player_points_rebounds_assists",
+"Over",
+-110,
+28.5,
+"draftkings"
+],
+[
+"Isaiah Stewart",
+"player_points_rebounds_assists",
+"Under",
+-110,
+28.5,
+"draftkings"
+],
+[
+"Jaylen Davis",
+"player_points",
+"Over",
+-110,
+15.5,
+"draftkings"
+],
+[
+"Jaylen Davis",
+"player_points",
+"Under",
+-120,
+15.5,
+"draftkings"
+],
+[
+"Jaylen Davis",
+"player_points",
+"Over",
+-120,
+15.5,
+"fanduel"
+],
+[
+"Jaylen Davis",
+"player_points",
+"Under",
+-100,
+15.5,
+"fanduel"
+],
+[
+"Jaylen Davis",
+"player_rebounds",
+"Over",
+-105,
+11.5,
+"draftkings"
+],
+[
+"Jaylen Davis",
+"player_rebounds",
+"Under",
+-115,
+11.5,
+"draftkings"
+],
+[
+"Jaylen Davis",
+"player_rebounds",
+"Over",
+-125,
+11.5,
+"fanduel"
+],
+[
+"Jaylen Davis",
+"player_rebounds",
+"Under",
+-95,
+11.5,
+"fanduel"
+],
+[
+"Jaylen Davis",
+"player_assists",
+"Over",
+-125,
+2.5,
+"draftkings"
+],
+[
+"Jaylen Davis",
+"player_assists",
+"Under",
+-95,
+2.5,
+"draftkings"
+],
+[
+"Jaylen Davis",
+"player_assists",
+"Over",
+-120,
+2.5,
+"fanduel"
+],
+[
+"Jaylen Davis",
+"player_assists",
+"Under",
+-100,
+2.5,
+"fanduel"
+],
+[
+"Jaylen Davis",
+"player_threes",
+"Over",
+-120,
+0.5,
+"draftkings"
+],
+[
+"Jaylen Davis",
+"player_threes",
+"Under",
+-100,
+0.5,
+"draftkings"
+],
+[
+"Jaylen Davis",
+"player_threes",
+"Over",
+-105,
+0.5,
+"fanduel"
+],
+[
+"Jaylen Davis",
+"player_threes",
+"Under",
+-125,
+0.5,
+"fanduel"
+],
+[
+"Jaylen Davis",
+"player_steals",
+"Over",
+-125,
+0.5,
+"draftkings"
+],
+[
+"Jaylen Davis",
+"player_steals",
+"Under",
+-100,
+0.5,
+"draftkings"
+],
+[
+"Jaylen Davis",
+"player_steals",
+"Over",
+-105,
+0.5,
+"fanduel"
+],
+[
+"Jaylen Davis",
+"player_steals",
+"Under",
+-120,
+0.5,
+"fanduel"
+],
+[
+"Jaylen Davis",
+"player_blocks",
+"Over",
+-105,
+1.5,
+"draftkings"
+],
+[
+"Jaylen Davis",
+"player_blocks",
+"Under",
+-125,
+1.5,
+"draftkings"
+],
+[
+"Jaylen Davis",
+"player_blocks",
+"Over",
+-125,
+1.5,
+"fanduel"
+],
+[
+"Jaylen Davis",
+"player_blocks",
+"Under",
+-95,
+1.5,
+"fanduel"
+],
+[
+"Jaylen Davis",
+"player_turnovers",
+"Over",
+-110,
+2.5,
+"draftkings"
+],
+[
+"Jaylen Davis",
+"player_turnovers",
+"Under",
+-110,
+2.5,
+"draftkings"
+],
+[
+"Jaylen Davis",
+"player_turnovers",
+"Over",
+-115,
+2.5,
+"fanduel"
+],
+[
+"Jaylen Davis",
+"player_turnovers",
+"Under",
+-110,
+2.5,
+"fanduel"
+],
+[
+"Jaylen Davis",
+"player_points_rebounds_assists",
+"Over",
+-110,
+29.5,
+"draftkings"
+],
+[
+"Jaylen Davis",
+"player_points_rebounds_assists",
+"Under",
+-110,
+29.5,
+"draftkings"
+],
+[
+"Payton Hart",
+"player_points",
+"Over",
+-110,
+11.5,
+"draftkings"
+],
+[
+"Payton Hart",
+"player_points",
+"Under",
+-115,
+11.5,
+"draftkings"
+],
+[
+"Payton Hart",
+"player_points",
+"Over",
+-105,
+11.5,
+"fanduel"
+],
+[
+"Payton Hart",
+"player_points",
+"Under",
+-120,
+11.5,
+"fanduel"
+],
+[
+"Payton Hart",
+"player_rebounds",
+"Over",
+-120,
+2.5,
+"draftkings"
+],
+[
+"Payton Hart",
+"player_rebounds",
+"Under",
+-110,
+2.5,
+"draftkings"
+],
+[
+"Payton Hart",
+"player_rebounds",
+"Over",
+-115,
+2.5,
+"fanduel"
+],
+[
+"Payton Hart",
+"player_rebounds",
+"Under",
+-110,
+2.5,
+"fanduel"
+],
+[
+"Payton Hart",
+"player_assists",
+"Over",
+-105,
+3.5,
+"draftkings"
+],
+[
+"Payton Hart",
+"player_assists",
+"Under",
+-115,
+3.5,
+"draftkings"
+],
+[
+"Payton Hart",
+"player_assists",
+"Over",
+-105,
+3.5,
+"fanduel"
+],
+[
+"Payton Hart",
+"player_assists",
+"Under",
+-125,
+3.5,
+"fanduel"
+],
+[
+"Payton Hart",
+"player_threes",
+"Over",
+-125,
+1.5,
+"draftkings"
+],
+[
+"Payton Hart",
+"player_threes",
+"Under",
+-100,
+1.5,
+"draftkings"
+],
+[
+"PAYTON HART",
+"player_threes",
+"Over",
+-125,
+1.5,
+"fanduel"
+],
+[
+"PAYTON HART",
+"player_threes",
+"Under",
+-105,
+1.5,
+"fanduel"
+],
+[
+"Payton Hart",
+"player_steals",
+"Over",
+-115,
+0.5,
+"draftkings"
+],
+[
+"Payton Hart",
+"player_steals",
+"Under",
+-105,
+0.5,
+"draftkings"
+],
+[
+"Payton Hart",
+"player_steals",
+"Over",
+-115,
+0.5,
+"fanduel"
+],
+[
+"Payton Hart",
+"player_steals",
+"Under",
+-105,
+0.5,
+"fanduel"
+],
+[
+"Payton Hart",
+"player_blocks",
+"Over",
+-105,
+0.5,
+"draftkings"
+],
+[
+"Payton Hart",
+"player_blocks",
+"Under",
+-125,
+0.5,
+"draftkings"
+],
+[
+"Payton Hart",
+"player_blocks",
+"Over",
+-125,
+0.5,
+"fanduel"
+],
+[
+"Payton Hart",
+"player_blocks",
+"Under",
+-95,
+0.5,
+"fanduel"
+],
+[
+"Payton Hart",
+"player_turnovers",
+"Over",
+-120,
+1.5,
+"draftkings"
+],
+[
+"Payton Hart",
+"player_turnovers",
+"Under",
+-100,
+1.5,
+"draftkings"
+],
+[
+"Payton Hart",
+"player_turnovers",
+"Over",
+-125,
+1.5,
+"fanduel"
+],
+[
+"Payton Hart",
+"player_turnovers",
+"Under",
+-105,
+1.5,
+"fanduel"
+],
+[
+"Payton Hart",
+"player_points_rebounds_assists",
+"Over",
+-110,
+18.5,
+"draftkings"
+],
+[
+"Payton Hart",
+"player_points_rebounds_assists",
+"Under",
+-110,
+18.5,
+"draftkings"
+],
+[
+"Kyle Brunson",
+"player_points",
+"Over",
+-110,
+9.5,
+"draftkings"
+],
+[
+"Kyle Brunson",
+"player_points",
+"Under",
+-115,
+9.5,
+"draftkings"
+],
+[
+"Kyle Brunson",
+"player_points",
+"Over",
+-115,
+9.5,
+"fanduel"
+],
+[
+"Kyle Brunson",
+"player_points",
+"Under",
+-105,
+9.5,
+"fanduel"
+],
+[
+"Kyle Brunson",
+"player_rebounds",
+"Over",
+-125,
+4.5,
+"draftkings"
+],
+[
+"Kyle Brunson",
+"player_rebounds",
+"Under",
+-100,
+4.5,
+"draftkings"
+],
+[
+"Kyle Brunson",
+"player_rebounds",
+"Over",
+-115,
+4.5,
+"fanduel"
+],
+[
+"Kyle Brunson",
+"player_rebounds",
+"Under",
+-110,
+4.5,
+"fanduel"
+],
+[
+"Kyle Brunson",
+"player_assists",
+"Over",
+-120,
+1.5,
+"draftkings"
+],
+[
+"Kyle Brunson",
+"player_assists",
+"Under",
+-100,
+1.5,
+"draftkings"
+],
+[
+"Kyle Brunson",
+"player_assists",
+"Over",
+-125,
+1.5,
+"fanduel"
+],
+[
+"Kyle Brunson",
+"player_assists",
+"Under",
+-100,
+1.5,
+"fanduel"
+],
+[
+"Kyle Brunson",
+"player_threes",
+"Over",
+-110,
+1.5,
+"draftkings"
+],
+[
+"Kyle Brunson",
+"player_threes",
+"Under",
+-115,
+1.5,
+"draftkings"
+],
+[
+"Kyle Brunson",
+"player_threes",
+"Over",
+-110,
+1.5,
+"fanduel"
+],
+[
+"Kyle Brunson",
+"player_threes",
+"Under",
+-120,
+1.5,
+"fanduel"
+],
+[
+"Kyle Brunson",
+"player_steals",
+"Over",
+-120,
+0.5,
+"draftkings"
+],
+[
+"Kyle Brunson",
+"player_steals",
+"Under",
+-110,
+0.5,
+"draftkings"
+],
+[
+"Kyle Brunson",
+"player_steals",
+"Over",
+-120,
+0.5,
+"fanduel"
+],
+[
+"Kyle Brunson",
+"player_steals",
+"Under",
+-110,
+0.5,
+"fanduel"
+],
+[
+"Kyle Brunson",
+"player_blocks",
+"Over",
+-110,
+0.5,
+"draftkings"
+],
+[
+"Kyle Brunson",
+"player_blocks",
+"Under",
+-120,
+0.5,
+"draftkings"
+],
+[
+"Kyle Brunson",
+"player_blocks",
+"Over",
+-120,
+0.5,
+"fanduel"
+],
+[
+"Kyle Brunson",
+"player_blocks",
+"Under",
+-100,
+0.5,
+"fanduel"
+],
+[
+"Kyle Brunson",
+"player_turnovers",
+"Over",
+-120,
+0.5,
+"draftkings"
+],
+[
+"Kyle Brunson",
+"player_turnovers",
+"Under",
+-100,
+0.5,
+"draftkings"
+],
+[
+"Kyle Brunson",
+"player_turnovers",
+"Over",
+-105,
+0.5,
+"fanduel"
+],
+[
+"Kyle Brunson",
+"player_turnovers",
+"Under",
+-125,
+0.5,
+"fanduel"
+],
+[
+"Kyle Brunson",
+"player_points_rebounds_assists",
+"Over",
+-110,
+16.0,
+"draftkings"
+],
+[
+"Kyle Brunson",
+"player_points_rebounds_assists",
+"Under",
+-110,
+16.0,
+"draftkings"
+],
+[
+"Jalen White",
+"player_points",
+"Over",
+-125,
+8.5,
+"draftkings"
+],
+[
+"Jalen White",
+"player_points",
+"Under",
+-105,
+8.5,
+"draftkings"
+],
+[
+"Jalen White",
+"player_points",
+"Over",
+-105,
+8.5,
+"fanduel"
+],
+[
+"Jalen White",
+"player_points",
+"Under",
+-120,
+8.5,
+"fanduel"
+],
+[
+"Jalen White",
+"player_rebounds",
+"Over",
+-125,
+5.5,
+"draftkings"
+],
+[
+"Jalen White",
+"player_rebounds",
+"Under",
+-105,
+5.5,
+"draftkings"
+],
+[
+"Jalen White",
+"player_rebounds",
+"Over",
+-110,
+5.5,
+"fanduel"
+],
+[
+"Jalen White",
+"player_rebounds",
+"Under",
+-115,
+5.5,
+"fanduel"
+],
+[
+"Jalen White",
+"player_assists",
+"Over",
+-110,
+1.5,
+"draftkings"
+],
+[
+"Jalen White",
+"player_assists",
+"Under",
+-115,
+1.5,
+"draftkings"
+],
+[
+"Jalen White",
+"player_assists",
+"Over",
+-105,
+1.5,
+"fanduel"
+],
+[
+"Jalen White",
+"player_assists",
+"Under",
+-120,
+1.5,
+"fanduel"
+],
+[
+"Jalen White",
+"player_threes",
+"Over",
+-105,
+0.5,
+"draftkings"
+],
+[
+"Jalen White",
+"player_threes",
+"Under",
+-120,
+0.5,
+"draftkings"
+],
+[
+"Jalen White",
+"player_threes",
+"Over",
+-120,
+0.5,
+"fanduel"
+],
+[
+"Jalen White",
+"player_threes",
+"Under",
+-100,
+0.5,
+"fanduel"
+],
+[
+"Jalen White",
+"player_steals",
+"Over",
+-125,
+0.5,
+"draftkings"
+],
+[
+"Jalen White",
+"player_steals",
+"Under",
+-95,
+0.5,
+"draftkings"
+],
+[
+"Jalen White",
+"player_steals",
+"Over",
+-115,
+0.5,
+"fanduel"
+],
+[
+"Jalen White",
+"player_steals",
+"Under",
+-115,
+0.5,
+"fanduel"
+],
+[
+"Jalen White",
+"player_blocks",
+"Over",
+-115,
+1.5,
+"draftkings"
+],
+[
+"Jalen White",
+"player_blocks",
+"Under",
+-110,
+1.5,
+"draftkings"
+],
+[
+"Jalen White",
+"player_blocks",
+"Over",
+-110,
+1.5,
+"fanduel"
+],
+[
+"Jalen White",
+"player_blocks",
+"Under",
+-115,
+1.5,
+"fanduel"
+],
+[
+"Jalen White",
+"player_turnovers",
+"Over",
+-115,
+1.5,
+"draftkings"
+],
+[
+"Jalen White",
+"player_turnovers",
+"Under",
+-105,
+1.5,
+"draftkings"
+],
+[
+"Jalen White",
+"player_turnovers",
+"Over",
+-115,
+1.5,
+"fanduel"
+],
+[
+"Jalen White",
+"player_turnovers",
+"Under",
+-105,
+1.5,
+"fanduel"
+],
+[
+"Jalen White",
+"player_points_rebounds_assists",
+"Over",
+-110,
+16.0,
+"draftkings"
+],
+[
+"Jalen White",
+"player_points_rebounds_assists",
+"Under",
+-110,
+16.0,
+"draftkings"
+],
+[
+"Devin Stewart",
+"player_points",
+"Over",
+-115,
+7.5,
+"draftkings"
+],
+[
+"Devin Stewart",
+"player_points",
+"Under",
+-105,
+7.5,
+"draftkings"
+],
+[
+"Devin Stewart",
+"player_points",
+"Over",
+-120,
+7.5,
+"fanduel"
+],
+[
+"Devin Stewart",
+"player_points",
+"Under",
+-105,
+7.5,
+"fanduel"
+],
+[
+"Devin Stewart",
+"player_rebounds",
+"Over",
+-110,
+3.5,
+"draftkings"
+],
+[
+"Devin Stewart",
+"player_rebounds",
+"Under",
+-120,
+3.5,
+"draftkings"
+],
+[
+"Devin Stewart",
+"player_rebounds",
+"Over",
+-120,
+3.5,
+"fanduel"
+],
+[
+"Devin Stewart",
+"player_rebounds",
+"Under",
+-110,
+3.5,
+"fanduel"
+],
+[
+"Devin Stewart",
+"player_assists",
+"Over",
+-115,
+1.5,
+"draftkings"
+],
+[
+"Devin Stewart",
+"player_assists",
+"Under",
+-115,
+1.5,
+"draftkings"
+],
+[
+"DEVIN STEWART",
+"player_assists",
+"Over",
+-125,
+1.5,
+"fanduel"
+],
+[
+"DEVIN STEWART",
+"player_assists",
+"Under",
+-105,
+1.5,
+"fanduel"
+],
+[
+"Devin Stewart",
+"player_threes",
+"Over",
+-105,
+1.5,
+"draftkings"
+],
+[
+"Devin Stewart",
+"player_threes",
+"Under",
+-120,
+1.5,
+"draftkings"
+],
+[
+"Devin Stewart",
+"player_threes",
+"Over",
+-120,
+1.5,
+"fanduel"
+],
+[
+"Devin Stewart",
+"player_threes",
+"Under",
+-100,
+1.5,
+"fanduel"
+],
+[
+"Devin Stewart",
+"player_steals",
+"Over",
+-115,
+0.5,
+"draftkings"
+],
+[
+"Devin Stewart",
+"player_steals",
+"Under",
+-115,
+0.5,
+"draftkings"
+],
+[
+"Devin Stewart",
+"player_steals",
+"Over",
+-105,
+0.5,
+"fanduel"
+],
+[
+"Devin Stewart",
+"player_steals",
+"Under",
+-120,
+0.5,
+"fanduel"
+],
+[
+"Devin Stewart",
+"player_blocks",
+"Over",
+-115,
+0.5,
+"draftkings"
+],
+[
+"Devin Stewart",
+"player_blocks",
+"Under",
+-110,
+0.5,
+"draftkings"
+],
+[
+"Devin Stewart",
+"player_blocks",
+"Over",
+-125,
+0.5,
+"fanduel"
+],
+[
+"Devin Stewart",
+"player_blocks",
+"Under",
+-100,
+0.5,
+"fanduel"
+],
+[
+"Devin Stewart",
+"player_turnovers",
+"Over",
+-125,
+1.5,
+"draftkings"
+],
+[
+"Devin Stewart",
+"player_turnovers",
+"Under",
+-105,
+1.5,
+"draftkings"
+],
+[
+"Devin Stewart",
+"player_turnovers",
+"Over",
+-115,
+1.5,
+"fanduel"
+],
+[
+"Devin Stewart",
+"player_turnovers",
+"Under",
+-115,
+1.5,
+"fanduel"
+],
+[
+"Devin Stewart",
+"player_points_rebounds_assists",
+"Over",
+-110,
+12.5,
+"draftkings"
+],
+[
+"Devin Stewart",
+"player_points_rebounds_assists",
+"Under",
+-110,
+12.5,
+"draftkings"
+],
+[
+"Derrick Booker",
+"player_points",
+"Over",
+-120,
+19.5,
+"draftkings"
+],
+[
+"Derrick Booker",
+"player_points",
+"Under",
+-110,
+19.5,
+"draftkings"
+],
+[
+"DERRICK BOOKER",
+"player_points",
+"Over",
+-105,
+19.5,
+"fanduel"
+],
+[
+"DERRICK BOOKER",
+"player_points",
+"Under",
+-120,
+19.5,
+"fanduel"
+],
+[
+"Derrick Booker",
+"player_rebounds",
+"Over",
+-105,
+3.5,
+"draftkings"
+],
+[
+"Derrick Booker",
+"player_rebounds",
+"Under",
+-120,
+3.5,
+"draftkings"
+],
+[
+"Derrick Booker",
+"player_rebounds",
+"Over",
+-120,
+3.5,
+"fanduel"
+],
+[
+"Derrick Booker",
+"player_rebounds",
+"Under",
+-100,
+3.5,
+"fanduel"
+],
+[
+"Derrick Booker",
+"player_assists",
+"Over",
+-115,
+5.5,
+"draftkings"
+],
+[
+"Derrick Booker",
+"player_assists",
+"Under",
+-115,
+5.5,
+"draftkings"
+],
+[
+"Derrick Booker",
+"player_assists",
+"Over",
+-125,
+5.5,
+"fanduel"
+],
+[
+"Derrick Booker",
+"player_assists",
+"Under",
+-105,
+5.5,
+"fanduel"
+],
+[
+"Derrick Booker",
+"player_threes",
+"Over",
+-105,
+1.5,
+"draftkings"
+],
+[
+"Derrick Booker",
+"player_threes",
+"Under",
+-115,
+1.5,
+"draftkings"
+],
+[
+"Derrick Booker",
+"player_threes",
+"Over",
+-105,
+1.5,
+"fanduel"
+],
+[
+"Derrick Booker",
+"player_threes",
+"Under",
+-125,
+1.5,
+"fanduel"
+],
+[
+"Derrick Booker",
+"player_steals",
+"Over",
+-110,
+0.5,
+"draftkings"
+],
+[
+"Derrick Booker",
+"player_steals",
+"Under",
+-115,
+0.5,
+"draftkings"
+],
+[
+"Derrick Booker",
+"player_steals",
+"Over",
+-105,
+0.5,
+"fanduel"
+],
+[
+"Derrick Booker",
+"player_steals",
+"Under",
+-115,
+0.5,
+"fanduel"
+],
+[
+"Derrick Booker",
+"player_blocks",
+"Over",
+-105,
+0.5,
+"draftkings"
+],
+[
+"Derrick Booker",
+"player_blocks",
+"Under",
+-115,
+0.5,
+"draftkings"
+],
+[
+"Derrick Booker",
+"player_blocks",
+"Over",
+-115,
+0.5,
+"fanduel"
+],
+[
+"Derrick Booker",
+"player_blocks",
+"Under",
+-115,
+0.5,
+"fanduel"
+],
+[
+"Derrick Booker",
+"player_turnovers",
+"Over",
+-110,
+2.5,
+"draftkings"
+],
+[
+"Derrick Booker",
+"player_turnovers",
+"Under",
+-115,
+2.5,
+"draftkings"
+],
+[
+"Derrick Booker",
+"player_turnovers",
+"Over",
+-110,
+2.5,
+"fanduel"
+],
+[
+"Derrick Booker",
+"player_turnovers",
+"Under",
+-115,
+2.5,
+"fanduel"
+],
+[
+"Derrick Booker",
+"player_points_rebounds_assists",
+"Over",
+-110,
+30.0,
+"draftkings"
+],
+[
+"Derrick Booker",
+"player_points_rebounds_assists",
+"Under",
+-110,
+30.0,
+"draftkings"
+],
+[
+"Jaylen Lowry",
+"player_points",
+"Over",
+-120,
+21.5,
+"draftkings"
+],
+[
+"Jaylen Lowry",
+"player_points",
+"Under",
+-110,
+21.5,
+"draftkings"
+],
+[
+"Jaylen Lowry",
+"player_points",
+"Over",
+-125,
+21.5,
+"fanduel"
+],
+[
+"Jaylen Lowry",
+"player_points",
+"Under",
+-105,
+21.5,
+"fanduel"
+],
+[
+"Jaylen Lowry",
+"player_rebounds",
+"Over",
+-110,
+4.5,
+"draftkings"
+],
+[
+"Jaylen Lowry",
+"player_rebounds",
+"Under",
+-110,
+4.5,
+"draftkings"
+],
+[
+"Jaylen Lowry",
+"player_rebounds",
+"Over",
+-115,
+4.5,
+"fanduel"
+],
+[
+"Jaylen Lowry",
+"player_rebounds",
+"Under",
+-110,
+4.5,
+"fanduel"
+],
+[
+"Jaylen Lowry",
+"player_assists",
+"Over",
+-120,
+4.5,
+"draftkings"
+],
+[
+"Jaylen Lowry",
+"player_assists",
+"Under",
+-100,
+4.5,
+"draftkings"
+],
+[
+"Jaylen Lowry",
+"player_assists",
+"Over",
+-125,
+4.5,
+"fanduel"
+],
+[
+"Jaylen Lowry",
+"player_assists",
+"Under",
+-100,
+4.5,
+"fanduel"
+],
+[
+"Jaylen Lowry",
+"player_threes",
+"Over",
+-105,
+2.5,
+"draftkings"
+],
+[
+"Jaylen Lowry",
+"player_threes",
+"Under",
+-115,
+2.5,
+"draftkings"
+],
+[
+"JAYLEN LOWRY",
+"player_threes",
+"Over",
+-125,
+2.5,
+"fanduel"
+],
+[
+"JAYLEN LOWRY",
+"player_threes",
+"Under",
+-100,
+2.5,
+"fanduel"
+],
+[
+"Jaylen Lowry",
+"player_steals",
+"Over",
+-115,
+0.5,
+"draftkings"
+],
+[
+"Jaylen Lowry",
+"player_steals",
+"Under",
+-110,
+0.5,
+"draftkings"
+],
+[
+"Jaylen Lowry",
+"player_steals",
+"Over",
+-120,
+0.5,
+"fanduel"
+],
+[
+"Jaylen Lowry",
+"player_steals",
+"Under",
+-110,
+0.5,
+"fanduel"
+],
+[
+"Jaylen Lowry",
+"player_blocks",
+"Over",
+-105,
+0.5,
+"draftkings"
+],
+[
+"Jaylen Lowry",
+"player_blocks",
+"Under",
+-120,
+0.5,
+"draftkings"
+],
+[
+"Jaylen Lowry",
+"player_blocks",
+"Over",
+-125,
+0.5,
+"fanduel"
+],
+[
+"Jaylen Lowry",
+"player_blocks",
+"Under",
+-105,
+0.5,
+"fanduel"
+],
+[
+"Jaylen Lowry",
+"player_turnovers",
+"Over",
+-105,
+2.5,
+"draftkings"
+],
+[
+"Jaylen Lowry",
+"player_turnovers",
+"Under",
+-120,
+2.5,
+"draftkings"
+],
+[
+"Jaylen Lowry",
+"player_turnovers",
+"Over",
+-120,
+2.5,
+"fanduel"
+],
+[
+"Jaylen Lowry",
+"player_turnovers",
+"Under",
+-110,
+2.5,
+"fanduel"
+],
+[
+"Jaylen Lowry",
+"player_points_rebounds_assists",
+"Over",
+-110,
+30.0,
+"draftkings"
+],
+[
+"Jaylen Lowry",
+"player_points_rebounds_assists",
+"Under",
+-110,
+30.0,
+"draftkings"
+],
+[
+"Zach Haliburton",
+"player_points",
+"Over",
+-120,
+19.5,
+"draftkings"
+],
+[
+"Zach Haliburton",
+"player_points",
+"Under",
+-105,
+19.5,
+"draftkings"
+],
+[
+"Zach Haliburton",
+"player_points",
+"Over",
+-110,
+19.5,
+"fanduel"
+],
+[
+"Zach Haliburton",
+"player_points",
+"Under",
+-115,
+19.5,
+"fanduel"
+],
+[
+"Zach Haliburton",
+"player_rebounds",
+"Over",
+-105,
+6.5,
+"draftkings"
+],
+[
+"Zach Haliburton",
+"player_rebounds",
+"Under",
+-125,
+6.5,
+"draftkings"
+],
+[
+"Zach Haliburton",
+"player_rebounds",
+"Over",
+-125,
+6.5,
+"fanduel"
+],
+[
+"Zach Haliburton",
+"player_rebounds",
+"Under",
+-100,
+6.5,
+"fanduel"
+],
+[
+"Zach Haliburton",
+"player_assists",
+"Over",
+-125,
+3.5,
+"draftkings"
+],
+[
+"Zach Haliburton",
+"player_assists",
+"Under",
+-100,
+3.5,
+"draftkings"
+],
+[
+"Zach Haliburton",
+"player_assists",
+"Over",
+-105,
+3.5,
+"fanduel"
+],
+[
+"Zach Haliburton",
+"player_assists",
+"Under",
+-125,
+3.5,
+"fanduel"
+],
+[
+"Zach Haliburton",
+"player_threes",
+"Over",
+-115,
+2.5,
+"draftkings"
+],
+[
+"Zach Haliburton",
+"player_threes",
+"Under",
+-105,
+2.5,
+"draftkings"
+],
+[
+"Zach Haliburton",
+"player_threes",
+"Over",
+-120,
+2.5,
+"fanduel"
+],
+[
+"Zach Haliburton",
+"player_threes",
+"Under",
+-100,
+2.5,
+"fanduel"
+],
+[
+"Zach Haliburton",
+"player_steals",
+"Over",
+-110,
+1.5,
+"draftkings"
+],
+[
+"Zach Haliburton",
+"player_steals",
+"Under",
+-115,
+1.5,
+"draftkings"
+],
+[
+"Zach Haliburton",
+"player_steals",
+"Over",
+-110,
+1.5,
+"fanduel"
+],
+[
+"Zach Haliburton",
+"player_steals",
+"Under",
+-120,
+1.5,
+"fanduel"
+],
+[
+"Zach Haliburton",
+"player_blocks",
+"Over",
+-125,
+0.5,
+"draftkings"
+],
+[
+"Zach Haliburton",
+"player_blocks",
+"Under",
+-100,
+0.5,
+"draftkings"
+],
+[
+"Zach Haliburton",
+"player_blocks",
+"Over",
+-120,
+0.5,
+"fanduel"
+],
+[
+"Zach Haliburton",
+"player_blocks",
+"Under",
+-100,
+0.5,
+"fanduel"
+],
+[
+"Zach Haliburton",
+"player_turnovers",
+"Over",
+-105,
+1.5,
+"draftkings"
+],
+[
+"Zach Haliburton",
+"player_turnovers",
+"Under",
+-125,
+1.5,
+"draftkings"
+],
+[
+"Zach Haliburton",
+"player_turnovers",
+"Over",
+-120,
+1.5,
+"fanduel"
+],
+[
+"Zach Haliburton",
+"player_turnovers",
+"Under",
+-110,
+1.5,
+"fanduel"
+],
+[
+"Zach Haliburton",
+"player_points_rebounds_assists",
+"Over",
+-110,
+31.0,
+"draftkings"
+],
+[
+"Zach Haliburton",
+"player_points_rebounds_assists",
+"Under",
+-110,
+31.0,
+"draftkings"
+],
+[
+"Cam Poole",
+"player_points",
+"Over",
+-110,
+16.5,
+"draftkings"
+],
+[
+"Cam Poole",
+"player_points",
+"Under",
+-120,
+16.5,
+"draftkings"
+],
+[
+"Cam Poole",
+"player_points",
+"Over",
+-115,
+16.5,
+"fanduel"
+],
+[
+"Cam Poole",
+"player_points",
+"Under",
+-105,
+16.5,
+"fanduel"
+],
+[
+"Cam Poole",
+"player_rebounds",
+"Over",
+-120,
+7.5,
+"draftkings"
+],
+[
+"Cam Poole",
+"player_rebounds",
+"Under",
+-100,
+7.5,
+"draftkings"
+],
+[
+"Cam Poole",
+"player_rebounds",
+"Over",
+-105,
+7.5,
+"fanduel"
+],
+[
+"Cam Poole",
+"player_rebounds",
+"Under",
+-115,
+7.5,
+"fanduel"
+],
+[
+"Cam Poole",
+"player_assists",
+"Over",
+-110,
+2.5,
+"draftkings"
+],
+[
+"Cam Poole",
+"player_assists",
+"Under",
+-115,
+2.5,
+"draftkings"
+],
+[
+"Cam Poole",
+"player_assists",
+"Over",
+-115,
+2.5,
+"fanduel"
+],
+[
+"Cam Poole",
+"player_assists",
+"Under",
+-105,
+2.5,
+"fanduel"
+],
+[
+"Cam Poole",
+"player_threes",
+"Over",
+-125,
+1.5,
+"draftkings"
+],
+[
+"Cam Poole",
+"player_threes",
+"Under",
+-100,
+1.5,
+"draftkings"
+],
+[
+"Cam Poole",
+"player_threes",
+"Over",
+-115,
+1.5,
+"fanduel"
+],
+[
+"Cam Poole",
+"player_threes",
+"Under",
+-110,
+1.5,
+"fanduel"
+],
+[
+"Cam Poole",
+"player_steals",
+"Over",
+-115,
+0.5,
+"draftkings"
+],
+[
+"Cam Poole",
+"player_steals",
+"Under",
+-105,
+0.5,
+"draftkings"
+],
+[
+"Cam Poole",
+"player_steals",
+"Over",
+-105,
+0.5,
+"fanduel"
+],
+[
+"Cam Poole",
+"player_steals",
+"Under",
+-115,
+0.5,
+"fanduel"
+],
+[
+"Cam Poole",
+"player_blocks",
+"Over",
+-105,
+1.5,
+"draftkings"
+],
+[
+"Cam Poole",
+"player_blocks",
+"Under",
+-120,
+1.5,
+"draftkings"
+],
+[
+"Cam Poole",
+"player_blocks",
+"Over",
+-115,
+1.5,
+"fanduel"
+],
+[
+"Cam Poole",
+"player_blocks",
+"Under",
+-110,
+1.5,
+"fanduel"
+],
+[
+"Cam Poole",
+"player_turnovers",
+"Over",
+-115,
+1.5,
+"draftkings"
+],
+[
+"Cam Poole",
+"player_turnovers",
+"Under",
+-110,
+1.5,
+"draftkings"
+],
+[
+"Cam Poole",
+"player_turnovers",
+"Over",
+-110,
+1.5,
+"fanduel"
+],
+[
+"Cam Poole",
+"player_turnovers",
+"Under",
+-110,
+1.5,
+"fanduel"
+],
+[
+"Cam Poole",
+"player_points_rebounds_assists",
+"Over",
+-110,
+27.5,
+"draftkings"
+],
+[
+"Cam Poole",
+"player_points_rebounds_assists",
+"Under",
+-110,
+27.5,
+"draftkings"
+],
+[
+"Malik Williams",
+"player_points",
+"Over",
+-125,
+11.5,
+"draftkings"
+],
+[
+"Malik Williams",
+"player_points",
+"Under",
+-95,
+11.5,
+"draftkings"
+],
+[
+"Malik Williams",
+"player_points",
+"Over",
+-125,
+11.5,
+"fanduel"
+],
+[
+"Malik Williams",
+"player_points",
+"Under",
+-105,
+11.5,
+"fanduel"
+],
+[
+"Malik Williams",
+"player_rebounds",
+"Over",
+-110,
+8.5,
+"draftkings"
+],
+[
+"Malik Williams",
+"player_rebounds",
+"Under",
+-120,
+8.5,
+"draftkings"
+],
+[
+"Malik Williams",
+"player_rebounds",
+"Over",
+-110,
+8.5,
+"fanduel"
+],
+[
+"Malik Williams",
+"player_rebounds",
+"Under",
+-115,
+8.5,
+"fanduel"
+],
+[
+"Malik Williams",
+"player_assists",
+"Over",
+-105,
+1.5,
+"draftkings"
+],
+[
+"Malik Williams",
+"player_assists",
+"Under",
+-120,
+1.5,
+"draftkings"
+],
+[
+"Malik Williams",
+"player_assists",
+"Over",
+-120,
+1.5,
+"fanduel"
+],
+[
+"Malik Williams",
+"player_assists",
+"Under",
+-110,
+1.5,
+"fanduel"
+],
+[
+"Malik Williams",
+"player_threes",
+"Over",
+-105,
+0.5,
+"draftkings"
+],
+[
+"Malik Williams",
+"player_threes",
+"Under",
+-125,
+0.5,
+"draftkings"
+],
+[
+"MALIK WILLIAMS",
+"player_threes",
+"Over",
+-120,
+0.5,
+"fanduel"
+],
+[
+"MALIK WILLIAMS",
+"player_threes",
+"Under",
+-105,
+0.5,
+"fanduel"
+],
+[
+"Malik Williams",
+"player_steals",
+"Over",
+-115,
+0.5,
+"draftkings"
+],
+[
+"Malik Williams",
+"player_steals",
+"Under",
+-110,
+0.5,
+"draftkings"
+],
+[
+"Malik Williams",
+"player_steals",
+"Over",
+-110,
+0.5,
+"fanduel"
+],
+[
+"Malik Williams",
+"player_steals",
+"Under",
+-120,
+0.5,
+"fanduel"
+],
+[
+"Malik Williams",
+"player_blocks",
+"Over",
+-115,
+1.5,
+"draftkings"
+],
+[
+"Malik Williams",
+"player_blocks",
+"Under",
+-115,
+1.5,
+"draftkings"
+],
+[
+"Malik Williams",
+"player_blocks",
+"Over",
+-105,
+1.5,
+"fanduel"
+],
+[
+"Malik Williams",
+"player_blocks",
+"Under",
+-120,
+1.5,
+"fanduel"
+],
+[
+"Malik Williams",
+"player_turnovers",
+"Over",
+-125,
+1.5,
+"draftkings"
+],
+[
+"Malik Williams",
+"player_turnovers",
+"Under",
+-95,
+1.5,
+"draftkings"
+],
+[
+"Malik Williams",
+"player_turnovers",
+"Over",
+-125,
+1.5,
+"fanduel"
+],
+[
+"Malik Williams",
+"player_turnovers",
+"Under",
+-105,
+1.5,
+"fanduel"
+],
+[
+"Malik Williams",
+"player_points_rebounds_assists",
+"Over",
+-110,
+22.5,
+"draftkings"
+],
+[
+"Malik Williams",
+"player_points_rebounds_assists",
+"Under",
+-110,
+22.5,
+"draftkings"
+],
+[
+"Kyle Davis",
+"player_points",
+"Over",
+-110,
+11.5,
+"draftkings"
+],
+[
+"Kyle Davis",
+"player_points",
+"Under",
+-115,
+11.5,
+"draftkings"
+],
+[
+"Kyle Davis",
+"player_points",
+"Over",
+-110,
+11.5,
+"fanduel"
+],
+[
+"Kyle Davis",
+"player_points",
+"Under",
+-115,
+11.5,
+"fanduel"
+],
+[
+"Kyle Davis",
+"player_rebounds",
+"Over",
+-110,
+2.5,
+"draftkings"
+],
+[
+"Kyle Davis",
+"player_rebounds",
+"Under",
+-120,
+2.5,
+"draftkings"
+],
+[
+"Kyle Davis",
+"player_rebounds",
+"Over",
+-110,
+2.5,
+"fanduel"
+],
+[
+"Kyle Davis",
+"player_rebounds",
+"Under",
+-110,
+2.5,
+"fanduel"
+],
+[
+"Kyle Davis",
+"player_assists",
+"Over",
+-105,
+3.5,
+"draftkings"
+],
+[
+"Kyle Davis",
+"player_assists",
+"Under",
+-120,
+3.5,
+"draftkings"
+],
+[
+"Kyle Davis",
+"player_assists",
+"Over",
+-125,
+3.5,
+"fanduel"
+],
+[
+"Kyle Davis",
+"player_assists",
+"Under",
+-95,
+3.5,
+"fanduel"
+],
+[
+"Kyle Davis",
+"player_threes",
+"Over",
+-115,
+1.5,
+"draftkings"
+],
+[
+"Kyle Davis",
+"player_threes",
+"Under",
+-105,
+1.5,
+"draftkings"
+],
+[
+"Kyle Davis",
+"player_threes",
+"Over",
+-115,
+1.5,
+"fanduel"
+],
+[
+"Kyle Davis",
+"player_threes",
+"Under",
+-110,
+1.5,
+"fanduel"
+],
+[
+"Kyle Davis",
+"player_steals",
+"Over",
+-115,
+1.5,
+"draftkings"
+],
+[
+"Kyle Davis",
+"player_steals",
+"Under",
+-105,
+1.5,
+"draftkings"
+],
+[
+"Kyle Davis",
+"player_steals",
+"Over",
+-125,
+1.5,
+"fanduel"
+],
+[
+"Kyle Davis",
+"player_steals",
+"Under",
+-100,
+1.5,
+"fanduel"
+],
+[
+"Kyle Davis",
+"player_blocks",
+"Over",
+-110,
+0.5,
+"draftkings"
+],
+[
+"Kyle Davis",
+"player_blocks",
+"Under",
+-115,
+0.5,
+"draftkings"
+],
+[
+"KYLE DAVIS",
+"player_blocks",
+"Over",
+-110,
+0.5,
+"fanduel"
+],
+[
+"KYLE DAVIS",
+"player_blocks",
+"Under",
+-110,
+0.5,
+"fanduel"
+],
+[
+"Kyle Davis",
+"player_turnovers",
+"Over",
+-105,
+1.5,
+"draftkings"
+],
+[
+"Kyle Davis",
+"player_turnovers",
+"Under",
+-120,
+1.5,
+"draftkings"
+],
+[
+"Kyle Davis",
+"player_turnovers",
+"Over",
+-120,
+1.5,
+"fanduel"
+],
+[
+"Kyle Davis",
+"player_turnovers",
+"Under",
+-100,
+1.5,
+"fanduel"
+],
+[
+"Kyle Davis",
+"player_points_rebounds_assists",
+"Over",
+-110,
+18.0,
+"draftkings"
+],
+[
+"Kyle Davis",
+"player_points_rebounds_assists",
+"Under",
+-110,
+18.0,
+"draftkings"
+],
+[
+"Payton Pritchard",
+"player_points",
+"Over",
+-125,
+9.5,
+"draftkings"
+],
+[
+"Payton Pritchard",
+"player_points",
+"Under",
+-95,
+9.5,
+"draftkings"
+],
+[
+"Payton Pritchard",
+"player_points",
+"Over",
+-110,
+9.5,
+"fanduel"
+],
+[
+"Payton Pritchard",
+"player_points",
+"Under",
+-120,
+9.5,
+"fanduel"
+],
+[
+"Payton Pritchard",
+"player_rebounds",
+"Over",
+-120,
+4.5,
+"draftkings"
+],
+[
+"Payton Pritchard",
+"player_rebounds",
+"Under",
+-110,
+4.5,
+"draftkings"
+],
+[
+"Payton Pritchard",
+"player_rebounds",
+"Over",
+-105,
+4.5,
+"fanduel"
+],
+[
+"Payton Pritchard",
+"player_rebounds",
+"Under",
+-125,
+4.5,
+"fanduel"
+],
+[
+"Payton Pritchard",
+"player_assists",
+"Over",
+-115,
+1.5,
+"draftkings"
+],
+[
+"Payton Pritchard",
+"player_assists",
+"Under",
+-110,
+1.5,
+"draftkings"
+],
+[
+"Payton Pritchard",
+"player_assists",
+"Over",
+-120,
+1.5,
+"fanduel"
+],
+[
+"Payton Pritchard",
+"player_assists",
+"Under",
+-110,
+1.5,
+"fanduel"
+],
+[
+"Payton Pritchard",
+"player_threes",
+"Over",
+-125,
+1.5,
+"draftkings"
+],
+[
+"Payton Pritchard",
+"player_threes",
+"Under",
+-105,
+1.5,
+"draftkings"
+],
+[
+"PAYTON PRITCHARD",
+"player_threes",
+"Over",
+-120,
+1.5,
+"fanduel"
+],
+[
+"PAYTON PRITCHARD",
+"player_threes",
+"Under",
+-105,
+1.5,
+"fanduel"
+],
+[
+"Payton Pritchard",
+"player_steals",
+"Over",
+-125,
+0.5,
+"draftkings"
+],
+[
+"Payton Pritchard",
+"player_steals",
+"Under",
+-105,
+0.5,
+"draftkings"
+],
+[
+"Payton Pritchard",
+"player_steals",
+"Over",
+-110,
+0.5,
+"fanduel"
+],
+[
+"Payton Pritchard",
+"player_steals",
+"Under",
+-120,
+0.5,
+"fanduel"
+],
+[
+"Payton Pritchard",
+"player_blocks",
+"Over",
+-115,
+0.5,
+"draftkings"
+],
+[
+"Payton Pritchard",
+"player_blocks",
+"Under",
+-110,
+0.5,
+"draftkings"
+],
+[
+"PAYTON PRITCHARD",
+"player_blocks",
+"Over",
+-115,
+0.5,
+"fanduel"
+],
+[
+"PAYTON PRITCHARD",
+"player_blocks",
+"Under",
+-115,
+0.5,
+"fanduel"
+],
+[
+"Payton Pritchard",
+"player_turnovers",
+"Over",
+-120,
+1.5,
+"draftkings"
+],
+[
+"Payton Pritchard",
+"player_turnovers",
+"Under",
+-110,
+1.5,
+"draftkings"
+],
+[
+"Payton Pritchard",
+"player_turnovers",
+"Over",
+-120,
+1.5,
+"fanduel"
+],
+[
+"Payton Pritchard",
+"player_turnovers",
+"Under",
+-110,
+1.5,
+"fanduel"
+],
+[
+"Payton Pritchard",
+"player_points_rebounds_assists",
+"Over",
+-110,
+16.0,
+"draftkings"
+],
+[
+"Payton Pritchard",
+"player_points_rebounds_assists",
+"Under",
+-110,
+16.0,
+"draftkings"
+],
+[
+"Jalen Booker",
+"player_points",
+"Over",
+-125,
+6.5,
+"draftkings"
+],
+[
+"Jalen Booker",
+"player_points",
+"Under",
+-105,
+6.5,
+"draftkings"
+],
+[
+"Jalen Booker",
+"player_points",
+"Over",
+-115,
+6.5,
+"fanduel"
+],
+[
+"Jalen Booker",
+"player_points",
+"Under",
+-115,
+6.5,
+"fanduel"
+],
+[
+"Jalen Booker",
+"player_rebounds",
+"Over",
+-105,
+4.5,
+"draftkings"
+],
+[
+"Jalen Booker",
+"player_rebounds",
+"Under",
+-120,
+4.5,
+"draftkings"
+],
+[
+"Jalen Booker",
+"player_rebounds",
+"Over",
+-110,
+4.5,
+"fanduel"
+],
+[
+"Jalen Booker",
+"player_rebounds",
+"Under",
+-120,
+4.5,
+"fanduel"
+],
+[
+"Jalen Booker",
+"player_assists",
+"Over",
+-125,
+0.5,
+"draftkings"
+],
+[
+"Jalen Booker",
+"player_assists",
+"Under",
+-100,
+0.5,
+"draftkings"
+],
+[
+"JALEN BOOKER",
+"player_assists",
+"Over",
+-125,
+0.5,
+"fanduel"
+],
+[
+"JALEN BOOKER",
+"player_assists",
+"Under",
+-100,
+0.5,
+"fanduel"
+],
+[
+"Jalen Booker",
+"player_threes",
+"Over",
+-125,
+0.5,
+"draftkings"
+],
+[
+"Jalen Booker",
+"player_threes",
+"Under",
+-95,
+0.5,
+"draftkings"
+],
+[
+"Jalen Booker",
+"player_threes",
+"Over",
+-120,
+0.5,
+"fanduel"
+],
+[
+"Jalen Booker",
+"player_threes",
+"Under",
+-105,
+0.5,
+"fanduel"
+],
+[
+"Jalen Booker",
+"player_steals",
+"Over",
+-120,
+0.5,
+"draftkings"
+],
+[
+"Jalen Booker",
+"player_steals",
+"Under",
+-110,
+0.5,
+"draftkings"
+],
+[
+"JALEN BOOKER",
+"player_steals",
+"Over",
+-125,
+0.5,
+"fanduel"
+],
+[
+"JALEN BOOKER",
+"player_steals",
+"Under",
+-100,
+0.5,
+"fanduel"
+],
+[
+"Jalen Booker",
+"player_blocks",
+"Over",
+-120,
+0.5,
+"draftkings"
+],
+[
+"Jalen Booker",
+"player_blocks",
+"Under",
+-105,
+0.5,
+"draftkings"
+],
+[
+"Jalen Booker",
+"player_blocks",
+"Over",
+-105,
+0.5,
+"fanduel"
+],
+[
+"Jalen Booker",
+"player_blocks",
+"Under",
+-125,
+0.5,
+"fanduel"
+],
+[
+"Jalen Booker",
+"player_turnovers",
+"Over",
+-110,
+0.5,
+"draftkings"
+],
+[
+"Jalen Booker",
+"player_turnovers",
+"Under",
+-110,
+0.5,
+"draftkings"
+],
+[
+"Jalen Booker",
+"player_turnovers",
+"Over",
+-120,
+0.5,
+"fanduel"
+],
+[
+"Jalen Booker",
+"player_turnovers",
+"Under",
+-110,
+0.5,
+"fanduel"
+],
+[
+"Jalen Booker",
+"player_points_rebounds_assists",
+"Over",
+-110,
+13.0,
+"draftkings"
+],
+[
+"Jalen Booker",
+"player_points_rebounds_assists",
+"Under",
+-110,
+13.0,
+"draftkings"
+],
+[
+"Devin Murphy",
+"player_points",
+"Over",
+-110,
+22.5,
+"draftkings"
+],
+[
+"Devin Murphy",
+"player_points",
+"Under",
+-110,
+22.5,
+"draftkings"
+],
+[
+"Devin Murphy",
+"player_points",
+"Over",
+-125,
+22.5,
+"fanduel"
+],
+[
+"Devin Murphy",
+"player_points",
+"Under",
+-95,
+22.5,
+"fanduel"
+],
+[
+"Devin Murphy",
+"player_rebounds",
+"Over",
+-115,
+4.5,
+"draftkings"
+],
+[
+"Devin Murphy",
+"player_rebounds",
+"Under",
+-110,
+4.5,
+"draftkings"
+],
+[
+"Devin Murphy",
+"player_rebounds",
+"Over",
+-120,
+4.5,
+"fanduel"
+],
+[
+"Devin Murphy",
+"player_rebounds",
+"Under",
+-100,
+4.5,
+"fanduel"
+],
+[
+"Devin Murphy",
+"player_assists",
+"Over",
+-105,
+7.5,
+"draftkings"
+],
+[
+"Devin Murphy",
+"player_assists",
+"Under",
+-125,
+7.5,
+"draftkings"
+],
+[
+"Devin Murphy",
+"player_assists",
+"Over",
+-115,
+7.5,
+"fanduel"
+],
+[
+"Devin Murphy",
+"player_assists",
+"Under",
+-105,
+7.5,
+"fanduel"
+],
+[
+"Devin Murphy",
+"player_threes",
+"Over",
+-125,
+2.5,
+"draftkings"
+],
+[
+"Devin Murphy",
+"player_threes",
+"Under",
+-105,
+2.5,
+"draftkings"
+],
+[
+"Devin Murphy",
+"player_threes",
+"Over",
+-110,
+2.5,
+"fanduel"
+],
+[
+"Devin Murphy",
+"player_threes",
+"Under",
+-120,
+2.5,
+"fanduel"
+],
+[
+"Devin Murphy",
+"player_steals",
+"Over",
+-125,
+1.5,
+"draftkings"
+],
+[
+"Devin Murphy",
+"player_steals",
+"Under",
+-95,
+1.5,
+"draftkings"
+],
+[
+"Devin Murphy",
+"player_steals",
+"Over",
+-120,
+1.5,
+"fanduel"
+],
+[
+"Devin Murphy",
+"player_steals",
+"Under",
+-105,
+1.5,
+"fanduel"
+],
+[
+"Devin Murphy",
+"player_blocks",
+"Over",
+-115,
+0.5,
+"draftkings"
+],
+[
+"Devin Murphy",
+"player_blocks",
+"Under",
+-110,
+0.5,
+"draftkings"
+],
+[
+"Devin Murphy",
+"player_blocks",
+"Over",
+-120,
+0.5,
+"fanduel"
+],
+[
+"Devin Murphy",
+"player_blocks",
+"Under",
+-100,
+0.5,
+"fanduel"
+],
+[
+"Devin Murphy",
+"player_turnovers",
+"Over",
+-115,
+3.5,
+"draftkings"
+],
+[
+"Devin Murphy",
+"player_turnovers",
+"Under",
+-115,
+3.5,
+"draftkings"
+],
+[
+"Devin Murphy",
+"player_turnovers",
+"Over",
+-115,
+3.5,
+"fanduel"
+],
+[
+"Devin Murphy",
+"player_turnovers",
+"Under",
+-110,
+3.5,
+"fanduel"
+],
+[
+"Devin Murphy",
+"player_points_rebounds_assists",
+"Over",
+-110,
+34.0,
+"draftkings"
+],
+[
+"Devin Murphy",
+"player_points_rebounds_assists",
+"Under",
+-110,
+34.0,
+"draftkings"
+],
+[
+"Derrick DiVincenzo",
+"player_points",
+"Over",
+-115,
+20.5,
+"draftkings"
+],
+[
+"Derrick DiVincenzo",
+"player_points",
+"Under",
+-110,
+20.5,
+"draftkings"
+],
+[
+"Derrick DiVincenzo",
+"player_points",
+"Over",
+-115,
+20.5,
+"fanduel"
+],
+[
+"Derrick DiVincenzo",
+"player_points",
+"Under",
+-115,
+20.5,
+"fanduel"
+],
+[
+"Derrick DiVincenzo",
+"player_rebounds",
+"Over",
+-105,
+4.5,
+"draftkings"
+],
+[
+"Derrick DiVincenzo",
+"player_rebounds",
+"Under",
+-120,
+4.5,
+"draftkings"
+],
+[
+"DERRICK DIVINCENZO",
+"player_rebounds",
+"Over",
+-105,
+4.5,
+"fanduel"
+],
+[
+"DERRICK DIVINCENZO",
+"player_rebounds",
+"Under",
+-125,
+4.5,
+"fanduel"
+],
+[
+"Derrick DiVincenzo",
+"player_assists",
+"Over",
+-115,
+3.5,
+"draftkings"
+],
+[
+"Derrick DiVincenzo",
+"player_assists",
+"Under",
+-115,
+3.5,
+"draftkings"
+],
+[
+"Derrick DiVincenzo",
+"player_assists",
+"Over",
+-105,
+3.5,
+"fanduel"
+],
+[
+"Derrick DiVincenzo",
+"player_assists",
+"Under",
+-125,
+3.5,
+"fanduel"
+],
+[
+"Derrick DiVincenzo",
+"player_threes",
+"Over",
+-115,
+2.5,
+"draftkings"
+],
+[
+"Derrick DiVincenzo",
+"player_threes",
+"Under",
+-110,
+2.5,
+"draftkings"
+],
+[
+"DERRICK DIVINCENZO",
+"player_threes",
+"Over",
+-110,
+2.5,
+"fanduel"
+],
+[
+"DERRICK DIVINCENZO",
+"player_threes",
+"Under",
+-115,
+2.5,
+"fanduel"
+],
+[
+"Derrick DiVincenzo",
+"player_steals",
+"Over",
+-105,
+0.5,
+"draftkings"
+],
+[
+"Derrick DiVincenzo",
+"player_steals",
+"Under",
+-115,
+0.5,
+"draftkings"
+],
+[
+"Derrick DiVincenzo",
+"player_steals",
+"Over",
+-115,
+0.5,
+"fanduel"
+],
+[
+"Derrick DiVincenzo",
+"player_steals",
+"Under",
+-115,
+0.5,
+"fanduel"
+],
+[
+"Derrick DiVincenzo",
+"player_blocks",
+"Over",
+-110,
+0.5,
+"draftkings"
+],
+[
+"Derrick DiVincenzo",
+"player_blocks",
+"Under",
+-110,
+0.5,
+"draftkings"
+],
+[
+"Derrick DiVincenzo",
+"player_blocks",
+"Over",
+-105,
+0.5,
+"fanduel"
+],
+[
+"Derrick DiVincenzo",
+"player_blocks",
+"Under",
+-120,
+0.5,
+"fanduel"
+],
+[
+"Derrick DiVincenzo",
+"player_turnovers",
+"Over",
+-120,
+1.5,
+"draftkings"
+],
+[
+"Derrick DiVincenzo",
+"player_turnovers",
+"Under",
+-105,
+1.5,
+"draftkings"
+],
+[
+"Derrick DiVincenzo",
+"player_turnovers",
+"Over",
+-105,
+1.5,
+"fanduel"
+],
+[
+"Derrick DiVincenzo",
+"player_turnovers",
+"Under",
+-125,
+1.5,
+"fanduel"
+],
+[
+"Derrick DiVincenzo",
+"player_points_rebounds_assists",
+"Over",
+-110,
+28.0,
+"draftkings"
+],
+[
+"Derrick DiVincenzo",
+"player_points_rebounds_assists",
+"Under",
+-110,
+28.0,
+"draftkings"
+],
+[
+"Kyle Murphy",
+"player_points",
+"Over",
+-115,
+18.5,
+"draftkings"
+],
+[
+"Kyle Murphy",
+"player_points",
+"Under",
+-105,
+18.5,
+"draftkings"
+],
+[
+"Kyle Murphy",
+"player_points",
+"Over",
+-125,
+18.5,
+"fanduel"
+],
+[
+"Kyle Murphy",
+"player_points",
+"Under",
+-105,
+18.5,
+"fanduel"
+],
+[
+"Kyle Murphy",
+"player_rebounds",
+"Over",
+-120,
+6.5,
+"draftkings"
+],
+[
+"Kyle Murphy",
+"player_rebounds",
+"Under",
+-105,
+6.5,
+"draftkings"
+],
+[
+"Kyle Murphy",
+"player_rebounds",
+"Over",
+-120,
+6.5,
+"fanduel"
+],
+[
+"Kyle Murphy",
+"player_rebounds",
+"Under",
+-110,
+6.5,
+"fanduel"
+],
+[
+"Kyle Murphy",
+"player_assists",
+"Over",
+-125,
+2.5,
+"draftkings"
+],
+[
+"Kyle Murphy",
+"player_assists",
+"Under",
+-100,
+2.5,
+"draftkings"
+],
+[
+"Kyle Murphy",
+"player_assists",
+"Over",
+-105,
+2.5,
+"fanduel"
+],
+[
+"Kyle Murphy",
+"player_assists",
+"Under",
+-125,
+2.5,
+"fanduel"
+],
+[
+"Kyle Murphy",
+"player_threes",
+"Over",
+-120,
+2.5,
+"draftkings"
+],
+[
+"Kyle Murphy",
+"player_threes",
+"Under",
+-100,
+2.5,
+"draftkings"
+],
+[
+"Kyle Murphy",
+"player_threes",
+"Over",
+-115,
+2.5,
+"fanduel"
+],
+[
+"Kyle Murphy",
+"player_threes",
+"Under",
+-110,
+2.5,
+"fanduel"
+],
+[
+"Kyle Murphy",
+"player_steals",
+"Over",
+-115,
+1.5,
+"draftkings"
+],
+[
+"Kyle Murphy",
+"player_steals",
+"Under",
+-110,
+1.5,
+"draftkings"
+],
+[
+"Kyle Murphy",
+"player_steals",
+"Over",
+-125,
+1.5,
+"fanduel"
+],
+[
+"Kyle Murphy",
+"player_steals",
+"Under",
+-100,
+1.5,
+"fanduel"
+],
+[
+"Kyle Murphy",
+"player_blocks",
+"Over",
+-105,
+0.5,
+"draftkings"
+],
+[
+"Kyle Murphy",
+"player_blocks",
+"Under",
+-120,
+0.5,
+"draftkings"
+],
+[
+"Kyle Murphy",
+"player_blocks",
+"Over",
+-105,
+0.5,
+"fanduel"
+],
+[
+"Kyle Murphy",
+"player_blocks",
+"Under",
+-125,
+0.5,
+"fanduel"
+],
+[
+"Kyle Murphy",
+"player_turnovers",
+"Over",
+-110,
+1.5,
+"draftkings"
+],
+[
+"Kyle Murphy",
+"player_turnovers",
+"Under",
+-110,
+1.5,
+"draftkings"
+],
+[
+"KYLE MURPHY",
+"player_turnovers",
+"Over",
+-120,
+1.5,
+"fanduel"
+],
+[
+"KYLE MURPHY",
+"player_turnovers",
+"Under",
+-110,
+1.5,
+"fanduel"
+],
+[
+"Kyle Murphy",
+"player_points_rebounds_assists",
+"Over",
+-110,
+28.5,
+"draftkings"
+],
+[
+"Kyle Murphy",
+"player_points_rebounds_assists",
+"Under",
+-110,
+28.5,
+"draftkings"
+],
+[
+"Kyle Booker",
+"player_points",
+"Over",
+-110,
+17.5,
+"draftkings"
+],
+[
+"Kyle Booker",
+"player_points",
+"Under",
+-115,
+17.5,
+"draftkings"
+],
+[
+"Kyle Booker",
+"player_points",
+"Over",
+-115,
+17.5,
+"fanduel"
+],
+[
+"Kyle Booker",
+"player_points",
+"Under",
+-115,
+17.5,
+"fanduel"
+],
+[
+"Kyle Booker",
+"player_rebounds",
+"Over",
+-110,
+8.5,
+"draftkings"
+],
+[
+"Kyle Booker",
+"player_rebounds",
+"Under",
+-115,
+8.5,
+"draftkings"
+],
+[
+"Kyle Booker",
+"player_rebounds",
+"Over",
+-120,
+8.5,
+"fanduel"
+],
+[
+"Kyle Booker",
+"player_rebounds",
+"Under",
+-100,
+8.5,
+"fanduel"
+],
+[
+"Kyle Booker",
+"player_assists",
+"Over",
+-105,
+2.5,
+"draftkings"
+],
+[
+"Kyle Booker",
+"player_assists",
+"Under",
+-120,
+2.5,
+"draftkings"
+],
+[
+"Kyle Booker",
+"player_assists",
+"Over",
+-105,
+2.5,
+"fanduel"
+],
+[
+"Kyle Booker",
+"player_assists",
+"Under",
+-115,
+2.5,
+"fanduel"
+],
+[
+"Kyle Booker",
+"player_threes",
+"Over",
+-120,
+1.5,
+"draftkings"
+],
+[
+"Kyle Booker",
+"player_threes",
+"Under",
+-100,
+1.5,
+"draftkings"
+],
+[
+"Kyle Booker",
+"player_threes",
+"Over",
+-120,
+1.5,
+"fanduel"
+],
+[
+"Kyle Booker",
+"player_threes",
+"Under",
+-100,
+1.5,
+"fanduel"
+],
+[
+"Kyle Booker",
+"player_steals",
+"Over",
+-125,
+0.5,
+"draftkings"
+],
+[
+"Kyle Booker",
+"player_steals",
+"Under",
+-95,
+0.5,
+"draftkings"
+],
+[
+"Kyle Booker",
+"player_steals",
+"Over",
+-105,
+0.5,
+"fanduel"
+],
+[
+"Kyle Booker",
+"player_steals",
+"Under",
+-120,
+0.5,
+"fanduel"
+],
+[
+"Kyle Booker",
+"player_blocks",
+"Over",
+-105,
+1.5,
+"draftkings"
+],
+[
+"Kyle Booker",
+"player_blocks",
+"Under",
+-125,
+1.5,
+"draftkings"
+],
+[
+"Kyle Booker",
+"player_blocks",
+"Over",
+-125,
+1.5,
+"fanduel"
+],
+[
+"Kyle Booker",
+"player_blocks",
+"Under",
+-100,
+1.5,
+"fanduel"
+],
+[
+"Kyle Booker",
+"player_turnovers",
+"Over",
+-110,
+1.5,
+"draftkings"
+],
+[
+"Kyle Booker",
+"player_turnovers",
+"Under",
+-115,
+1.5,
+"draftkings"
+],
+[
+"Kyle Booker",
+"player_turnovers",
+"Over",
+-110,
+1.5,
+"fanduel"
+],
+[
+"Kyle Booker",
+"player_turnovers",
+"Under",
+-115,
+1.5,
+"fanduel"
+],
+[
+"Kyle Booker",
+"player_points_rebounds_assists",
+"Over",
+-110,
+30.5,
+"draftkings"
+],
+[
+"Kyle Booker",
+"player_points_rebounds_assists",
+"Under",
+-110,
+30.5,
+"draftkings"
+],
+[
+"Nikola Jokic",
+"player_points",
+"Over",
+-120,
+27.5,
+"draftkings"
+],
+[
+"Nikola Jokic",
+"player_points",
+"Under",
+-110,
+27.5,
+"draftkings"
+],
+[
+"NIKOLA JOKIC",
+"player_points",
+"Over",
+-105,
+27.5,
+"fanduel"
+],
+[
+"NIKOLA JOKIC",
+"player_points",
+"Under",
+-120,
+27.5,
+"fanduel"
+],
+[
+"Nikola Jokic",
+"player_rebounds",
+"Over",
+-105,
+8.5,
+"draftkings"
+],
+[
+"Nikola Jokic",
+"player_rebounds",
+"Under",
+-120,
+8.5,
+"draftkings"
+],
+[
+"Nikola Jokic",
+"player_rebounds",
+"Over",
+-125,
+8.5,
+"fanduel"
+],
+[
+"Nikola Jokic",
+"player_rebounds",
+"Under",
+-100,
+8.5,
+"fanduel"
+],
+[
+"Nikola Jokic",
+"player_assists",
+"Over",
+-115,
+7.5,
+"draftkings"
+],
+[
+"Nikola Jokic",
+"player_assists",
+"Under",
+-115,
+7.5,
+"draftkings"
+],
+[
+"Nikola Jokic",
+"player_assists",
+"Over",
+-120,
+7.5,
+"fanduel"
+],
+[
+"Nikola Jokic",
+"player_assists",
+"Under",
+-105,
+7.5,
+"fanduel"
+],
+[
+"Nikola Jokic",
+"player_points_rebounds_assists",
+"Over",
+-110,
+44.5,
+"draftkings"
+],
+[
+"Nikola Jokic",
+"player_points_rebounds_assists",
+"Under",
+-110,
+44.5,
+"draftkings"
+],
+[
+"Malik Brunson",
+"player_points",
+"Over",
+-110,
+11.5,
+"draftkings"
+],
+[
+"Malik Brunson",
+"player_points",
+"Under",
+-120,
+11.5,
+"draftkings"
+],
+[
+"Malik Brunson",
+"player_points",
+"Over",
+-110,
+11.5,
+"fanduel"
+],
+[
+"Malik Brunson",
+"player_points",
+"Under",
+-120,
+11.5,
+"fanduel"
+],
+[
+"Malik Brunson",
+"player_rebounds",
+"Over",
+-125,
+2.5,
+"draftkings"
+],
+[
+"Malik Brunson",
+"player_rebounds",
+"Under",
+-100,
+2.5,
+"draftkings"
+],
+[
+"MALIK BRUNSON",
+"player_rebounds",
+"Over",
+-110,
+2.5,
+"fanduel"
+],
+[
+"MALIK BRUNSON",
+"player_rebounds",
+"Under",
+-115,
+2.5,
+"fanduel"
+],
+[
+"Malik Brunson",
+"player_assists",
+"Over",
+-120,
+3.5,
+"draftkings"
+],
+[
+"Malik Brunson",
+"player_assists",
+"Under",
+-105,
+3.5,
+"draftkings"
+],
+[
+"Malik Brunson",
+"player_assists",
+"Over",
+-120,
+3.5,
+"fanduel"
+],
+[
+"Malik Brunson",
+"player_assists",
+"Under",
+-100,
+3.5,
+"fanduel"
+],
+[
+"Malik Brunson",
+"player_threes",
+"Over",
+-125,
+1.5,
+"draftkings"
+],
+[
+"Malik Brunson",
+"player_threes",
+"Under",
+-100,
+1.5,
+"draftkings"
+],
+[
+"Malik Brunson",
+"player_threes",
+"Over",
+-105,
+1.5,
+"fanduel"
+],
+[
+"Malik Brunson",
+"player_threes",
+"Under",
+-120,
+1.5,
+"fanduel"
+],
+[
+"Malik Brunson",
+"player_steals",
+"Over",
+-115,
+0.5,
+"draftkings"
+],
+[
+"Malik Brunson",
+"player_steals",
+"Under",
+-115,
+0.5,
+"draftkings"
+],
+[
+"Malik Brunson",
+"player_steals",
+"Over",
+-115,
+0.5,
+"fanduel"
+],
+[
+"Malik Brunson",
+"player_steals",
+"Under",
+-110,
+0.5,
+"fanduel"
+],
+[
+"Malik Brunson",
+"player_blocks",
+"Over",
+-115,
+0.5,
+"draftkings"
+],
+[
+"Malik Brunson",
+"player_blocks",
+"Under",
+-115,
+0.5,
+"draftkings"
+],
+[
+"Malik Brunson",
+"player_blocks",
+"Over",
+-110,
+0.5,
+"fanduel"
+],
+[
+"Malik Brunson",
+"player_blocks",
+"Under",
+-120,
+0.5,
+"fanduel"
+],
+[
+"Malik Brunson",
+"player_turnovers",
+"Over",
+-125,
+1.5,
+"draftkings"
+],
+[
+"Malik Brunson",
+"player_turnovers",
+"Under",
+-100,
+1.5,
+"draftkings"
+],
+[
+"Malik Brunson",
+"player_turnovers",
+"Over",
+-125,
+1.5,
+"fanduel"
+],
+[
+"Malik Brunson",
+"player_turnovers",
+"Under",
+-95,
+1.5,
+"fanduel"
+],
+[
+"Malik Brunson",
+"player_points_rebounds_assists",
+"Over",
+-110,
+17.5,
+"draftkings"
+],
+[
+"Malik Brunson",
+"player_points_rebounds_assists",
+"Under",
+-110,
+17.5,
+"draftkings"
+],
+[
+"Luke Stewart",
+"player_points",
+"Over",
+-110,
+8.5,
+"draftkings"
+],
+[
+"Luke Stewart",
+"player_points",
+"Under",
+-115,
+8.5,
+"draftkings"
+],
+[
+"Luke Stewart",
+"player_points",
+"Over",
+-115,
+8.5,
+"fanduel"
+],
+[
+"Luke Stewart",
+"player_points",
+"Under",
+-115,
+8.5,
+"fanduel"
+],
+[
+"Luke Stewart",
+"player_rebounds",
+"Over",
+-115,
+3.5,
+"draftkings"
+],
+[
+"Luke Stewart",
+"player_rebounds",
+"Under",
+-105,
+3.5,
+"draftkings"
+],
+[
+"Luke Stewart",
+"player_rebounds",
+"Over",
+-115,
+3.5,
+"fanduel"
+],
+[
+"Luke Stewart",
+"player_rebounds",
+"Under",
+-105,
+3.5,
+"fanduel"
+],
+[
+"Luke Stewart",
+"player_assists",
+"Over",
+-120,
+1.5,
+"draftkings"
+],
+[
+"Luke Stewart",
+"player_assists",
+"Under",
+-110,
+1.5,
+"draftkings"
+],
+[
+"Luke Stewart",
+"player_assists",
+"Over",
+-105,
+1.5,
+"fanduel"
+],
+[
+"Luke Stewart",
+"player_assists",
+"Under",
+-120,
+1.5,
+"fanduel"
+],
+[
+"Luke Stewart",
+"player_threes",
+"Over",
+-125,
+1.5,
+"draftkings"
+],
+[
+"Luke Stewart",
+"player_threes",
+"Under",
+-100,
+1.5,
+"draftkings"
+],
+[
+"Luke Stewart",
+"player_threes",
+"Over",
+-115,
+1.5,
+"fanduel"
+],
+[
+"Luke Stewart",
+"player_threes",
+"Under",
+-115,
+1.5,
+"fanduel"
+],
+[
+"Luke Stewart",
+"player_steals",
+"Over",
+-105,
+0.5,
+"draftkings"
+],
+[
+"Luke Stewart",
+"player_steals",
+"Under",
+-125,
+0.5,
+"draftkings"
+],
+[
+"Luke Stewart",
+"player_steals",
+"Over",
+-115,
+0.5,
+"fanduel"
+],
+[
+"Luke Stewart",
+"player_steals",
+"Under",
+-115,
+0.5,
+"fanduel"
+],
+[
+"Luke Stewart",
+"player_blocks",
+"Over",
+-110,
+0.5,
+"draftkings"
+],
+[
+"Luke Stewart",
+"player_blocks",
+"Under",
+-110,
+0.5,
+"draftkings"
+],
+[
+"Luke Stewart",
+"player_blocks",
+"Over",
+-110,
+0.5,
+"fanduel"
+],
+[
+"Luke Stewart",
+"player_blocks",
+"Under",
+-120,
+0.5,
+"fanduel"
+],
+[
+"Luke Stewart",
+"player_turnovers",
+"Over",
+-125,
+0.5,
+"draftkings"
+],
+[
+"Luke Stewart",
+"player_turnovers",
+"Under",
+-105,
+0.5,
+"draftkings"
+],
+[
+"Luke Stewart",
+"player_turnovers",
+"Over",
+-120,
+0.5,
+"fanduel"
+],
+[
+"Luke Stewart",
+"player_turnovers",
+"Under",
+-100,
+0.5,
+"fanduel"
+],
+[
+"Luke Stewart",
+"player_points_rebounds_assists",
+"Over",
+-110,
+14.0,
+"draftkings"
+],
+[
+"Luke Stewart",
+"player_points_rebounds_assists",
+"Under",
+-110,
+14.0,
+"draftkings"
+],
+[
+"Jordan Williams",
+"player_points",
+"Over",
+-120,
+6.5,
+"draftkings"
+],
+[
+"Jordan Williams",
+"player_points",
+"Under",
+-105,
+6.5,
+"draftkings"
+],
+[
+"Jordan Williams",
+"player_points",
+"Over",
+-105,
+6.5,
+"fanduel"
+],
+[
+"Jordan Williams",
+"player_points",
+"Under",
+-120,
+6.5,
+"fanduel"
+],
+[
+"Jordan Williams",
+"player_rebounds",
+"Over",
+-105,
+4.5,
+"draftkings"
+],
+[
+"Jordan Williams",
+"player_rebounds",
+"Under",
+-115,
+4.5,
+"draftkings"
+],
+[
+"Jordan Williams",
+"player_rebounds",
+"Over",
+-105,
+4.5,
+"fanduel"
+],
+[
+"Jordan Williams",
+"player_rebounds",
+"Under",
+-115,
+4.5,
+"fanduel"
+],
+[
+"Jordan Williams",
+"player_assists",
+"Over",
+-125,
+0.5,
+"draftkings"
+],
+[
+"Jordan Williams",
+"player_assists",
+"Under",
+-100,
+0.5,
+"draftkings"
+],
+[
+"Jordan Williams",
+"player_assists",
+"Over",
+-115,
+0.5,
+"fanduel"
+],
+[
+"Jordan Williams",
+"player_assists",
+"Under",
+-115,
+0.5,
+"fanduel"
+],
+[
+"Jordan Williams",
+"player_threes",
+"Over",
+-105,
+0.5,
+"draftkings"
+],
+[
+"Jordan Williams",
+"player_threes",
+"Under",
+-115,
+0.5,
+"draftkings"
+],
+[
+"Jordan Williams",
+"player_threes",
+"Over",
+-115,
+0.5,
+"fanduel"
+],
+[
+"Jordan Williams",
+"player_threes",
+"Under",
+-105,
+0.5,
+"fanduel"
+],
+[
+"Jordan Williams",
+"player_steals",
+"Over",
+-105,
+0.5,
+"draftkings"
+],
+[
+"Jordan Williams",
+"player_steals",
+"Under",
+-115,
+0.5,
+"draftkings"
+],
+[
+"Jordan Williams",
+"player_steals",
+"Over",
+-115,
+0.5,
+"fanduel"
+],
+[
+"Jordan Williams",
+"player_steals",
+"Under",
+-105,
+0.5,
+"fanduel"
+],
+[
+"Jordan Williams",
+"player_blocks",
+"Over",
+-115,
+0.5,
+"draftkings"
+],
+[
+"Jordan Williams",
+"player_blocks",
+"Under",
+-110,
+0.5,
+"draftkings"
+],
+[
+"Jordan Williams",
+"player_blocks",
+"Over",
+-105,
+0.5,
+"fanduel"
+],
+[
+"Jordan Williams",
+"player_blocks",
+"Under",
+-120,
+0.5,
+"fanduel"
+],
+[
+"Jordan Williams",
+"player_turnovers",
+"Over",
+-120,
+0.5,
+"draftkings"
+],
+[
+"Jordan Williams",
+"player_turnovers",
+"Under",
+-105,
+0.5,
+"draftkings"
+],
+[
+"Jordan Williams",
+"player_turnovers",
+"Over",
+-115,
+0.5,
+"fanduel"
+],
+[
+"Jordan Williams",
+"player_turnovers",
+"Under",
+-105,
+0.5,
+"fanduel"
+],
+[
+"Jordan Williams",
+"player_points_rebounds_assists",
+"Over",
+-110,
+12.5,
+"draftkings"
+],
+[
+"Jordan Williams",
+"player_points_rebounds_assists",
+"Under",
+-110,
+12.5,
+"draftkings"
+],
+[
+"Tyrese Smart",
+"player_points",
+"Over",
+-125,
+6.5,
+"draftkings"
+],
+[
+"Tyrese Smart",
+"player_points",
+"Under",
+-95,
+6.5,
+"draftkings"
+],
+[
+"Tyrese Smart",
+"player_points",
+"Over",
+-120,
+6.5,
+"fanduel"
+],
+[
+"Tyrese Smart",
+"player_points",
+"Under",
+-105,
+6.5,
+"fanduel"
+],
+[
+"Tyrese Smart",
+"player_rebounds",
+"Over",
+-125,
+2.5,
+"draftkings"
+],
+[
+"Tyrese Smart",
+"player_rebounds",
+"Under",
+-100,
+2.5,
+"draftkings"
+],
+[
+"TYRESE SMART",
+"player_rebounds",
+"Over",
+-115,
+2.5,
+"fanduel"
+],
+[
+"TYRESE SMART",
+"player_rebounds",
+"Under",
+-110,
+2.5,
+"fanduel"
+],
+[
+"Tyrese Smart",
+"player_assists",
+"Over",
+-105,
+1.5,
+"draftkings"
+],
+[
+"Tyrese Smart",
+"player_assists",
+"Under",
+-115,
+1.5,
+"draftkings"
+],
+[
+"Tyrese Smart",
+"player_assists",
+"Over",
+-120,
+1.5,
+"fanduel"
+],
+[
+"Tyrese Smart",
+"player_assists",
+"Under",
+-110,
+1.5,
+"fanduel"
+],
+[
+"Tyrese Smart",
+"player_threes",
+"Over",
+-125,
+0.5,
+"draftkings"
+],
+[
+"Tyrese Smart",
+"player_threes",
+"Under",
+-100,
+0.5,
+"draftkings"
+],
+[
+"Tyrese Smart",
+"player_threes",
+"Over",
+-115,
+0.5,
+"fanduel"
+],
+[
+"Tyrese Smart",
+"player_threes",
+"Under",
+-115,
+0.5,
+"fanduel"
+],
+[
+"Tyrese Smart",
+"player_steals",
+"Over",
+-115,
+0.5,
+"draftkings"
+],
+[
+"Tyrese Smart",
+"player_steals",
+"Under",
+-110,
+0.5,
+"draftkings"
+],
+[
+"Tyrese Smart",
+"player_steals",
+"Over",
+-115,
+0.5,
+"fanduel"
+],
+[
+"Tyrese Smart",
+"player_steals",
+"Under",
+-105,
+0.5,
+"fanduel"
+],
+[
+"Tyrese Smart",
+"player_blocks",
+"Over",
+-120,
+0.5,
+"draftkings"
+],
+[
+"Tyrese Smart",
+"player_blocks",
+"Under",
+-105,
+0.5,
+"draftkings"
+],
+[
+"Tyrese Smart",
+"player_blocks",
+"Over",
+-110,
+0.5,
+"fanduel"
+],
+[
+"Tyrese Smart",
+"player_blocks",
+"Under",
+-110,
+0.5,
+"fanduel"
+],
+[
+"Tyrese Smart",
+"player_turnovers",
+"Over",
+-110,
+0.5,
+"draftkings"
+],
+[
+"Tyrese Smart",
+"player_turnovers",
+"Under",
+-115,
+0.5,
+"draftkings"
+],
+[
+"Tyrese Smart",
+"player_turnovers",
+"Over",
+-125,
+0.5,
+"fanduel"
+],
+[
+"Tyrese Smart",
+"player_turnovers",
+"Under",
+-105,
+0.5,
+"fanduel"
+],
+[
+"Tyrese Smart",
+"player_points_rebounds_assists",
+"Over",
+-110,
+10.5,
+"draftkings"
+],
+[
+"Tyrese Smart",
+"player_points_rebounds_assists",
+"Under",
+-110,
+10.5,
+"draftkings"
+],
+[
+"Luke Smart",
+"player_points",
+"Over",
+-105,
+19.5,
+"draftkings"
+],
+[
+"Luke Smart",
+"player_points",
+"Under",
+-125,
+19.5,
+"draftkings"
+],
+[
+"Luke Smart",
+"player_points",
+"Over",
+-110,
+19.5,
+"fanduel"
+],
+[
+"Luke Smart",
+"player_points",
+"Under",
+-110,
+19.5,
+"fanduel"
+],
+[
+"Luke Smart",
+"player_rebounds",
+"Over",
+-120,
+3.5,
+"draftkings"
+],
+[
+"Luke Smart",
+"player_rebounds",
+"Under",
+-100,
+3.5,
+"draftkings"
+],
+[
+"Luke Smart",
+"player_rebounds",
+"Over",
+-115,
+3.5,
+"fanduel"
+],
+[
+"Luke Smart",
+"player_rebounds",
+"Under",
+-110,
+3.5,
+"fanduel"
+],
+[
+"Luke Smart",
+"player_assists",
+"Over",
+-120,
+6.5,
+"draftkings"
+],
+[
+"Luke Smart",
+"player_assists",
+"Under",
+-105,
+6.5,
+"draftkings"
+],
+[
+"Luke Smart",
+"player_assists",
+"Over",
+-125,
+6.5,
+"fanduel"
+],
+[
+"Luke Smart",
+"player_assists",
+"Under",
+-100,
+6.5,
+"fanduel"
+],
+[
+"Luke Smart",
+"player_threes",
+"Over",
+-125,
+2.5,
+"draftkings"
+],
+[
+"Luke Smart",
+"player_threes",
+"Under",
+-105,
+2.5,
+"draftkings"
+],
+[
+"Luke Smart",
+"player_threes",
+"Over",
+-125,
+2.5,
+"fanduel"
+],
+[
+"Luke Smart",
+"player_threes",
+"Under",
+-100,
+2.5,
+"fanduel"
+],
+[
+"Luke Smart",
+"player_steals",
+"Over",
+-115,
+0.5,
+"draftkings"
+],
+[
+"Luke Smart",
+"player_steals",
+"Under",
+-110,
+0.5,
+"draftkings"
+],
+[
+"LUKE SMART",
+"player_steals",
+"Over",
+-125,
+0.5,
+"fanduel"
+],
+[
+"LUKE SMART",
+"player_steals",
+"Under",
+-105,
+0.5,
+"fanduel"
+],
+[
+"Luke Smart",
+"player_blocks",
+"Over",
+-110,
+0.5,
+"draftkings"
+],
+[
+"Luke Smart",
+"player_blocks",
+"Under",
+-110,
+0.5,
+"draftkings"
+],
+[
+"Luke Smart",
+"player_blocks",
+"Over",
+-125,
+0.5,
+"fanduel"
+],
+[
+"Luke Smart",
+"player_blocks",
+"Under",
+-95,
+0.5,
+"fanduel"
+],
+[
+"Luke Smart",
+"player_turnovers",
+"Over",
+-105,
+2.5,
+"draftkings"
+],
+[
+"Luke Smart",
+"player_turnovers",
+"Under",
+-120,
+2.5,
+"draftkings"
+],
+[
+"Luke Smart",
+"player_turnovers",
+"Over",
+-110,
+2.5,
+"fanduel"
+],
+[
+"Luke Smart",
+"player_turnovers",
+"Under",
+-120,
+2.5,
+"fanduel"
+],
+[
+"Luke Smart",
+"player_points_rebounds_assists",
+"Over",
+-110,
+30.0,
+"draftkings"
+],
+[
+"Luke Smart",
+"player_points_rebounds_assists",
+"Under",
+-110,
+30.0,
+"draftkings"
+],
+[
+"Payton Reaves",
+"player_points",
+"Over",
+-110,
+16.5,
+"draftkings"
+],
+[
+"Payton Reaves",
+"player_points",
+"Under",
+-120,
+16.5,
+"draftkings"
+],
+[
+"Payton Reaves",
+"player_points",
+"Over",
+-105,
+16.5,
+"fanduel"
+],
+[
+"Payton Reaves",
+"player_points",
+"Under",
+-115,
+16.5,
+"fanduel"
+],
+[
+"Payton Reaves",
+"player_rebounds",
+"Over",
+-120,
+3.5,
+"draftkings"
+],
+[
+"Payton Reaves",
+"player_rebounds",
+"Under",
+-105,
+3.5,
+"draftkings"
+],
+[
+"Payton Reaves",
+"player_rebounds",
+"Over",
+-105,
+3.5,
+"fanduel"
+],
+[
+"Payton Reaves",
+"player_rebounds",
+"Under",
+-125,
+3.5,
+"fanduel"
+],
+[
+"Payton Reaves",
+"player_assists",
+"Over",
+-110,
+2.5,
+"draftkings"
+],
+[
+"Payton Reaves",
+"player_assists",
+"Under",
+-115,
+2.5,
+"draftkings"
+],
+[
+"Payton Reaves",
+"player_assists",
+"Over",
+-120,
+2.5,
+"fanduel"
+],
+[
+"Payton Reaves",
+"player_assists",
+"Under",
+-110,
+2.5,
+"fanduel"
+],
+[
+"Payton Reaves",
+"player_threes",
+"Over",
+-125,
+2.5,
+"draftkings"
+],
+[
+"Payton Reaves",
+"player_threes",
+"Under",
+-95,
+2.5,
+"draftkings"
+],
+[
+"Payton Reaves",
+"player_threes",
+"Over",
+-110,
+2.5,
+"fanduel"
+],
+[
+"Payton Reaves",
+"player_threes",
+"Under",
+-120,
+2.5,
+"fanduel"
+],
+[
+"Payton Reaves",
+"player_steals",
+"Over",
+-105,
+1.5,
+"draftkings"
+],
+[
+"Payton Reaves",
+"player_steals",
+"Under",
+-125,
+1.5,
+"draftkings"
+],
+[
+"Payton Reaves",
+"player_steals",
+"Over",
+-105,
+1.5,
+"fanduel"
+],
+[
+"Payton Reaves",
+"player_steals",
+"Under",
+-120,
+1.5,
+"fanduel"
+],
+[
+"Payton Reaves",
+"player_blocks",
+"Over",
+-120,
+0.5,
+"draftkings"
+],
+[
+"Payton Reaves",
+"player_blocks",
+"Under",
+-105,
+0.5,
+"draftkings"
+],
+[
+"PAYTON REAVES",
+"player_blocks",
+"Over",
+-105,
+0.5,
+"fanduel"
+],
+[
+"PAYTON REAVES",
+"player_blocks",
+"Under",
+-120,
+0.5,
+"fanduel"
+],
+[
+"Payton Reaves",
+"player_turnovers",
+"Over",
+-105,
+1.5,
+"draftkings"
+],
+[
+"Payton Reaves",
+"player_turnovers",
+"Under",
+-125,
+1.5,
+"draftkings"
+],
+[
+"Payton Reaves",
+"player_turnovers",
+"Over",
+-110,
+1.5,
+"fanduel"
+],
+[
+"Payton Reaves",
+"player_turnovers",
+"Under",
+-115,
+1.5,
+"fanduel"
+],
+[
+"Payton Reaves",
+"player_points_rebounds_assists",
+"Over",
+-110,
+24.0,
+"draftkings"
+],
+[
+"Payton Reaves",
+"player_points_rebounds_assists",
+"Under",
+-110,
+24.0,
+"draftkings"
+],
+[
+"Anthony White",
+"player_points",
+"Over",
+-105,
+15.5,
+"draftkings"
+],
+[
+"Anthony White",
+"player_points",
+"Under",
+-125,
+15.5,
+"draftkings"
+],
+[
+"Anthony White",
+"player_points",
+"Over",
+-115,
+15.5,
+"fanduel"
+],
+[
+"Anthony White",
+"player_points",
+"Under",
+-105,
+15.5,
+"fanduel"
+],
+[
+"Anthony White",
+"player_rebounds",
+"Over",
+-105,
+5.5,
+"draftkings"
+],
+[
+"Anthony White",
+"player_rebounds",
+"Under",
+-120,
+5.5,
+"draftkings"
+],
+[
+"ANTHONY WHITE",
+"player_rebounds",
+"Over",
+-115,
+5.5,
+"fanduel"
+],
+[
+"ANTHONY WHITE",
+"player_rebounds",
+"Under",
+-110,
+5.5,
+"fanduel"
+],
+[
+"Anthony White",
+"player_assists",
+"Over",
+-120,
+2.5,
+"draftkings"
+],
+[
+"Anthony White",
+"player_assists",
+"Under",
+-110,
+2.5,
+"draftkings"
+],
+[
+"ANTHONY WHITE",
+"player_assists",
+"Over",
+-110,
+2.5,
+"fanduel"
+],
+[
+"ANTHONY WHITE",
+"player_assists",
+"Under",
+-115,
+2.5,
+"fanduel"
+],
+[
+"Anthony White",
+"player_threes",
+"Over",
+-115,
+1.5,
+"draftkings"
+],
+[
+"Anthony White",
+"player_threes",
+"Under",
+-105,
+1.5,
+"draftkings"
+],
+[
+"ANTHONY WHITE",
+"player_threes",
+"Over",
+-115,
+1.5,
+"fanduel"
+],
+[
+"ANTHONY WHITE",
+"player_threes",
+"Under",
+-110,
+1.5,
+"fanduel"
+],
+[
+"Anthony White",
+"player_steals",
+"Over",
+-125,
+0.5,
+"draftkings"
+],
+[
+"Anthony White",
+"player_steals",
+"Under",
+-100,
+0.5,
+"draftkings"
+],
+[
+"Anthony White",
+"player_steals",
+"Over",
+-120,
+0.5,
+"fanduel"
+],
+[
+"Anthony White",
+"player_steals",
+"Under",
+-105,
+0.5,
+"fanduel"
+],
+[
+"Anthony White",
+"player_blocks",
+"Over",
+-115,
+0.5,
+"draftkings"
+],
+[
+"Anthony White",
+"player_blocks",
+"Under",
+-110,
+0.5,
+"draftkings"
+],
+[
+"Anthony White",
+"player_blocks",
+"Over",
+-120,
+0.5,
+"fanduel"
+],
+[
+"Anthony White",
+"player_blocks",
+"Under",
+-110,
+0.5,
+"fanduel"
+],
+[
+"Anthony White",
+"player_turnovers",
+"Over",
+-105,
+1.5,
+"draftkings"
+],
+[
+"Anthony White",
+"player_turnovers",
+"Under",
+-115,
+1.5,
+"draftkings"
+],
+[
+"Anthony White",
+"player_turnovers",
+"Over",
+-120,
+1.5,
+"fanduel"
+],
+[
+"Anthony White",
+"player_turnovers",
+"Under",
+-105,
+1.5,
+"fanduel"
+],
+[
+"Anthony White",
+"player_points_rebounds_assists",
+"Over",
+-110,
+24.0,
+"draftkings"
+],
+[
+"Anthony White",
+"player_points_rebounds_assists",
+"Under",
+-110,
+24.0,
+"draftkings"
+],
+[
+"Jalen Brown",
+"player_points",
+"Over",
+-110,
+16.5,
+"draftkings"
+],
+[
+"Jalen Brown",
+"player_points",
+"Under",
+-110,
+16.5,
+"draftkings"
+],
+[
+"Jalen Brown",
+"player_points",
+"Over",
+-125,
+16.5,
+"fanduel"
+],
+[
+"Jalen Brown",
+"player_points",
+"Under",
+-105,
+16.5,
+"fanduel"
+],
+[
+"Jalen Brown",
+"player_rebounds",
+"Over",
+-120,
+8.5,
+"draftkings"
+],
+[
+"Jalen Brown",
+"player_rebounds",
+"Under",
+-110,
+8.5,
+"draftkings"
+],
+[
+"Jalen Brown",
+"player_rebounds",
+"Over",
+-120,
+8.5,
+"fanduel"
+],
+[
+"Jalen Brown",
+"player_rebounds",
+"Under",
+-110,
+8.5,
+"fanduel"
+],
+[
+"Jalen Brown",
+"player_assists",
+"Over",
+-110,
+2.5,
+"draftkings"
+],
+[
+"Jalen Brown",
+"player_assists",
+"Under",
+-110,
+2.5,
+"draftkings"
+],
+[
+"Jalen Brown",
+"player_assists",
+"Over",
+-120,
+2.5,
+"fanduel"
+],
+[
+"Jalen Brown",
+"player_assists",
+"Under",
+-105,
+2.5,
+"fanduel"
+],
+[
+"Jalen Brown",
+"player_threes",
+"Over",
+-120,
+1.5,
+"draftkings"
+],
+[
+"Jalen Brown",
+"player_threes",
+"Under",
+-105,
+1.5,
+"draftkings"
+],
+[
+"Jalen Brown",
+"player_threes",
+"Over",
+-125,
+1.5,
+"fanduel"
+],
+[
+"Jalen Brown",
+"player_threes",
+"Under",
+-95,
+1.5,
+"fanduel"
+],
+[
+"Jalen Brown",
+"player_steals",
+"Over",
+-125,
+0.5,
+"draftkings"
+],
+[
+"Jalen Brown",
+"player_steals",
+"Under",
+-105,
+0.5,
+"draftkings"
+],
+[
+"Jalen Brown",
+"player_steals",
+"Over",
+-110,
+0.5,
+"fanduel"
+],
+[
+"Jalen Brown",
+"player_steals",
+"Under",
+-120,
+0.5,
+"fanduel"
+],
+[
+"Jalen Brown",
+"player_blocks",
+"Over",
+-120,
+0.5,
+"draftkings"
+],
+[
+"Jalen Brown",
+"player_blocks",
+"Under",
+-105,
+0.5,
+"draftkings"
+],
+[
+"JALEN BROWN",
+"player_blocks",
+"Over",
+-105,
+0.5,
+"fanduel"
+],
+[
+"JALEN BROWN",
+"player_blocks",
+"Under",
+-125,
+0.5,
+"fanduel"
+],
+[
+"Jalen Brown",
+"player_turnovers",
+"Over",
+-110,
+1.5,
+"draftkings"
+],
+[
+"Jalen Brown",
+"player_turnovers",
+"Under",
+-115,
+1.5,
+"draftkings"
+],
+[
+"Jalen Brown",
+"player_turnovers",
+"Over",
+-115,
+1.5,
+"fanduel"
+],
+[
+"Jalen Brown",
+"player_turnovers",
+"Under",
+-115,
+1.5,
+"fanduel"
+],
+[
+"Jalen Brown",
+"player_points_rebounds_assists",
+"Over",
+-110,
+29.0,
+"draftkings"
+],
+[
+"Jalen Brown",
+"player_points_rebounds_assists",
+"Under",
+-110,
+29.0,
+"draftkings"
+],
+[
+"Josh DiVincenzo",
+"player_points",
+"Over",
+-120,
+12.5,
+"draftkings"
+],
+[
+"Josh DiVincenzo",
+"player_points",
+"Under",
+-100,
+12.5,
+"draftkings"
+],
+[
+"Josh DiVincenzo",
+"player_points",
+"Over",
+-115,
+12.5,
+"fanduel"
+],
+[
+"Josh DiVincenzo",
+"player_points",
+"Under",
+-110,
+12.5,
+"fanduel"
+],
+[
+"Josh DiVincenzo",
+"player_rebounds",
+"Over",
+-115,
+9.5,
+"draftkings"
+],
+[
+"Josh DiVincenzo",
+"player_rebounds",
+"Under",
+-115,
+9.5,
+"draftkings"
+],
+[
+"Josh DiVincenzo",
+"player_rebounds",
+"Over",
+-115,
+9.5,
+"fanduel"
+],
+[
+"Josh DiVincenzo",
+"player_rebounds",
+"Under",
+-105,
+9.5,
+"fanduel"
+],
+[
+"Josh DiVincenzo",
+"player_assists",
+"Over",
+-105,
+1.5,
+"draftkings"
+],
+[
+"Josh DiVincenzo",
+"player_assists",
+"Under",
+-115,
+1.5,
+"draftkings"
+],
+[
+"Josh DiVincenzo",
+"player_assists",
+"Over",
+-115,
+1.5,
+"fanduel"
+],
+[
+"Josh DiVincenzo",
+"player_assists",
+"Under",
+-105,
+1.5,
+"fanduel"
+],
+[
+"Josh DiVincenzo",
+"player_threes",
+"Over",
+-105,
+0.5,
+"draftkings"
+],
+[
+"Josh DiVincenzo",
+"player_threes",
+"Under",
+-125,
+0.5,
+"draftkings"
+],
+[
+"Josh DiVincenzo",
+"player_threes",
+"Over",
+-105,
+0.5,
+"fanduel"
+],
+[
+"Josh DiVincenzo",
+"player_threes",
+"Under",
+-120,
+0.5,
+"fanduel"
+],
+[
+"Josh DiVincenzo",
+"player_steals",
+"Over",
+-110,
+0.5,
+"draftkings"
+],
+[
+"Josh DiVincenzo",
+"player_steals",
+"Under",
+-115,
+0.5,
+"draftkings"
+],
+[
+"Josh DiVincenzo",
+"player_steals",
+"Over",
+-115,
+0.5,
+"fanduel"
+],
+[
+"Josh DiVincenzo",
+"player_steals",
+"Under",
+-110,
+0.5,
+"fanduel"
+],
+[
+"Josh DiVincenzo",
+"player_blocks",
+"Over",
+-115,
+1.5,
+"draftkings"
+],
+[
+"Josh DiVincenzo",
+"player_blocks",
+"Under",
+-105,
+1.5,
+"draftkings"
+],
+[
+"Josh DiVincenzo",
+"player_blocks",
+"Over",
+-110,
+1.5,
+"fanduel"
+],
+[
+"Josh DiVincenzo",
+"player_blocks",
+"Under",
+-120,
+1.5,
+"fanduel"
+],
+[
+"Josh DiVincenzo",
+"player_turnovers",
+"Over",
+-120,
+1.5,
+"draftkings"
+],
+[
+"Josh DiVincenzo",
+"player_turnovers",
+"Under",
+-100,
+1.5,
+"draftkings"
+],
+[
+"Josh DiVincenzo",
+"player_turnovers",
+"Over",
+-110,
+1.5,
+"fanduel"
+],
+[
+"Josh DiVincenzo",
+"player_turnovers",
+"Under",
+-115,
+1.5,
+"fanduel"
+],
+[
+"Josh DiVincenzo",
+"player_points_rebounds_assists",
+"Over",
+-110,
+25.0,
+"draftkings"
+],
+[
+"Josh DiVincenzo",
+"player_points_rebounds_assists",
+"Under",
+-110,
+25.0,
+"draftkings"
+],
+[
+"Luke Booker",
+"player_points",
+"Over",
+-110,
+12.5,
+"draftkings"
+],
+[
+"Luke Booker",
+"player_points",
+"Under",
+-115,
+12.5,
+"draftkings"
+],
+[
+"Luke Booker",
+"player_points",
+"Over",
+-110,
+12.5,
+"fanduel"
+],
+[
+"Luke Booker",
+"player_points",
+"Under",
+-115,
+12.5,
+"fanduel"
+],
+[
+"Luke Booker",
+"player_rebounds",
+"Over",
+-115,
+2.5,
+"draftkings"
+],
+[
+"Luke Booker",
+"player_rebounds",
+"Under",
+-110,
+2.5,
+"draftkings"
+],
+[
+"Luke Booker",
+"player_rebounds",
+"Over",
+-110,
+2.5,
+"fanduel"
+],
+[
+"Luke Booker",
+"player_rebounds",
+"Under",
+-115,
+2.5,
+"fanduel"
+],
+[
+"Luke Booker",
+"player_assists",
+"Over",
+-120,
+3.5,
+"draftkings"
+],
+[
+"Luke Booker",
+"player_assists",
+"Under",
+-100,
+3.5,
+"draftkings"
+],
+[
+"Luke Booker",
+"player_assists",
+"Over",
+-125,
+3.5,
+"fanduel"
+],
+[
+"Luke Booker",
+"player_assists",
+"Under",
+-100,
+3.5,
+"fanduel"
+],
+[
+"Luke Booker",
+"player_threes",
+"Over",
+-110,
+1.5,
+"draftkings"
+],
+[
+"Luke Booker",
+"player_threes",
+"Under",
+-110,
+1.5,
+"draftkings"
+],
+[
+"Luke Booker",
+"player_threes",
+"Over",
+-115,
+1.5,
+"fanduel"
+],
+[
+"Luke Booker",
+"player_threes",
+"Under",
+-115,
+1.5,
+"fanduel"
+],
+[
+"Luke Booker",
+"player_steals",
+"Over",
+-115,
+0.5,
+"draftkings"
+],
+[
+"Luke Booker",
+"player_steals",
+"Under",
+-115,
+0.5,
+"draftkings"
+],
+[
+"LUKE BOOKER",
+"player_steals",
+"Over",
+-120,
+0.5,
+"fanduel"
+],
+[
+"LUKE BOOKER",
+"player_steals",
+"Under",
+-105,
+0.5,
+"fanduel"
+],
+[
+"Luke Booker",
+"player_blocks",
+"Over",
+-105,
+0.5,
+"draftkings"
+],
+[
+"Luke Booker",
+"player_blocks",
+"Under",
+-125,
+0.5,
+"draftkings"
+],
+[
+"Luke Booker",
+"player_blocks",
+"Over",
+-105,
+0.5,
+"fanduel"
+],
+[
+"Luke Booker",
+"player_blocks",
+"Under",
+-125,
+0.5,
+"fanduel"
+],
+[
+"Luke Booker",
+"player_turnovers",
+"Over",
+-115,
+1.5,
+"draftkings"
+],
+[
+"Luke Booker",
+"player_turnovers",
+"Under",
+-105,
+1.5,
+"draftkings"
+],
+[
+"Luke Booker",
+"player_turnovers",
+"Over",
+-115,
+1.5,
+"fanduel"
+],
+[
+"Luke Booker",
+"player_turnovers",
+"Under",
+-105,
+1.5,
+"fanduel"
+],
+[
+"Luke Booker",
+"player_points_rebounds_assists",
+"Over",
+-110,
+18.5,
+"draftkings"
+],
+[
+"Luke Booker",
+"player_points_rebounds_assists",
+"Under",
+-110,
+18.5,
+"draftkings"
+],
+[
+"Austin Smart",
+"player_points",
+"Over",
+-125,
+7.5,
+"draftkings"
+],
+[
+"Austin Smart",
+"player_points",
+"Under",
+-105,
+7.5,
+"draftkings"
+],
+[
+"Austin Smart",
+"player_points",
+"Over",
+-105,
+7.5,
+"fanduel"
+],
+[
+"Austin Smart",
+"player_points",
+"Under",
+-120,
+7.5,
+"fanduel"
+],
+[
+"Austin Smart",
+"player_rebounds",
+"Over",
+-110,
+3.5,
+"draftkings"
+],
+[
+"Austin Smart",
+"player_rebounds",
+"Under",
+-120,
+3.5,
+"draftkings"
+],
+[
+"Austin Smart",
+"player_rebounds",
+"Over",
+-115,
+3.5,
+"fanduel"
+],
+[
+"Austin Smart",
+"player_rebounds",
+"Under",
+-115,
+3.5,
+"fanduel"
+],
+[
+"Austin Smart",
+"player_assists",
+"Over",
+-105,
+1.5,
+"draftkings"
+],
+[
+"Austin Smart",
+"player_assists",
+"Under",
+-120,
+1.5,
+"draftkings"
+],
+[
+"AUSTIN SMART",
+"player_assists",
+"Over",
+-115,
+1.5,
+"fanduel"
+],
+[
+"AUSTIN SMART",
+"player_assists",
+"Under",
+-105,
+1.5,
+"fanduel"
+],
+[
+"Austin Smart",
+"player_threes",
+"Over",
+-105,
+1.5,
+"draftkings"
+],
+[
+"Austin Smart",
+"player_threes",
+"Under",
+-125,
+1.5,
+"draftkings"
+],
+[
+"Austin Smart",
+"player_threes",
+"Over",
+-120,
+1.5,
+"fanduel"
+],
+[
+"Austin Smart",
+"player_threes",
+"Under",
+-105,
+1.5,
+"fanduel"
+],
+[
+"Austin Smart",
+"player_steals",
+"Over",
+-125,
+0.5,
+"draftkings"
+],
+[
+"Austin Smart",
+"player_steals",
+"Under",
+-95,
+0.5,
+"draftkings"
+],
+[
+"Austin Smart",
+"player_steals",
+"Over",
+-110,
+0.5,
+"fanduel"
+],
+[
+"Austin Smart",
+"player_steals",
+"Under",
+-115,
+0.5,
+"fanduel"
+],
+[
+"Austin Smart",
+"player_blocks",
+"Over",
+-120,
+0.5,
+"draftkings"
+],
+[
+"Austin Smart",
+"player_blocks",
+"Under",
+-100,
+0.5,
+"draftkings"
+],
+[
+"Austin Smart",
+"player_blocks",
+"Over",
+-120,
+0.5,
+"fanduel"
+],
+[
+"Austin Smart",
+"player_blocks",
+"Under",
+-110,
+0.5,
+"fanduel"
+],
+[
+"Austin Smart",
+"player_turnovers",
+"Over",
+-105,
+1.5,
+"draftkings"
+],
+[
+"Austin Smart",
+"player_turnovers",
+"Under",
+-115,
+1.5,
+"draftkings"
+],
+[
+"Austin Smart",
+"player_turnovers",
+"Over",
+-120,
+1.5,
+"fanduel"
+],
+[
+"Austin Smart",
+"player_turnovers",
+"Under",
+-100,
+1.5,
+"fanduel"
+],
+[
+"Austin Smart",
+"player_points_rebounds_assists",
+"Over",
+-110,
+13.5,
+"draftkings"
+],
+[
+"Austin Smart",
+"player_points_rebounds_assists",
+"Under",
+-110,
+13.5,
+"draftkings"
+],
+[
+"Trey White",
+"player_points",
+"Over",
+-120,
+8.5,
+"draftkings"
+],
+[
+"Trey White",
+"player_points",
+"Under",
+-110,
+8.5,
+"draftkings"
+],
+[
+"Trey White",
+"player_points",
+"Over",
+-110,
+8.5,
+"fanduel"
+],
+[
+"Trey White",
+"player_points",
+"Under",
+-115,
+8.5,
+"fanduel"
+],
+[
+"Trey White",
+"player_rebounds",
+"Over",
+-105,
+5.5,
+"draftkings"
+],
+[
+"Trey White",
+"player_rebounds",
+"Under",
+-125,
+5.5,
+"draftkings"
+],
+[
+"Trey White",
+"player_rebounds",
+"Over",
+-120,
+5.5,
+"fanduel"
+],
+[
+"Trey White",
+"player_rebounds",
+"Under",
+-110,
+5.5,
+"fanduel"
+],
+[
+"Trey White",
+"player_assists",
+"Over",
+-110,
+1.5,
+"draftkings"
+],
+[
+"Trey White",
+"player_assists",
+"Under",
+-120,
+1.5,
+"draftkings"
+],
+[
+"TREY WHITE",
+"player_assists",
+"Over",
+-125,
+1.5,
+"fanduel"
+],
+[
+"TREY WHITE",
+"player_assists",
+"Under",
+-95,
+1.5,
+"fanduel"
+],
+[
+"Trey White",
+"player_threes",
+"Over",
+-105,
+0.5,
+"draftkings"
+],
+[
+"Trey White",
+"player_threes",
+"Under",
+-115,
+0.5,
+"draftkings"
+],
+[
+"Trey White",
+"player_threes",
+"Over",
+-125,
+0.5,
+"fanduel"
+],
+[
+"Trey White",
+"player_threes",
+"Under",
+-100,
+0.5,
+"fanduel"
+],
+[
+"Trey White",
+"player_steals",
+"Over",
+-105,
+0.5,
+"draftkings"
+],
+[
+"Trey White",
+"player_steals",
+"Under",
+-120,
+0.5,
+"draftkings"
+],
+[
+"Trey White",
+"player_steals",
+"Over",
+-110,
+0.5,
+"fanduel"
+],
+[
+"Trey White",
+"player_steals",
+"Under",
+-120,
+0.5,
+"fanduel"
+],
+[
+"Trey White",
+"player_blocks",
+"Over",
+-120,
+0.5,
+"draftkings"
+],
+[
+"Trey White",
+"player_blocks",
+"Under",
+-100,
+0.5,
+"draftkings"
+],
+[
+"TREY WHITE",
+"player_blocks",
+"Over",
+-110,
+0.5,
+"fanduel"
+],
+[
+"TREY WHITE",
+"player_blocks",
+"Under",
+-115,
+0.5,
+"fanduel"
+],
+[
+"Trey White",
+"player_turnovers",
+"Over",
+-125,
+1.5,
+"draftkings"
+],
+[
+"Trey White",
+"player_turnovers",
+"Under",
+-105,
+1.5,
+"draftkings"
+],
+[
+"Trey White",
+"player_turnovers",
+"Over",
+-105,
+1.5,
+"fanduel"
+],
+[
+"Trey White",
+"player_turnovers",
+"Under",
+-115,
+1.5,
+"fanduel"
+],
+[
+"Trey White",
+"player_points_rebounds_assists",
+"Over",
+-110,
+15.5,
+"draftkings"
+],
+[
+"Trey White",
+"player_points_rebounds_assists",
+"Under",
+-110,
+15.5,
+"draftkings"
+],
+[
+"Jaylen Williams",
+"player_points",
+"Over",
+-120,
+5.5,
+"draftkings"
+],
+[
+"Jaylen Williams",
+"player_points",
+"Under",
+-110,
+5.5,
+"draftkings"
+],
+[
+"Jaylen Williams",
+"player_points",
+"Over",
+-125,
+5.5,
+"fanduel"
+],
+[
+"Jaylen Williams",
+"player_points",
+"Under",
+-95,
+5.5,
+"fanduel"
+],
+[
+"Jaylen Williams",
+"player_rebounds",
+"Over",
+-120,
+1.5,
+"draftkings"
+],
+[
+"Jaylen Williams",
+"player_rebounds",
+"Under",
+-105,
+1.5,
+"draftkings"
+],
+[
+"Jaylen Williams",
+"player_rebounds",
+"Over",
+-115,
+1.5,
+"fanduel"
+],
+[
+"Jaylen Williams",
+"player_rebounds",
+"Under",
+-115,
+1.5,
+"fanduel"
+],
+[
+"Jaylen Williams",
+"player_assists",
+"Over",
+-110,
+1.5,
+"draftkings"
+],
+[
+"Jaylen Williams",
+"player_assists",
+"Under",
+-110,
+1.5,
+"draftkings"
+],
+[
+"Jaylen Williams",
+"player_assists",
+"Over",
+-120,
+1.5,
+"fanduel"
+],
+[
+"Jaylen Williams",
+"player_assists",
+"Under",
+-110,
+1.5,
+"fanduel"
+],
+[
+"Jaylen Williams",
+"player_threes",
+"Over",
+-115,
+0.5,
+"draftkings"
+],
+[
+"Jaylen Williams",
+"player_threes",
+"Under",
+-115,
+0.5,
+"draftkings"
+],
+[
+"Jaylen Williams",
+"player_threes",
+"Over",
+-125,
+0.5,
+"fanduel"
+],
+[
+"Jaylen Williams",
+"player_threes",
+"Under",
+-95,
+0.5,
+"fanduel"
+],
+[
+"Jaylen Williams",
+"player_steals",
+"Over",
+-115,
+0.5,
+"draftkings"
+],
+[
+"Jaylen Williams",
+"player_steals",
+"Under",
+-115,
+0.5,
+"draftkings"
+],
+[
+"Jaylen Williams",
+"player_steals",
+"Over",
+-120,
+0.5,
+"fanduel"
+],
+[
+"Jaylen Williams",
+"player_steals",
+"Under",
+-100,
+0.5,
+"fanduel"
+],
+[
+"Jaylen Williams",
+"player_blocks",
+"Over",
+-115,
+0.5,
+"draftkings"
+],
+[
+"Jaylen Williams",
+"player_blocks",
+"Under",
+-115,
+0.5,
+"draftkings"
+],
+[
+"Jaylen Williams",
+"player_blocks",
+"Over",
+-125,
+0.5,
+"fanduel"
+],
+[
+"Jaylen Williams",
+"player_blocks",
+"Under",
+-105,
+0.5,
+"fanduel"
+],
+[
+"Jaylen Williams",
+"player_turnovers",
+"Over",
+-120,
+0.5,
+"draftkings"
+],
+[
+"Jaylen Williams",
+"player_turnovers",
+"Under",
+-100,
+0.5,
+"draftkings"
+],
+[
+"Jaylen Williams",
+"player_turnovers",
+"Over",
+-120,
+0.5,
+"fanduel"
+],
+[
+"Jaylen Williams",
+"player_turnovers",
+"Under",
+-105,
+0.5,
+"fanduel"
+],
+[
+"Jaylen Williams",
+"player_points_rebounds_assists",
+"Over",
+-110,
+10.0,
+"draftkings"
+],
+[
+"Jaylen Williams",
+"player_points_rebounds_assists",
+"Under",
+-110,
+10.0,
+"draftkings"
+],
+[
+"Jalen Haliburton",
+"player_points",
+"Over",
+-110,
+20.5,
+"draftkings"
+],
+[
+"Jalen Haliburton",
+"player_points",
+"Under",
+-110,
+20.5,
+"draftkings"
+],
+[
+"Jalen Haliburton",
+"player_points",
+"Over",
+-105,
+20.5,
+"fanduel"
+],
+[
+"Jalen Haliburton",
+"player_points",
+"Under",
+-125,
+20.5,
+"fanduel"
+],
+[
+"Jalen Haliburton",
+"player_rebounds",
+"Over",
+-115,
+4.5,
+"draftkings"
+],
+[
+"Jalen Haliburton",
+"player_rebounds",
+"Under",
+-105,
+4.5,
+"draftkings"
+],
+[
+"Jalen Haliburton",
+"player_rebounds",
+"Over",
+-110,
+4.5,
+"fanduel"
+],
+[
+"Jalen Haliburton",
+"player_rebounds",
+"Under",
+-120,
+4.5,
+"fanduel"
+],
+[
+"Jalen Haliburton",
+"player_assists",
+"Over",
+-105,
+6.5,
+"draftkings"
+],
+[
+"Jalen Haliburton",
+"player_assists",
+"Under",
+-120,
+6.5,
+"draftkings"
+],
+[
+"Jalen Haliburton",
+"player_assists",
+"Over",
+-115,
+6.5,
+"fanduel"
+],
+[
+"Jalen Haliburton",
+"player_assists",
+"Under",
+-105,
+6.5,
+"fanduel"
+],
+[
+"Jalen Haliburton",
+"player_threes",
+"Over",
+-120,
+2.5,
+"draftkings"
+],
+[
+"Jalen Haliburton",
+"player_threes",
+"Under",
+-100,
+2.5,
+"draftkings"
+],
+[
+"Jalen Haliburton",
+"player_threes",
+"Over",
+-115,
+2.5,
+"fanduel"
+],
+[
+"Jalen Haliburton",
+"player_threes",
+"Under",
+-115,
+2.5,
+"fanduel"
+],
+[
+"Jalen Haliburton",
+"player_steals",
+"Over",
+-120,
+0.5,
+"draftkings"
+],
+[
+"Jalen Haliburton",
+"player_steals",
+"Under",
+-100,
+0.5,
+"draftkings"
+],
+[
+"Jalen Haliburton",
+"player_steals",
+"Over",
+-110,
+0.5,
+"fanduel"
+],
+[
+"Jalen Haliburton",
+"player_steals",
+"Under",
+-120,
+0.5,
+"fanduel"
+],
+[
+"Jalen Haliburton",
+"player_blocks",
+"Over",
+-125,
+0.5,
+"draftkings"
+],
+[
+"Jalen Haliburton",
+"player_blocks",
+"Under",
+-105,
+0.5,
+"draftkings"
+],
+[
+"Jalen Haliburton",
+"player_blocks",
+"Over",
+-115,
+0.5,
+"fanduel"
+],
+[
+"Jalen Haliburton",
+"player_blocks",
+"Under",
+-110,
+0.5,
+"fanduel"
+],
+[
+"Jalen Haliburton",
+"player_turnovers",
+"Over",
+-110,
+2.5,
+"draftkings"
+],
+[
+"Jalen Haliburton",
+"player_turnovers",
+"Under",
+-115,
+2.5,
+"draftkings"
+],
+[
+"Jalen Haliburton",
+"player_turnovers",
+"Over",
+-110,
+2.5,
+"fanduel"
+],
+[
+"Jalen Haliburton",
+"player_turnovers",
+"Under",
+-110,
+2.5,
+"fanduel"
+],
+[
+"Jalen Haliburton",
+"player_points_rebounds_assists",
+"Over",
+-110,
+32.0,
+"draftkings"
+],
+[
+"Jalen Haliburton",
+"player_points_rebounds_assists",
+"Under",
+-110,
+32.0,
+"draftkings"
+],
+[
+"Tyrese Murphy",
+"player_points",
+"Over",
+-110,
+18.5,
+"draftkings"
+],
+[
+"Tyrese Murphy",
+"player_points",
+"Under",
+-115,
+18.5,
+"draftkings"
+],
+[
+"Tyrese Murphy",
+"player_points",
+"Over",
+-105,
+18.5,
+"fanduel"
+],
+[
+"Tyrese Murphy",
+"player_points",
+"Under",
+-125,
+18.5,
+"fanduel"
+],
+[
+"Tyrese Murphy",
+"player_rebounds",
+"Over",
+-110,
+3.5,
+"draftkings"
+],
+[
+"Tyrese Murphy",
+"player_rebounds",
+"Under",
+-115,
+3.5,
+"draftkings"
+],
+[
+"TYRESE MURPHY",
+"player_rebounds",
+"Over",
+-120,
+3.5,
+"fanduel"
+],
+[
+"TYRESE MURPHY",
+"player_rebounds",
+"Under",
+-105,
+3.5,
+"fanduel"
+],
+[
+"Tyrese Murphy",
+"player_assists",
+"Over",
+-110,
+3.5,
+"draftkings"
+],
+[
+"Tyrese Murphy",
+"player_assists",
+"Under",
+-120,
+3.5,
+"draftkings"
+],
+[
+"Tyrese Murphy",
+"player_assists",
+"Over",
+-120,
+3.5,
+"fanduel"
+],
+[
+"Tyrese Murphy",
+"player_assists",
+"Under",
+-105,
+3.5,
+"fanduel"
+],
+[
+"Tyrese Murphy",
+"player_threes",
+"Over",
+-115,
+2.5,
+"draftkings"
+],
+[
+"Tyrese Murphy",
+"player_threes",
+"Under",
+-115,
+2.5,
+"draftkings"
+],
+[
+"Tyrese Murphy",
+"player_threes",
+"Over",
+-125,
+2.5,
+"fanduel"
+],
+[
+"Tyrese Murphy",
+"player_threes",
+"Under",
+-95,
+2.5,
+"fanduel"
+],
+[
+"Tyrese Murphy",
+"player_steals",
+"Over",
+-110,
+0.5,
+"draftkings"
+],
+[
+"Tyrese Murphy",
+"player_steals",
+"Under",
+-115,
+0.5,
+"draftkings"
+],
+[
+"Tyrese Murphy",
+"player_steals",
+"Over",
+-105,
+0.5,
+"fanduel"
+],
+[
+"Tyrese Murphy",
+"player_steals",
+"Under",
+-120,
+0.5,
+"fanduel"
+],
+[
+"Tyrese Murphy",
+"player_blocks",
+"Over",
+-105,
+0.5,
+"draftkings"
+],
+[
+"Tyrese Murphy",
+"player_blocks",
+"Under",
+-115,
+0.5,
+"draftkings"
+],
+[
+"Tyrese Murphy",
+"player_blocks",
+"Over",
+-105,
+0.5,
+"fanduel"
+],
+[
+"Tyrese Murphy",
+"player_blocks",
+"Under",
+-115,
+0.5,
+"fanduel"
+],
+[
+"Tyrese Murphy",
+"player_turnovers",
+"Over",
+-120,
+1.5,
+"draftkings"
+],
+[
+"Tyrese Murphy",
+"player_turnovers",
+"Under",
+-105,
+1.5,
+"draftkings"
+],
+[
+"Tyrese Murphy",
+"player_turnovers",
+"Over",
+-105,
+1.5,
+"fanduel"
+],
+[
+"Tyrese Murphy",
+"player_turnovers",
+"Under",
+-125,
+1.5,
+"fanduel"
+],
+[
+"Tyrese Murphy",
+"player_points_rebounds_assists",
+"Over",
+-110,
+25.0,
+"draftkings"
+],
+[
+"Tyrese Murphy",
+"player_points_rebounds_assists",
+"Under",
+-110,
+25.0,
+"draftkings"
+],
+[
+"Austin Haliburton",
+"player_points",
+"Over",
+-110,
+15.5,
+"draftkings"
+],
+[
+"Austin Haliburton",
+"player_points",
+"Under",
+-110,
+15.5,
+"draftkings"
+],
+[
+"Austin Haliburton",
+"player_points",
+"Over",
+-125,
+15.5,
+"fanduel"
+],
+[
+"Austin Haliburton",
+"player_points",
+"Under",
+-100,
+15.5,
+"fanduel"
+],
+[
+"Austin Haliburton",
+"player_rebounds",
+"Over",
+-115,
+5.5,
+"draftkings"
+],
+[
+"Austin Haliburton",
+"player_rebounds",
+"Under",
+-115,
+5.5,
+"draftkings"
+],
+[
+"Austin Haliburton",
+"player_rebounds",
+"Over",
+-110,
+5.5,
+"fanduel"
+],
+[
+"Austin Haliburton",
+"player_rebounds",
+"Under",
+-120,
+5.5,
+"fanduel"
+],
+[
+"Austin Haliburton",
+"player_assists",
+"Over",
+-105,
+2.5,
+"draftkings"
+],
+[
+"Austin Haliburton",
+"player_assists",
+"Under",
+-120,
+2.5,
+"draftkings"
+],
+[
+"Austin Haliburton",
+"player_assists",
+"Over",
+-120,
+2.5,
+"fanduel"
+],
+[
+"Austin Haliburton",
+"player_assists",
+"Under",
+-100,
+2.5,
+"fanduel"
+],
+[
+"Austin Haliburton",
+"player_threes",
+"Over",
+-110,
+1.5,
+"draftkings"
+],
+[
+"Austin Haliburton",
+"player_threes",
+"Under",
+-115,
+1.5,
+"draftkings"
+],
+[
+"Austin Haliburton",
+"player_threes",
+"Over",
+-120,
+1.5,
+"fanduel"
+],
+[
+"Austin Haliburton",
+"player_threes",
+"Under",
+-110,
+1.5,
+"fanduel"
+],
+[
+"Austin Haliburton",
+"player_steals",
+"Over",
+-125,
+1.5,
+"draftkings"
+],
+[
+"Austin Haliburton",
+"player_steals",
+"Under",
+-100,
+1.5,
+"draftkings"
+],
+[
+"Austin Haliburton",
+"player_steals",
+"Over",
+-115,
+1.5,
+"fanduel"
+],
+[
+"Austin Haliburton",
+"player_steals",
+"Under",
+-110,
+1.5,
+"fanduel"
+],
+[
+"Austin Haliburton",
+"player_blocks",
+"Over",
+-105,
+0.5,
+"draftkings"
+],
+[
+"Austin Haliburton",
+"player_blocks",
+"Under",
+-120,
+0.5,
+"draftkings"
+],
+[
+"Austin Haliburton",
+"player_blocks",
+"Over",
+-115,
+0.5,
+"fanduel"
+],
+[
+"Austin Haliburton",
+"player_blocks",
+"Under",
+-115,
+0.5,
+"fanduel"
+],
+[
+"Austin Haliburton",
+"player_turnovers",
+"Over",
+-110,
+1.5,
+"draftkings"
+],
+[
+"Austin Haliburton",
+"player_turnovers",
+"Under",
+-115,
+1.5,
+"draftkings"
+],
+[
+"Austin Haliburton",
+"player_turnovers",
+"Over",
+-115,
+1.5,
+"fanduel"
+],
+[
+"Austin Haliburton",
+"player_turnovers",
+"Under",
+-110,
+1.5,
+"fanduel"
+],
+[
+"Austin Haliburton",
+"player_points_rebounds_assists",
+"Over",
+-110,
+24.0,
+"draftkings"
+],
+[
+"Austin Haliburton",
+"player_points_rebounds_assists",
+"Under",
+-110,
+24.0,
+"draftkings"
+],
+[
+"Malik Smart",
+"player_points",
+"Over",
+-125,
+17.5,
+"draftkings"
+],
+[
+"Malik Smart",
+"player_points",
+"Under",
+-100,
+17.5,
+"draftkings"
+],
+[
+"Malik Smart",
+"player_points",
+"Over",
+-120,
+17.5,
+"fanduel"
+],
+[
+"Malik Smart",
+"player_points",
+"Under",
+-110,
+17.5,
+"fanduel"
+],
+[
+"Malik Smart",
+"player_rebounds",
+"Over",
+-105,
+9.5,
+"draftkings"
+],
+[
+"Malik Smart",
+"player_rebounds",
+"Under",
+-125,
+9.5,
+"draftkings"
+],
+[
+"Malik Smart",
+"player_rebounds",
+"Over",
+-110,
+9.5,
+"fanduel"
+],
+[
+"Malik Smart",
+"player_rebounds",
+"Under",
+-110,
+9.5,
+"fanduel"
+],
+[
+"Malik Smart",
+"player_assists",
+"Over",
+-105,
+3.5,
+"draftkings"
+],
+[
+"Malik Smart",
+"player_assists",
+"Under",
+-120,
+3.5,
+"draftkings"
+],
+[
+"Malik Smart",
+"player_assists",
+"Over",
+-110,
+3.5,
+"fanduel"
+],
+[
+"Malik Smart",
+"player_assists",
+"Under",
+-115,
+3.5,
+"fanduel"
+],
+[
+"Malik Smart",
+"player_threes",
+"Over",
+-115,
+1.5,
+"draftkings"
+],
+[
+"Malik Smart",
+"player_threes",
+"Under",
+-110,
+1.5,
+"draftkings"
+],
+[
+"Malik Smart",
+"player_threes",
+"Over",
+-105,
+1.5,
+"fanduel"
+],
+[
+"Malik Smart",
+"player_threes",
+"Under",
+-115,
+1.5,
+"fanduel"
+],
+[
+"Malik Smart",
+"player_steals",
+"Over",
+-120,
+1.5,
+"draftkings"
+],
+[
+"Malik Smart",
+"player_steals",
+"Under",
+-110,
+1.5,
+"draftkings"
+],
+[
+"Malik Smart",
+"player_steals",
+"Over",
+-110,
+1.5,
+"fanduel"
+],
+[
+"Malik Smart",
+"player_steals",
+"Under",
+-120,
+1.5,
+"fanduel"
+],
+[
+"Malik Smart",
+"player_blocks",
+"Over",
+-110,
+1.5,
+"draftkings"
+],
+[
+"Malik Smart",
+"player_blocks",
+"Under",
+-120,
+1.5,
+"draftkings"
+],
+[
+"Malik Smart",
+"player_blocks",
+"Over",
+-115,
+1.5,
+"fanduel"
+],
+[
+"Malik Smart",
+"player_blocks",
+"Under",
+-115,
+1.5,
+"fanduel"
+],
+[
+"Malik Smart",
+"player_turnovers",
+"Over",
+-120,
+1.5,
+"draftkings"
+],
+[
+"Malik Smart",
+"player_turnovers",
+"Under",
+-105,
+1.5,
+"draftkings"
+],
+[
+"Malik Smart",
+"player_turnovers",
+"Over",
+-105,
+1.5,
+"fanduel"
+],
+[
+"Malik Smart",
+"player_turnovers",
+"Under",
+-125,
+1.5,
+"fanduel"
+],
+[
+"Malik Smart",
+"player_points_rebounds_assists",
+"Over",
+-110,
+30.0,
+"draftkings"
+],
+[
+"Malik Smart",
+"player_points_rebounds_assists",
+"Under",
+-110,
+30.0,
+"draftkings"
+],
+[
+"Devin Davis",
+"player_points",
+"Over",
+-120,
+14.5,
+"draftkings"
+],
+[
+"Devin Davis",
+"player_points",
+"Under",
+-105,
+14.5,
+"draftkings"
+],
+[
+"Devin Davis",
+"player_points",
+"Over",
+-120,
+14.5,
+"fanduel"
+],
+[
+"Devin Davis",
+"player_points",
+"Under",
+-100,
+14.5,
+"fanduel"
+],
+[
+"Devin Davis",
+"player_rebounds",
+"Over",
+-110,
+10.5,
+"draftkings"
+],
+[
+"Devin Davis",
+"player_rebounds",
+"Under",
+-110,
+10.5,
+"draftkings"
+],
+[
+"Devin Davis",
+"player_rebounds",
+"Over",
+-105,
+10.5,
+"fanduel"
+],
+[
+"Devin Davis",
+"player_rebounds",
+"Under",
+-125,
+10.5,
+"fanduel"
+],
+[
+"Devin Davis",
+"player_assists",
+"Over",
+-110,
+1.5,
+"draftkings"
+],
+[
+"Devin Davis",
+"player_assists",
+"Under",
+-115,
+1.5,
+"draftkings"
+],
+[
+"Devin Davis",
+"player_assists",
+"Over",
+-105,
+1.5,
+"fanduel"
+],
+[
+"Devin Davis",
+"player_assists",
+"Under",
+-125,
+1.5,
+"fanduel"
+],
+[
+"Devin Davis",
+"player_threes",
+"Over",
+-125,
+0.5,
+"draftkings"
+],
+[
+"Devin Davis",
+"player_threes",
+"Under",
+-95,
+0.5,
+"draftkings"
+],
+[
+"Devin Davis",
+"player_threes",
+"Over",
+-115,
+0.5,
+"fanduel"
+],
+[
+"Devin Davis",
+"player_threes",
+"Under",
+-105,
+0.5,
+"fanduel"
+],
+[
+"Devin Davis",
+"player_steals",
+"Over",
+-125,
+0.5,
+"draftkings"
+],
+[
+"Devin Davis",
+"player_steals",
+"Under",
+-95,
+0.5,
+"draftkings"
+],
+[
+"Devin Davis",
+"player_steals",
+"Over",
+-110,
+0.5,
+"fanduel"
+],
+[
+"Devin Davis",
+"player_steals",
+"Under",
+-110,
+0.5,
+"fanduel"
+],
+[
+"Devin Davis",
+"player_blocks",
+"Over",
+-120,
+1.5,
+"draftkings"
+],
+[
+"Devin Davis",
+"player_blocks",
+"Under",
+-105,
+1.5,
+"draftkings"
+],
+[
+"Devin Davis",
+"player_blocks",
+"Over",
+-110,
+1.5,
+"fanduel"
+],
+[
+"Devin Davis",
+"player_blocks",
+"Under",
+-115,
+1.5,
+"fanduel"
+],
+[
+"Devin Davis",
+"player_turnovers",
+"Over",
+-115,
+1.5,
+"draftkings"
+],
+[
+"Devin Davis",
+"player_turnovers",
+"Under",
+-115,
+1.5,
+"draftkings"
+],
+[
+"Devin Davis",
+"player_turnovers",
+"Over",
+-120,
+1.5,
+"fanduel"
+],
+[
+"Devin Davis",
+"player_turnovers",
+"Under",
+-105,
+1.5,
+"fanduel"
+],
+[
+"Devin Davis",
+"player_points_rebounds_assists",
+"Over",
+-110,
+28.5,
+"draftkings"
+],
+[
+"Devin Davis",
+"player_points_rebounds_assists",
+"Under",
+-110,
+28.5,
+"draftkings"
+],
+[
+"Trey Pritchard",
+"player_points",
+"Over",
+-115,
+11.5,
+"draftkings"
+],
+[
+"Trey Pritchard",
+"player_points",
+"Under",
+-115,
+11.5,
+"draftkings"
+],
+[
+"TREY PRITCHARD",
+"player_points",
+"Over",
+-105,
+11.5,
+"fanduel"
+],
+[
+"TREY PRITCHARD",
+"player_points",
+"Under",
+-115,
+11.5,
+"fanduel"
+],
+[
+"Trey Pritchard",
+"player_rebounds",
+"Over",
+-115,
+2.5,
+"draftkings"
+],
+[
+"Trey Pritchard",
+"player_rebounds",
+"Under",
+-115,
+2.5,
+"draftkings"
+],
+[
+"Trey Pritchard",
+"player_rebounds",
+"Over",
+-105,
+2.5,
+"fanduel"
+],
+[
+"Trey Pritchard",
+"player_rebounds",
+"Under",
+-120,
+2.5,
+"fanduel"
+],
+[
+"Trey Pritchard",
+"player_assists",
+"Over",
+-125,
+3.5,
+"draftkings"
+],
+[
+"Trey Pritchard",
+"player_assists",
+"Under",
+-105,
+3.5,
+"draftkings"
+],
+[
+"Trey Pritchard",
+"player_assists",
+"Over",
+-120,
+3.5,
+"fanduel"
+],
+[
+"Trey Pritchard",
+"player_assists",
+"Under",
+-105,
+3.5,
+"fanduel"
+],
+[
+"Trey Pritchard",
+"player_threes",
+"Over",
+-120,
+1.5,
+"draftkings"
+],
+[
+"Trey Pritchard",
+"player_threes",
+"Under",
+-105,
+1.5,
+"draftkings"
+],
+[
+"Trey Pritchard",
+"player_threes",
+"Over",
+-125,
+1.5,
+"fanduel"
+],
+[
+"Trey Pritchard",
+"player_threes",
+"Under",
+-95,
+1.5,
+"fanduel"
+],
+[
+"Trey Pritchard",
+"player_steals",
+"Over",
+-105,
+0.5,
+"draftkings"
+],
+[
+"Trey Pritchard",
+"player_steals",
+"Under",
+-115,
+0.5,
+"draftkings"
+],
+[
+"Trey Pritchard",
+"player_steals",
+"Over",
+-120,
+0.5,
+"fanduel"
+],
+[
+"Trey Pritchard",
+"player_steals",
+"Under",
+-100,
+0.5,
+"fanduel"
+],
+[
+"Trey Pritchard",
+"player_blocks",
+"Over",
+-120,
+0.5,
+"draftkings"
+],
+[
+"Trey Pritchard",
+"player_blocks",
+"Under",
+-110,
+0.5,
+"draftkings"
+],
+[
+"Trey Pritchard",
+"player_blocks",
+"Over",
+-110,
+0.5,
+"fanduel"
+],
+[
+"Trey Pritchard",
+"player_blocks",
+"Under",
+-115,
+0.5,
+"fanduel"
+],
+[
+"Trey Pritchard",
+"player_turnovers",
+"Over",
+-105,
+1.5,
+"draftkings"
+],
+[
+"Trey Pritchard",
+"player_turnovers",
+"Under",
+-120,
+1.5,
+"draftkings"
+],
+[
+"Trey Pritchard",
+"player_turnovers",
+"Over",
+-115,
+1.5,
+"fanduel"
+],
+[
+"Trey Pritchard",
+"player_turnovers",
+"Under",
+-115,
+1.5,
+"fanduel"
+],
+[
+"Trey Pritchard",
+"player_points_rebounds_assists",
+"Over",
+-110,
+18.5,
+"draftkings"
+],
+[
+"Trey Pritchard",
+"player_points_rebounds_assists",
+"Under",
+-110,
+18.5,
+"draftkings"
+],
+[
+"Donte Booker",
+"player_points",
+"Over",
+-120,
+8.5,
+"draftkings"
+],
+[
+"Donte Booker",
+"player_points",
+"Under",
+-105,
+8.5,
+"draftkings"
+],
+[
+"Donte Booker",
+"player_points",
+"Over",
+-120,
+8.5,
+"fanduel"
+],
+[
+"Donte Booker",
+"player_points",
+"Under",
+-100,
+8.5,
+"fanduel"
+],
+[
+"Donte Booker",
+"player_rebounds",
+"Over",
+-110,
+3.5,
+"draftkings"
+],
+[
+"Donte Booker",
+"player_rebounds",
+"Under",
+-120,
+3.5,
+"draftkings"
+],
+[
+"Donte Booker",
+"player_rebounds",
+"Over",
+-105,
+3.5,
+"fanduel"
+],
+[
+"Donte Booker",
+"player_rebounds",
+"Under",
+-125,
+3.5,
+"fanduel"
+],
+[
+"Donte Booker",
+"player_assists",
+"Over",
+-110,
+1.5,
+"draftkings"
+],
+[
+"Donte Booker",
+"player_assists",
+"Under",
+-120,
+1.5,
+"draftkings"
+],
+[
+"Donte Booker",
+"player_assists",
+"Over",
+-105,
+1.5,
+"fanduel"
+],
+[
+"Donte Booker",
+"player_assists",
+"Under",
+-125,
+1.5,
+"fanduel"
+],
+[
+"Donte Booker",
+"player_threes",
+"Over",
+-120,
+1.5,
+"draftkings"
+],
+[
+"Donte Booker",
+"player_threes",
+"Under",
+-100,
+1.5,
+"draftkings"
+],
+[
+"Donte Booker",
+"player_threes",
+"Over",
+-120,
+1.5,
+"fanduel"
+],
+[
+"Donte Booker",
+"player_threes",
+"Under",
+-105,
+1.5,
+"fanduel"
+],
+[
+"Donte Booker",
+"player_steals",
+"Over",
+-110,
+0.5,
+"draftkings"
+],
+[
+"Donte Booker",
+"player_steals",
+"Under",
+-110,
+0.5,
+"draftkings"
+],
+[
+"Donte Booker",
+"player_steals",
+"Over",
+-115,
+0.5,
+"fanduel"
+],
+[
+"Donte Booker",
+"player_steals",
+"Under",
+-105,
+0.5,
+"fanduel"
+],
+[
+"Donte Booker",
+"player_blocks",
+"Over",
+-125,
+0.5,
+"draftkings"
+],
+[
+"Donte Booker",
+"player_blocks",
+"Under",
+-105,
+0.5,
+"draftkings"
+],
+[
+"Donte Booker",
+"player_blocks",
+"Over",
+-125,
+0.5,
+"fanduel"
+],
+[
+"Donte Booker",
+"player_blocks",
+"Under",
+-100,
+0.5,
+"fanduel"
+],
+[
+"Donte Booker",
+"player_turnovers",
+"Over",
+-125,
+0.5,
+"draftkings"
+],
+[
+"Donte Booker",
+"player_turnovers",
+"Under",
+-95,
+0.5,
+"draftkings"
+],
+[
+"Donte Booker",
+"player_turnovers",
+"Over",
+-105,
+0.5,
+"fanduel"
+],
+[
+"Donte Booker",
+"player_turnovers",
+"Under",
+-125,
+0.5,
+"fanduel"
+],
+[
+"Donte Booker",
+"player_points_rebounds_assists",
+"Over",
+-110,
+15.5,
+"draftkings"
+],
+[
+"Donte Booker",
+"player_points_rebounds_assists",
+"Under",
+-110,
+15.5,
+"draftkings"
+],
+[
+"Tyrese Lowry",
+"player_points",
+"Over",
+-105,
+8.5,
+"draftkings"
+],
+[
+"Tyrese Lowry",
+"player_points",
+"Under",
+-115,
+8.5,
+"draftkings"
+],
+[
+"TYRESE LOWRY",
+"player_points",
+"Over",
+-115,
+8.5,
+"fanduel"
+],
+[
+"TYRESE LOWRY",
+"player_points",
+"Under",
+-110,
+8.5,
+"fanduel"
+],
+[
+"Tyrese Lowry",
+"player_rebounds",
+"Over",
+-105,
+4.5,
+"draftkings"
+],
+[
+"Tyrese Lowry",
+"player_rebounds",
+"Under",
+-125,
+4.5,
+"draftkings"
+],
+[
+"Tyrese Lowry",
+"player_rebounds",
+"Over",
+-105,
+4.5,
+"fanduel"
+],
+[
+"Tyrese Lowry",
+"player_rebounds",
+"Under",
+-120,
+4.5,
+"fanduel"
+],
+[
+"Tyrese Lowry",
+"player_assists",
+"Over",
+-120,
+1.5,
+"draftkings"
+],
+[
+"Tyrese Lowry",
+"player_assists",
+"Under",
+-100,
+1.5,
+"draftkings"
+],
+[
+"Tyrese Lowry",
+"player_assists",
+"Over",
+-105,
+1.5,
+"fanduel"
+],
+[
+"Tyrese Lowry",
+"player_assists",
+"Under",
+-115,
+1.5,
+"fanduel"
+],
+[
+"Tyrese Lowry",
+"player_threes",
+"Over",
+-105,
+0.5,
+"draftkings"
+],
+[
+"Tyrese Lowry",
+"player_threes",
+"Under",
+-125,
+0.5,
+"draftkings"
+],
+[
+"Tyrese Lowry",
+"player_threes",
+"Over",
+-115,
+0.5,
+"fanduel"
+],
+[
+"Tyrese Lowry",
+"player_threes",
+"Under",
+-110,
+0.5,
+"fanduel"
+],
+[
+"Tyrese Lowry",
+"player_steals",
+"Over",
+-125,
+0.5,
+"draftkings"
+],
+[
+"Tyrese Lowry",
+"player_steals",
+"Under",
+-95,
+0.5,
+"draftkings"
+],
+[
+"Tyrese Lowry",
+"player_steals",
+"Over",
+-125,
+0.5,
+"fanduel"
+],
+[
+"Tyrese Lowry",
+"player_steals",
+"Under",
+-95,
+0.5,
+"fanduel"
+],
+[
+"Tyrese Lowry",
+"player_blocks",
+"Over",
+-125,
+0.5,
+"draftkings"
+],
+[
+"Tyrese Lowry",
+"player_blocks",
+"Under",
+-105,
+0.5,
+"draftkings"
+],
+[
+"Tyrese Lowry",
+"player_blocks",
+"Over",
+-125,
+0.5,
+"fanduel"
+],
+[
+"Tyrese Lowry",
+"player_blocks",
+"Under",
+-105,
+0.5,
+"fanduel"
+],
+[
+"Tyrese Lowry",
+"player_turnovers",
+"Over",
+-105,
+1.5,
+"draftkings"
+],
+[
+"Tyrese Lowry",
+"player_turnovers",
+"Under",
+-125,
+1.5,
+"draftkings"
+],
+[
+"Tyrese Lowry",
+"player_turnovers",
+"Over",
+-125,
+1.5,
+"fanduel"
+],
+[
+"Tyrese Lowry",
+"player_turnovers",
+"Under",
+-95,
+1.5,
+"fanduel"
+],
+[
+"Tyrese Lowry",
+"player_points_rebounds_assists",
+"Over",
+-110,
+15.0,
+"draftkings"
+],
+[
+"Tyrese Lowry",
+"player_points_rebounds_assists",
+"Under",
+-110,
+15.0,
+"draftkings"
+],
+[
+"Josh LaVine",
+"player_points",
+"Over",
+-110,
+7.5,
+"draftkings"
+],
+[
+"Josh LaVine",
+"player_points",
+"Under",
+-120,
+7.5,
+"draftkings"
+],
+[
+"Josh LaVine",
+"player_points",
+"Over",
+-110,
+7.5,
+"fanduel"
+],
+[
+"Josh LaVine",
+"player_points",
+"Under",
+-120,
+7.5,
+"fanduel"
+],
+[
+"Josh LaVine",
+"player_rebounds",
+"Over",
+-110,
+2.5,
+"draftkings"
+],
+[
+"Josh LaVine",
+"player_rebounds",
+"Under",
+-115,
+2.5,
+"draftkings"
+],
+[
+"Josh LaVine",
+"player_rebounds",
+"Over",
+-110,
+2.5,
+"fanduel"
+],
+[
+"Josh LaVine",
+"player_rebounds",
+"Under",
+-110,
+2.5,
+"fanduel"
+],
+[
+"Josh LaVine",
+"player_assists",
+"Over",
+-110,
+1.5,
+"draftkings"
+],
+[
+"Josh LaVine",
+"player_assists",
+"Under",
+-110,
+1.5,
+"draftkings"
+],
+[
+"Josh LaVine",
+"player_assists",
+"Over",
+-105,
+1.5,
+"fanduel"
+],
+[
+"Josh LaVine",
+"player_assists",
+"Under",
+-120,
+1.5,
+"fanduel"
+],
+[
+"Josh LaVine",
+"player_threes",
+"Over",
+-110,
+1.5,
+"draftkings"
+],
+[
+"Josh LaVine",
+"player_threes",
+"Under",
+-110,
+1.5,
+"draftkings"
+],
+[
+"Josh LaVine",
+"player_threes",
+"Over",
+-110,
+1.5,
+"fanduel"
+],
+[
+"Josh LaVine",
+"player_threes",
+"Under",
+-115,
+1.5,
+"fanduel"
+],
+[
+"Josh LaVine",
+"player_steals",
+"Over",
+-125,
+0.5,
+"draftkings"
+],
+[
+"Josh LaVine",
+"player_steals",
+"Under",
+-105,
+0.5,
+"draftkings"
+],
+[
+"Josh LaVine",
+"player_steals",
+"Over",
+-110,
+0.5,
+"fanduel"
+],
+[
+"Josh LaVine",
+"player_steals",
+"Under",
+-115,
+0.5,
+"fanduel"
+],
+[
+"Josh LaVine",
+"player_blocks",
+"Over",
+-125,
+0.5,
+"draftkings"
+],
+[
+"Josh LaVine",
+"player_blocks",
+"Under",
+-105,
+0.5,
+"draftkings"
+],
+[
+"Josh LaVine",
+"player_blocks",
+"Over",
+-105,
+0.5,
+"fanduel"
+],
+[
+"Josh LaVine",
+"player_blocks",
+"Under",
+-125,
+0.5,
+"fanduel"
+],
+[
+"Josh LaVine",
+"player_turnovers",
+"Over",
+-115,
+0.5,
+"draftkings"
+],
+[
+"Josh LaVine",
+"player_turnovers",
+"Under",
+-115,
+0.5,
+"draftkings"
+],
+[
+"Josh LaVine",
+"player_turnovers",
+"Over",
+-110,
+0.5,
+"fanduel"
+],
+[
+"Josh LaVine",
+"player_turnovers",
+"Under",
+-115,
+0.5,
+"fanduel"
+],
+[
+"Josh LaVine",
+"player_points_rebounds_assists",
+"Over",
+-110,
+12.0,
+"draftkings"
+],
+[
+"Josh LaVine",
+"player_points_rebounds_assists",
+"Under",
+-110,
+12.0,
+"draftkings"
+],
+[
+"Josh Stewart",
+"player_points",
+"Over",
+-125,
+20.5,
+"draftkings"
+],
+[
+"Josh Stewart",
+"player_points",
+"Under",
+-95,
+20.5,
+"draftkings"
+],
+[
+"Josh Stewart",
+"player_points",
+"Over",
+-120,
+20.5,
+"fanduel"
+],
+[
+"Josh Stewart",
+"player_points",
+"Under",
+-100,
+20.5,
+"fanduel"
+],
+[
+"Josh Stewart",
+"player_rebounds",
+"Over",
+-125,
+3.5,
+"draftkings"
+],
+[
+"Josh Stewart",
+"player_rebounds",
+"Under",
+-105,
+3.5,
+"draftkings"
+],
+[
+"Josh Stewart",
+"player_rebounds",
+"Over",
+-125,
+3.5,
+"fanduel"
+],
+[
+"Josh Stewart",
+"player_rebounds",
+"Under",
+-105,
+3.5,
+"fanduel"
+],
+[
+"Josh Stewart",
+"player_assists",
+"Over",
+-105,
+6.5,
+"draftkings"
+],
+[
+"Josh Stewart",
+"player_assists",
+"Under",
+-115,
+6.5,
+"draftkings"
+],
+[
+"Josh Stewart",
+"player_assists",
+"Over",
+-110,
+6.5,
+"fanduel"
+],
+[
+"Josh Stewart",
+"player_assists",
+"Under",
+-120,
+6.5,
+"fanduel"
+],
+[
+"Josh Stewart",
+"player_threes",
+"Over",
+-110,
+2.5,
+"draftkings"
+],
+[
+"Josh Stewart",
+"player_threes",
+"Under",
+-110,
+2.5,
+"draftkings"
+],
+[
+"Josh Stewart",
+"player_threes",
+"Over",
+-110,
+2.5,
+"fanduel"
+],
+[
+"Josh Stewart",
+"player_threes",
+"Under",
+-115,
+2.5,
+"fanduel"
+],
+[
+"Josh Stewart",
+"player_steals",
+"Over",
+-110,
+0.5,
+"draftkings"
+],
+[
+"Josh Stewart",
+"player_steals",
+"Under",
+-115,
+0.5,
+"draftkings"
+],
+[
+"Josh Stewart",
+"player_steals",
+"Over",
+-110,
+0.5,
+"fanduel"
+],
+[
+"Josh Stewart",
+"player_steals",
+"Under",
+-110,
+0.5,
+"fanduel"
+],
+[
+"Josh Stewart",
+"player_blocks",
+"Over",
+-125,
+0.5,
+"draftkings"
+],
+[
+"Josh Stewart",
+"player_blocks",
+"Under",
+-105,
+0.5,
+"draftkings"
+],
+[
+"Josh Stewart",
+"player_blocks",
+"Over",
+-125,
+0.5,
+"fanduel"
+],
+[
+"Josh Stewart",
+"player_blocks",
+"Under",
+-105,
+0.5,
+"fanduel"
+],
+[
+"Josh Stewart",
+"player_turnovers",
+"Over",
+-110,
+2.5,
+"draftkings"
+],
+[
+"Josh Stewart",
+"player_turnovers",
+"Under",
+-115,
+2.5,
+"draftkings"
+],
+[
+"Josh Stewart",
+"player_turnovers",
+"Over",
+-110,
+2.5,
+"fanduel"
+],
+[
+"Josh Stewart",
+"player_turnovers",
+"Under",
+-110,
+2.5,
+"fanduel"
+],
+[
+"Josh Stewart",
+"player_points_rebounds_assists",
+"Over",
+-110,
+30.5,
+"draftkings"
+],
+[
+"Josh Stewart",
+"player_points_rebounds_assists",
+"Under",
+-110,
+30.5,
+"draftkings"
+],
+[
+"Malik Stewart",
+"player_points",
+"Over",
+-115,
+18.5,
+"draftkings"
+],
+[
+"Malik Stewart",
+"player_points",
+"Under",
+-110,
+18.5,
+"draftkings"
+],
+[
+"Malik Stewart",
+"player_points",
+"Over",
+-110,
+18.5,
+"fanduel"
+],
+[
+"Malik Stewart",
+"player_points",
+"Under",
+-120,
+18.5,
+"fanduel"
+],
+[
+"Malik Stewart",
+"player_rebounds",
+"Over",
+-105,
+3.5,
+"draftkings"
+],
+[
+"Malik Stewart",
+"player_rebounds",
+"Under",
+-125,
+3.5,
+"draftkings"
+],
+[
+"Malik Stewart",
+"player_rebounds",
+"Over",
+-105,
+3.5,
+"fanduel"
+],
+[
+"Malik Stewart",
+"player_rebounds",
+"Under",
+-120,
+3.5,
+"fanduel"
+],
+[
+"Malik Stewart",
+"player_assists",
+"Over",
+-120,
+2.5,
+"draftkings"
+],
+[
+"Malik Stewart",
+"player_assists",
+"Under",
+-100,
+2.5,
+"draftkings"
+],
+[
+"Malik Stewart",
+"player_assists",
+"Over",
+-115,
+2.5,
+"fanduel"
+],
+[
+"Malik Stewart",
+"player_assists",
+"Under",
+-105,
+2.5,
+"fanduel"
+],
+[
+"Malik Stewart",
+"player_threes",
+"Over",
+-120,
+2.5,
+"draftkings"
+],
+[
+"Malik Stewart",
+"player_threes",
+"Under",
+-105,
+2.5,
+"draftkings"
+],
+[
+"Malik Stewart",
+"player_threes",
+"Over",
+-115,
+2.5,
+"fanduel"
+],
+[
+"Malik Stewart",
+"player_threes",
+"Under",
+-110,
+2.5,
+"fanduel"
+],
+[
+"Malik Stewart",
+"player_steals",
+"Over",
+-125,
+0.5,
+"draftkings"
+],
+[
+"Malik Stewart",
+"player_steals",
+"Under",
+-100,
+0.5,
+"draftkings"
+],
+[
+"Malik Stewart",
+"player_steals",
+"Over",
+-125,
+0.5,
+"fanduel"
+],
+[
+"Malik Stewart",
+"player_steals",
+"Under",
+-105,
+0.5,
+"fanduel"
+],
+[
+"Malik Stewart",
+"player_blocks",
+"Over",
+-125,
+0.5,
+"draftkings"
+],
+[
+"Malik Stewart",
+"player_blocks",
+"Under",
+-95,
+0.5,
+"draftkings"
+],
+[
+"Malik Stewart",
+"player_blocks",
+"Over",
+-115,
+0.5,
+"fanduel"
+],
+[
+"Malik Stewart",
+"player_blocks",
+"Under",
+-110,
+0.5,
+"fanduel"
+],
+[
+"Malik Stewart",
+"player_turnovers",
+"Over",
+-105,
+1.5,
+"draftkings"
+],
+[
+"Malik Stewart",
+"player_turnovers",
+"Under",
+-125,
+1.5,
+"draftkings"
+],
+[
+"Malik Stewart",
+"player_turnovers",
+"Over",
+-105,
+1.5,
+"fanduel"
+],
+[
+"Malik Stewart",
+"player_turnovers",
+"Under",
+-125,
+1.5,
+"fanduel"
+],
+[
+"Malik Stewart",
+"player_points_rebounds_assists",
+"Over",
+-110,
+25.5,
+"draftkings"
+],
+[
+"Malik Stewart",
+"player_points_rebounds_assists",
+"Under",
+-110,
+25.5,
+"draftkings"
+],
+[
+"Marcus Johnson",
+"player_points",
+"Over",
+-115,
+17.5,
+"draftkings"
+],
+[
+"Marcus Johnson",
+"player_points",
+"Under",
+-110,
+17.5,
+"draftkings"
+],
+[
+"Marcus Johnson",
+"player_points",
+"Over",
+-115,
+17.5,
+"fanduel"
+],
+[
+"Marcus Johnson",
+"player_points",
+"Under",
+-105,
+17.5,
+"fanduel"
+],
+[
+"Marcus Johnson",
+"player_rebounds",
+"Over",
+-105,
+5.5,
+"draftkings"
+],
+[
+"Marcus Johnson",
+"player_rebounds",
+"Under",
+-125,
+5.5,
+"draftkings"
+],
+[
+"Marcus Johnson",
+"player_rebounds",
+"Over",
+-105,
+5.5,
+"fanduel"
+],
+[
+"Marcus Johnson",
+"player_rebounds",
+"Under",
+-115,
+5.5,
+"fanduel"
+],
+[
+"Marcus Johnson",
+"player_assists",
+"Over",
+-120,
+2.5,
+"draftkings"
+],
+[
+"Marcus Johnson",
+"player_assists",
+"Under",
+-100,
+2.5,
+"draftkings"
+],
+[
+"Marcus Johnson",
+"player_assists",
+"Over",
+-120,
+2.5,
+"fanduel"
+],
+[
+"Marcus Johnson",
+"player_assists",
+"Under",
+-110,
+2.5,
+"fanduel"
+],
+[
+"Marcus Johnson",
+"player_threes",
+"Over",
+-115,
+2.5,
+"draftkings"
+],
+[
+"Marcus Johnson",
+"player_threes",
+"Under",
+-110,
+2.5,
+"draftkings"
+],
+[
+"Marcus Johnson",
+"player_threes",
+"Over",
+-105,
+2.5,
+"fanduel"
+],
+[
+"Marcus Johnson",
+"player_threes",
+"Under",
+-125,
+2.5,
+"fanduel"
+],
+[
+"Marcus Johnson",
+"player_steals",
+"Over",
+-120,
+0.5,
+"draftkings"
+],
+[
+"Marcus Johnson",
+"player_steals",
+"Under",
+-100,
+0.5,
+"draftkings"
+],
+[
+"MARCUS JOHNSON",
+"player_steals",
+"Over",
+-110,
+0.5,
+"fanduel"
+],
+[
+"MARCUS JOHNSON",
+"player_steals",
+"Under",
+-115,
+0.5,
+"fanduel"
+],
+[
+"Marcus Johnson",
+"player_blocks",
+"Over",
+-110,
+0.5,
+"draftkings"
+],
+[
+"Marcus Johnson",
+"player_blocks",
+"Under",
+-115,
+0.5,
+"draftkings"
+],
+[
+"MARCUS JOHNSON",
+"player_blocks",
+"Over",
+-115,
+0.5,
+"fanduel"
+],
+[
+"MARCUS JOHNSON",
+"player_blocks",
+"Under",
+-105,
+0.5,
+"fanduel"
+],
+[
+"Marcus Johnson",
+"player_turnovers",
+"Over",
+-115,
+1.5,
+"draftkings"
+],
+[
+"Marcus Johnson",
+"player_turnovers",
+"Under",
+-110,
+1.5,
+"draftkings"
+],
+[
+"Marcus Johnson",
+"player_turnovers",
+"Over",
+-115,
+1.5,
+"fanduel"
+],
+[
+"Marcus Johnson",
+"player_turnovers",
+"Under",
+-110,
+1.5,
+"fanduel"
+],
+[
+"Marcus Johnson",
+"player_points_rebounds_assists",
+"Over",
+-110,
+28.0,
+"draftkings"
+],
+[
+"Marcus Johnson",
+"player_points_rebounds_assists",
+"Under",
+-110,
+28.0,
+"draftkings"
+],
+[
+"Jaylen Brown",
+"player_points",
+"Over",
+-110,
+17.5,
+"draftkings"
+],
+[
+"Jaylen Brown",
+"player_points",
+"Under",
+-110,
+17.5,
+"draftkings"
+],
+[
+"Jaylen Brown",
+"player_points",
+"Over",
+-115,
+17.5,
+"fanduel"
+],
+[
+"Jaylen Brown",
+"player_points",
+"Under",
+-105,
+17.5,
+"fanduel"
+],
+[
+"Jaylen Brown",
+"player_rebounds",
+"Over",
+-115,
+8.5,
+"draftkings"
+],
+[
+"Jaylen Brown",
+"player_rebounds",
+"Under",
+-115,
+8.5,
+"draftkings"
+],
+[
+"Jaylen Brown",
+"player_rebounds",
+"Over",
+-120,
+8.5,
+"fanduel"
+],
+[
+"Jaylen Brown",
+"player_rebounds",
+"Under",
+-105,
+8.5,
+"fanduel"
+],
+[
+"Jaylen Brown",
+"player_assists",
+"Over",
+-110,
+2.5,
+"draftkings"
+],
+[
+"Jaylen Brown",
+"player_assists",
+"Under",
+-115,
+2.5,
+"draftkings"
+],
+[
+"Jaylen Brown",
+"player_assists",
+"Over",
+-115,
+2.5,
+"fanduel"
+],
+[
+"Jaylen Brown",
+"player_assists",
+"Under",
+-105,
+2.5,
+"fanduel"
+],
+[
+"Jaylen Brown",
+"player_threes",
+"Over",
+-105,
+1.5,
+"draftkings"
+],
+[
+"Jaylen Brown",
+"player_threes",
+"Under",
+-125,
+1.5,
+"draftkings"
+],
+[
+"Jaylen Brown",
+"player_threes",
+"Over",
+-110,
+1.5,
+"fanduel"
+],
+[
+"Jaylen Brown",
+"player_threes",
+"Under",
+-110,
+1.5,
+"fanduel"
+],
+[
+"Jaylen Brown",
+"player_steals",
+"Over",
+-110,
+1.5,
+"draftkings"
+],
+[
+"Jaylen Brown",
+"player_steals",
+"Under",
+-115,
+1.5,
+"draftkings"
+],
+[
+"Jaylen Brown",
+"player_steals",
+"Over",
+-125,
+1.5,
+"fanduel"
+],
+[
+"Jaylen Brown",
+"player_steals",
+"Under",
+-105,
+1.5,
+"fanduel"
+],
+[
+"Jaylen Brown",
+"player_blocks",
+"Over",
+-125,
+0.5,
+"draftkings"
+],
+[
+"Jaylen Brown",
+"player_blocks",
+"Under",
+-100,
+0.5,
+"draftkings"
+],
+[
+"Jaylen Brown",
+"player_blocks",
+"Over",
+-110,
+0.5,
+"fanduel"
+],
+[
+"Jaylen Brown",
+"player_blocks",
+"Under",
+-110,
+0.5,
+"fanduel"
+],
+[
+"Jaylen Brown",
+"player_turnovers",
+"Over",
+-110,
+1.5,
+"draftkings"
+],
+[
+"Jaylen Brown",
+"player_turnovers",
+"Under",
+-110,
+1.5,
+"draftkings"
+],
+[
+"Jaylen Brown",
+"player_turnovers",
+"Over",
+-105,
+1.5,
+"fanduel"
+],
+[
+"Jaylen Brown",
+"player_turnovers",
+"Under",
+-125,
+1.5,
+"fanduel"
+],
+[
+"Jaylen Brown",
+"player_points_rebounds_assists",
+"Over",
+-110,
+29.5,
+"draftkings"
+],
+[
+"Jaylen Brown",
+"player_points_rebounds_assists",
+"Under",
+-110,
+29.5,
+"draftkings"
+],
+[
+"Anthony Stewart",
+"player_points",
+"Over",
+-120,
+14.5,
+"draftkings"
+],
+[
+"Anthony Stewart",
+"player_points",
+"Under",
+-110,
+14.5,
+"draftkings"
+],
+[
+"Anthony Stewart",
+"player_points",
+"Over",
+-120,
+14.5,
+"fanduel"
+],
+[
+"Anthony Stewart",
+"player_points",
+"Under",
+-105,
+14.5,
+"fanduel"
+],
+[
+"Anthony Stewart",
+"player_rebounds",
+"Over",
+-120,
+10.5,
+"draftkings"
+],
+[
+"Anthony Stewart",
+"player_rebounds",
+"Under",
+-105,
+10.5,
+"draftkings"
+],
+[
+"Anthony Stewart",
+"player_rebounds",
+"Over",
+-110,
+10.5,
+"fanduel"
+],
+[
+"Anthony Stewart",
+"player_rebounds",
+"Under",
+-110,
+10.5,
+"fanduel"
+],
+[
+"Anthony Stewart",
+"player_assists",
+"Over",
+-110,
+2.5,
+"draftkings"
+],
+[
+"Anthony Stewart",
+"player_assists",
+"Under",
+-115,
+2.5,
+"draftkings"
+],
+[
+"Anthony Stewart",
+"player_assists",
+"Over",
+-125,
+2.5,
+"fanduel"
+],
+[
+"Anthony Stewart",
+"player_assists",
+"Under",
+-100,
+2.5,
+"fanduel"
+],
+[
+"Anthony Stewart",
+"player_threes",
+"Over",
+-105,
+0.5,
+"draftkings"
+],
+[
+"Anthony Stewart",
+"player_threes",
+"Under",
+-115,
+0.5,
+"draftkings"
+],
+[
+"Anthony Stewart",
+"player_threes",
+"Over",
+-110,
+0.5,
+"fanduel"
+],
+[
+"Anthony Stewart",
+"player_threes",
+"Under",
+-110,
+0.5,
+"fanduel"
+],
+[
+"Anthony Stewart",
+"player_steals",
+"Over",
+-115,
+0.5,
+"draftkings"
+],
+[
+"Anthony Stewart",
+"player_steals",
+"Under",
+-105,
+0.5,
+"draftkings"
+],
+[
+"Anthony Stewart",
+"player_steals",
+"Over",
+-110,
+0.5,
+"fanduel"
+],
+[
+"Anthony Stewart",
+"player_steals",
+"Under",
+-110,
+0.5,
+"fanduel"
+],
+[
+"Anthony Stewart",
+"player_blocks",
+"Over",
+-120,
+1.5,
+"draftkings"
+],
+[
+"Anthony Stewart",
+"player_blocks",
+"Under",
+-110,
+1.5,
+"draftkings"
+],
+[
+"ANTHONY STEWART",
+"player_blocks",
+"Over",
+-110,
+1.5,
+"fanduel"
+],
+[
+"ANTHONY STEWART",
+"player_blocks",
+"Under",
+-115,
+1.5,
+"fanduel"
+],
+[
+"Anthony Stewart",
+"player_turnovers",
+"Over",
+-105,
+1.5,
+"draftkings"
+],
+[
+"Anthony Stewart",
+"player_turnovers",
+"Under",
+-115,
+1.5,
+"draftkings"
+],
+[
+"Anthony Stewart",
+"player_turnovers",
+"Over",
+-115,
+1.5,
+"fanduel"
+],
+[
+"Anthony Stewart",
+"player_turnovers",
+"Under",
+-110,
+1.5,
+"fanduel"
+],
+[
+"Anthony Stewart",
+"player_points_rebounds_assists",
+"Over",
+-110,
+27.5,
+"draftkings"
+],
+[
+"Anthony Stewart",
+"player_points_rebounds_assists",
+"Under",
+-110,
+27.5,
+"draftkings"
+],
+[
+"Donte Kennard",
+"player_points",
+"Over",
+-125,
+10.5,
+"draftkings"
+],
+[
+"Donte Kennard",
+"player_points",
+"Under",
+-105,
+10.5,
+"draftkings"
+],
+[
+"Donte Kennard",
+"player_points",
+"Over",
+-105,
+10.5,
+"fanduel"
+],
+[
+"Donte Kennard",
+"player_points",
+"Under",
+-115,
+10.5,
+"fanduel"
+],
+[
+"Donte Kennard",
+"player_rebounds",
+"Over",
+-125,
+2.5,
+"draftkings"
+],
+[
+"Donte Kennard",
+"player_rebounds",
+"Under",
+-105,
+2.5,
+"draftkings"
+],
+[
+"Donte Kennard",
+"player_rebounds",
+"Over",
+-125,
+2.5,
+"fanduel"
+],
+[
+"Donte Kennard",
+"player_rebounds",
+"Under",
+-100,
+2.5,
+"fanduel"
+],
+[
+"Donte Kennard",
+"player_assists",
+"Over",
+-105,
+2.5,
+"draftkings"
+],
+[
+"Donte Kennard",
+"player_assists",
+"Under",
+-120,
+2.5,
+"draftkings"
+],
+[
+"Donte Kennard",
+"player_assists",
+"Over",
+-120,
+2.5,
+"fanduel"
+],
+[
+"Donte Kennard",
+"player_assists",
+"Under",
+-100,
+2.5,
+"fanduel"
+],
+[
+"Donte Kennard",
+"player_threes",
+"Over",
+-125,
+1.5,
+"draftkings"
+],
+[
+"Donte Kennard",
+"player_threes",
+"Under",
+-105,
+1.5,
+"draftkings"
+],
+[
+"Donte Kennard",
+"player_threes",
+"Over",
+-115,
+1.5,
+"fanduel"
+],
+[
+"Donte Kennard",
+"player_threes",
+"Under",
+-110,
+1.5,
+"fanduel"
+],
+[
+"Donte Kennard",
+"player_steals",
+"Over",
+-105,
+0.5,
+"draftkings"
+],
+[
+"Donte Kennard",
+"player_steals",
+"Under",
+-115,
+0.5,
+"draftkings"
+],
+[
+"Donte Kennard",
+"player_steals",
+"Over",
+-105,
+0.5,
+"fanduel"
+],
+[
+"Donte Kennard",
+"player_steals",
+"Under",
+-115,
+0.5,
+"fanduel"
+],
+[
+"Donte Kennard",
+"player_blocks",
+"Over",
+-105,
+0.5,
+"draftkings"
+],
+[
+"Donte Kennard",
+"player_blocks",
+"Under",
+-120,
+0.5,
+"draftkings"
+],
+[
+"Donte Kennard",
+"player_blocks",
+"Over",
+-110,
+0.5,
+"fanduel"
+],
+[
+"Donte Kennard",
+"player_blocks",
+"Under",
+-120,
+0.5,
+"fanduel"
+],
+[
+"Donte Kennard",
+"player_turnovers",
+"Over",
+-125,
+1.5,
+"draftkings"
+],
+[
+"Donte Kennard",
+"player_turnovers",
+"Under",
+-95,
+1.5,
+"draftkings"
+],
+[
+"Donte Kennard",
+"player_turnovers",
+"Over",
+-120,
+1.5,
+"fanduel"
+],
+[
+"Donte Kennard",
+"player_turnovers",
+"Under",
+-110,
+1.5,
+"fanduel"
+],
+[
+"Donte Kennard",
+"player_points_rebounds_assists",
+"Over",
+-110,
+16.5,
+"draftkings"
+],
+[
+"Donte Kennard",
+"player_points_rebounds_assists",
+"Under",
+-110,
+16.5,
+"draftkings"
+],
+[
+"Payton Murphy",
+"player_points",
+"Over",
+-120,
+9.5,
+"draftkings"
+],
+[
+"Payton Murphy",
+"player_points",
+"Under",
+-105,
+9.5,
+"draftkings"
+],
+[
+"Payton Murphy",
+"player_points",
+"Over",
+-120,
+9.5,
+"fanduel"
+],
+[
+"Payton Murphy",
+"player_points",
+"Under",
+-110,
+9.5,
+"fanduel"
+],
+[
+"Payton Murphy",
+"player_rebounds",
+"Over",
+-110,
+3.5,
+"draftkings"
+],
+[
+"Payton Murphy",
+"player_rebounds",
+"Under",
+-110,
+3.5,
+"draftkings"
+],
+[
+"Payton Murphy",
+"player_rebounds",
+"Over",
+-105,
+3.5,
+"fanduel"
+],
+[
+"Payton Murphy",
+"player_rebounds",
+"Under",
+-120,
+3.5,
+"fanduel"
+],
+[
+"Payton Murphy",
+"player_assists",
+"Over",
+-110,
+1.5,
+"draftkings"
+],
+[
+"Payton Murphy",
+"player_assists",
+"Under",
+-120,
+1.5,
+"draftkings"
+],
+[
+"Payton Murphy",
+"player_assists",
+"Over",
+-115,
+1.5,
+"fanduel"
+],
+[
+"Payton Murphy",
+"player_assists",
+"Under",
+-105,
+1.5,
+"fanduel"
+],
+[
+"Payton Murphy",
+"player_threes",
+"Over",
+-120,
+1.5,
+"draftkings"
+],
+[
+"Payton Murphy",
+"player_threes",
+"Under",
+-100,
+1.5,
+"draftkings"
+],
+[
+"Payton Murphy",
+"player_threes",
+"Over",
+-110,
+1.5,
+"fanduel"
+],
+[
+"Payton Murphy",
+"player_threes",
+"Under",
+-115,
+1.5,
+"fanduel"
+],
+[
+"Payton Murphy",
+"player_steals",
+"Over",
+-115,
+0.5,
+"draftkings"
+],
+[
+"Payton Murphy",
+"player_steals",
+"Under",
+-115,
+0.5,
+"draftkings"
+],
+[
+"Payton Murphy",
+"player_steals",
+"Over",
+-120,
+0.5,
+"fanduel"
+],
+[
+"Payton Murphy",
+"player_steals",
+"Under",
+-100,
+0.5,
+"fanduel"
+],
+[
+"Payton Murphy",
+"player_blocks",
+"Over",
+-125,
+0.5,
+"draftkings"
+],
+[
+"Payton Murphy",
+"player_blocks",
+"Under",
+-95,
+0.5,
+"draftkings"
+],
+[
+"Payton Murphy",
+"player_blocks",
+"Over",
+-120,
+0.5,
+"fanduel"
+],
+[
+"Payton Murphy",
+"player_blocks",
+"Under",
+-105,
+0.5,
+"fanduel"
+],
+[
+"Payton Murphy",
+"player_turnovers",
+"Over",
+-120,
+0.5,
+"draftkings"
+],
+[
+"Payton Murphy",
+"player_turnovers",
+"Under",
+-105,
+0.5,
+"draftkings"
+],
+[
+"Payton Murphy",
+"player_turnovers",
+"Over",
+-115,
+0.5,
+"fanduel"
+],
+[
+"Payton Murphy",
+"player_turnovers",
+"Under",
+-110,
+0.5,
+"fanduel"
+],
+[
+"Payton Murphy",
+"player_points_rebounds_assists",
+"Over",
+-110,
+16.0,
+"draftkings"
+],
+[
+"Payton Murphy",
+"player_points_rebounds_assists",
+"Under",
+-110,
+16.0,
+"draftkings"
+],
+[
+"Isaiah White",
+"player_points",
+"Over",
+-120,
+8.5,
+"draftkings"
+],
+[
+"Isaiah White",
+"player_points",
+"Under",
+-105,
+8.5,
+"draftkings"
+],
+[
+"Isaiah White",
+"player_points",
+"Over",
+-115,
+8.5,
+"fanduel"
+],
+[
+"Isaiah White",
+"player_points",
+"Under",
+-115,
+8.5,
+"fanduel"
+],
+[
+"Isaiah White",
+"player_rebounds",
+"Over",
+-105,
+4.5,
+"draftkings"
+],
+[
+"Isaiah White",
+"player_rebounds",
+"Under",
+-120,
+4.5,
+"draftkings"
+],
+[
+"Isaiah White",
+"player_rebounds",
+"Over",
+-115,
+4.5,
+"fanduel"
+],
+[
+"Isaiah White",
+"player_rebounds",
+"Under",
+-105,
+4.5,
+"fanduel"
+],
+[
+"Isaiah White",
+"player_assists",
+"Over",
+-115,
+1.5,
+"draftkings"
+],
+[
+"Isaiah White",
+"player_assists",
+"Under",
+-105,
+1.5,
+"draftkings"
+],
+[
+"Isaiah White",
+"player_assists",
+"Over",
+-110,
+1.5,
+"fanduel"
+],
+[
+"Isaiah White",
+"player_assists",
+"Under",
+-120,
+1.5,
+"fanduel"
+],
+[
+"Isaiah White",
+"player_threes",
+"Over",
+-120,
+0.5,
+"draftkings"
+],
+[
+"Isaiah White",
+"player_threes",
+"Under",
+-110,
+0.5,
+"draftkings"
+],
+[
+"Isaiah White",
+"player_threes",
+"Over",
+-125,
+0.5,
+"fanduel"
+],
+[
+"Isaiah White",
+"player_threes",
+"Under",
+-105,
+0.5,
+"fanduel"
+],
+[
+"Isaiah White",
+"player_steals",
+"Over",
+-110,
+0.5,
+"draftkings"
+],
+[
+"Isaiah White",
+"player_steals",
+"Under",
+-120,
+0.5,
+"draftkings"
+],
+[
+"Isaiah White",
+"player_steals",
+"Over",
+-115,
+0.5,
+"fanduel"
+],
+[
+"Isaiah White",
+"player_steals",
+"Under",
+-105,
+0.5,
+"fanduel"
+],
+[
+"Isaiah White",
+"player_blocks",
+"Over",
+-120,
+1.5,
+"draftkings"
+],
+[
+"Isaiah White",
+"player_blocks",
+"Under",
+-105,
+1.5,
+"draftkings"
+],
+[
+"Isaiah White",
+"player_blocks",
+"Over",
+-105,
+1.5,
+"fanduel"
+],
+[
+"Isaiah White",
+"player_blocks",
+"Under",
+-115,
+1.5,
+"fanduel"
+],
+[
+"Isaiah White",
+"player_turnovers",
+"Over",
+-105,
+0.5,
+"draftkings"
+],
+[
+"Isaiah White",
+"player_turnovers",
+"Under",
+-125,
+0.5,
+"draftkings"
+],
+[
+"Isaiah White",
+"player_turnovers",
+"Over",
+-125,
+0.5,
+"fanduel"
+],
+[
+"Isaiah White",
+"player_turnovers",
+"Under",
+-105,
+0.5,
+"fanduel"
+],
+[
+"Isaiah White",
+"player_points_rebounds_assists",
+"Over",
+-110,
+15.0,
+"draftkings"
+],
+[
+"Isaiah White",
+"player_points_rebounds_assists",
+"Under",
+-110,
+15.0,
+"draftkings"
+]
+]
+}

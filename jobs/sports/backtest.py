@@ -2,6 +2,10 @@
 
     python jobs/sports/backtest.py --sport MLB --n 20 --sims 4000 --every 2 --out bt/sports/MLB.jsonl --workers 2
     python jobs/sports/backtest.py --summary bt/sports/*.jsonl
+    python jobs/sports/backtest.py --sport NBA --proj-dir data/sports/nba --out bt/sports/NBA_props.jsonl
+                                  # replay with OUR projection CSVs (<proj-dir>/<date>/projections.csv or <proj-dir>/NBA_<date>.csv)
+                                  # swapped in for SaberSim's; slates without a file are skipped. Same fields, same grading,
+                                  # so the two jsonl files compare our props model against SaberSim lineup-for-lineup.
 
 Per slate and mode it writes one JSON line per contest kind (flagship / 20max / minimax): the lineups' real
 points, their percentile in the field, real rank and prize (ties split), ROI for entering the lineups at the
@@ -70,11 +74,46 @@ def grade(slate, ps, lineups, fields):
     return out
 
 
+def apply_proj_csv(slate, path):
+    """Replace SaberSim's proj / percentiles with ours (projections CSV: name, proj, p25..p99), matched by name.
+    Players without a row get proj 0 (never rostered). Returns the number of players matched."""
+    import csv
+    from build_lineups_sport import norm, fill_quantiles
+    rows = {norm(r.get("name") or ""): r for r in csv.DictReader(open(path, encoding="utf-8-sig"))}
+    hit = 0
+    for p in slate["players"]:
+        r = rows.get(norm(p["name"]))
+        if not r or not float(r.get("proj") or 0):
+            p["proj"] = 0.0
+            continue
+        hit += 1
+        p["proj"] = float(r["proj"])
+        p["q"] = {k: float(r.get(f"p{k}") or 0) for k in (25, 50, 75, 85, 95, 99)}
+        fill_quantiles(slate["sport"], p)
+    return hit
+
+
+def proj_csv_path(proj_dir, sport, date):
+    for cand in (os.path.join(proj_dir, date, "projections.csv"), os.path.join(proj_dir, f"{sport}_{date}.csv"),
+                 os.path.join(proj_dir, f"{date}.csv")):
+        if os.path.exists(cand):
+            return cand
+    return None
+
+
 def run_slate(args):
-    sport, date, modes, n, sims, seed, root = args
+    sport, date, modes, n, sims, seed, root = args[:7]
+    proj_dir = args[7] if len(args) > 7 else None
     t0 = time.time()
     try:
         slate = load_slate(sport, date, root)
+        if proj_dir:
+            pc = proj_csv_path(proj_dir, sport, date)
+            if not pc:
+                return date, None, "no projection csv"
+            hit = apply_proj_csv(slate, pc)
+            if hit < 2 * len(__import__("sports").RULES[sport]["slots"]):
+                return date, None, f"only {hit} players matched in {os.path.basename(pc)}"
         kinds = field_kinds(slate)
         if not kinds:
             return date, None, "no field"
@@ -119,6 +158,7 @@ def main(argv=None):
     ap.add_argument("--workers", type=int, default=2)
     ap.add_argument("--root", default=os.environ.get("SS_ALLSPORTS", os.path.expanduser("~/ssa")))
     ap.add_argument("--limit", type=int, default=0, help="stop after this many slates (chunked runs)")
+    ap.add_argument("--proj-dir", help="swap in our projection CSVs (<dir>/<date>/projections.csv or <dir>/<SPORT>_<date>.csv)")
     ap.add_argument("--out")
     ap.add_argument("--summary", nargs="*")
     a = ap.parse_args(argv)
@@ -139,7 +179,7 @@ def main(argv=None):
                 done.add(json.loads(line)["date"])
             except Exception:
                 pass
-    todo = [(a.sport, d, modes, a.n, a.sims, a.seed, a.root) for d in dates if d not in done]
+    todo = [(a.sport, d, modes, a.n, a.sims, a.seed, a.root, a.proj_dir) for d in dates if d not in done]
     if a.limit:
         todo = todo[:a.limit]
     print(f"{a.sport}: {len(dates)} slates, {len(todo)} to do, modes {modes}", file=sys.stderr)

@@ -23,7 +23,7 @@ SAMPLE = {"github.event.inputs.seasons": "2025", "github.event.inputs.reproject"
           "steps.changed.outputs.files": "data/slates/DKSalaries_2026_wk03_main.csv"}
 
 
-@pytest.mark.parametrize("path", sorted(JOBS.glob("*.py")) + sorted((ROOT / "tests").glob("*.py")), ids=lambda p: p.name)
+@pytest.mark.parametrize("path", sorted(JOBS.glob("*.py")) + sorted((JOBS / "sports").glob("*.py")) + sorted((ROOT / "tests").glob("*.py")), ids=lambda p: p.name)
 def test_compiles(path, tmp_path):
     py_compile.compile(str(path), cfile=str(tmp_path / "x.pyc"), doraise=True)
 
@@ -32,7 +32,7 @@ def workflow_commands():
     out = []
     for wf in WORKFLOWS:
         for line in wf.read_text().splitlines():
-            for m in re.finditer(r"python3? (jobs/[\w_]+\.py)([^|;&\n]*)", line):
+            for m in re.finditer(r"python3? (jobs/[\w_/]+\.py)([^|;&\n]*)", line):
                 args = re.sub(r"\$\{\{\s*([^}]+?)\s*\}\}", lambda g: SAMPLE.get(g.group(1), "x"), m.group(2))
                 args = re.sub(r"\$\{?[A-Za-z_][A-Za-z0-9_]*\}?", "ok", args)        # shell vars ($S = ok/warn/failed)
                 args = args.split("#")[0].strip().rstrip("\\").strip()

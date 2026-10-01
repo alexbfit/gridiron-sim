@@ -136,3 +136,113 @@ def test_field_place_and_ties(tmp_path):
     rank, prize, pct = F.place(90.0)           # ties two real entries at 90: three-way split of ranks 2-4
     assert rank == 2 and abs(prize - (20 + 20 + 10) / 3) < 1e-6
     assert F.place(0)[1] == 0 and F.place(0)[2] == 0
+
+
+# ------------------------------------------------------------------ NBA live pipeline (jobs/sports/props_nba.py, nba_daily.py, fetch_dk.py)
+from pathlib import Path                                                 # noqa: E402
+
+NBA_FIX = Path(__file__).parent / "fixtures" / "nba"
+NBA_DK = NBA_FIX / "DKSalaries_NBA_2026-10-21.csv"
+NBA_PROPS = NBA_FIX / "props_2026-10-21.json"
+
+
+def test_props_nba_star_projects_about_fifty_with_dd():
+    """28 pts / 8 reb / 8 ast -> 28 + 10 + 12 = 50 plus the double-double bonus x its probability (about half the nights)."""
+    from sports.props_nba import simulate_player, line_to_mean, collect_outcomes
+    s = simulate_player({"pts": 28, "reb": 8, "ast": 8}, 20000, np.random.default_rng(1))
+    assert 45 <= s["proj"] <= 55, s
+    assert 0.3 <= s["p_dd"] <= 0.7 and 0.03 <= s["p_td"] <= 0.25
+    assert s["q"][25] < s["q"][50] < s["q"][75] < s["q"][85] < s["q"][95] < s["q"][99]
+    assert abs(s["q"][50] - s["proj"]) < 3            # near-symmetric at this volume
+    # a 26 / 12.5 / 9.5 big is a near-certain double-double and a frequent triple-double
+    big = simulate_player({"pts": 26, "reb": 12.5, "ast": 9.5, "fg3": 1, "stl": 1.5, "blk": 0.9, "tov": 3.5}, 20000, np.random.default_rng(2))
+    assert big["p_dd"] > 0.7 and 0.2 < big["p_td"] < 0.55 and 56 <= big["proj"] <= 68
+    # line -> mean: a fair half-point line is the median (x the small skew); a juiced Over lifts it; counts use the price-implied Poisson mean
+    assert abs(line_to_mean("pts", 24.5, 0.5) - 24.5 * 1.015) < 1e-6
+    assert line_to_mean("pts", 24.5, 0.58) > line_to_mean("pts", 24.5, 0.5) > line_to_mean("pts", 24.5, 0.42)
+    assert 1.3 < line_to_mean("stl", 1.5, 0.45) < 1.7
+    # collect_outcomes de-vigs per book and medians the points across books
+    out = collect_outcomes([("A. Star", "player_points", "Over", -110, 27.5, "dk"), ("A. Star", "player_points", "Under", -110, 27.5, "dk"),
+                            ("A. Star", "player_points", "Over", -120, 28.5, "fd"), ("A. Star", "player_points", "Under", 100, 28.5, "fd"),
+                            ("A. Star", "player_threes", "Over", -130, 2.5, "dk"), ("A. Star", "player_threes", "Under", 105, 2.5, "dk")])
+    assert set(out) == {"a star"} and 27.5 < out["a star"]["pts"] < 30 and 2.5 < out["a star"]["fg3"] < 3.3
+
+
+def test_props_nba_csv_format_and_matching(tmp_path):
+    from sports.props_nba import run, HEADER
+    import csv
+    out = tmp_path / "proj.csv"
+    info = run(str(NBA_DK), str(out), date="2026-10-21", props_json=str(NBA_PROPS), sims=3000, log=lambda *a: None)
+    rows = list(csv.DictReader(open(out)))
+    assert list(rows[0].keys()) == HEADER
+    assert info["players"] == len(rows) == 70 and info["unmatched_props"] == 0     # 10 fixture bench players have no props -> excluded
+    dk_names = {r["Name"] for r in csv.DictReader(open(NBA_DK, encoding="utf-8-sig"))}
+    assert all(r["name"] in dk_names for r in rows)                                   # exact DK names, builder's join is exact
+    assert all(r["team"] and r["opp"] and r["team"] != r["opp"] for r in rows)
+    for r in rows:
+        q = [float(r[k]) for k in ("p25", "p50", "p75", "p85", "p95", "p99")]
+        assert q == sorted(q) and q[0] < float(r["proj"]) < q[-1] and 0 <= float(r["p_dd"]) <= 1
+    star = next(r for r in rows if r["name"] == "Nikola Jokic")
+    assert star["source"] == "props_partial" and 46 <= float(star["proj"]) <= 62 and float(star["p_dd"]) > 0.35
+    assert abs(float(star["pts"]) - 28) < 1.5 and abs(float(star["reb"]) - 8) < 1.5 and abs(float(star["ast"]) - 8) < 1.5
+    # the slate's best player projects most; nobody is absurd
+    assert 20 < max(float(r["proj"]) for r in rows) < 80 and min(float(r["proj"]) for r in rows) > 3
+    # fallback rows carry proj only (shapes.json fills the curve in the builder)
+    fb = tmp_path / "fb.csv"
+    fb.write_text("name,proj\nTrey Booker,12.5\n")
+    info = run(str(NBA_DK), str(tmp_path / "proj2.csv"), date="2026-10-21", props_json=str(NBA_PROPS), sims=500, fallback_proj=str(fb), log=lambda *a: None)
+    rows = list(csv.DictReader(open(tmp_path / "proj2.csv")))
+    assert info["fallback"] == 1 and any(r["name"] == "Trey Booker" and r["source"] == "fallback" and r["p50"] == "" for r in rows)
+
+
+def test_nba_daily_builds_twenty_valid_lineups_offline(tmp_path, monkeypatch):
+    import csv
+    from sports import nba_daily
+    monkeypatch.delenv("SUPABASE_SERVICE_ROLE_KEY", raising=False)
+    rc = nba_daily.main(["--dk", str(NBA_DK), "--props-json", str(NBA_PROPS), "--date", "2026-10-21", "--out-dir", str(tmp_path),
+                         "--seed", "3", "--sims", "600", "--props-sims", "2000", "--candidates", "2"])
+    assert rc == 0
+    for f in ("DKSalaries_NBA_2026-10-21.csv", "projections.csv", "projections_info.json", "lineups.csv", "lineups.txt", "README.md"):
+        assert (tmp_path / f).exists(), f
+    dk = {r["ID"]: r for r in csv.DictReader(open(NBA_DK, encoding="utf-8-sig"))}
+    lines = list(csv.reader(open(tmp_path / "lineups.csv")))
+    assert lines[0] == ["PG", "SG", "SF", "PF", "C", "G", "F", "UTIL"]
+    lineups = lines[1:]
+    assert len(lineups) == 20
+    count = {}
+    for L in lineups:
+        assert len(set(L)) == 8
+        ps = [dk[i] for i in L]
+        assert sum(int(p["Salary"]) for p in ps) <= 50000
+        for slot, p in zip(lines[0], ps):
+            assert slot in p["Roster Position"].split("/"), (slot, p["Name"], p["Roster Position"])
+        assert len({p["Game Info"] for p in ps}) >= 2 and max(sum(1 for p in ps if p["TeamAbbrev"] == t) for t in {p["TeamAbbrev"] for p in ps}) <= 8
+        assert max(sum(1 for p in ps if p["Game Info"] == g) for g in {p["Game Info"] for p in ps}) >= 3    # the 3-player game stack
+        for i in L:
+            count[i] = count.get(i, 0) + 1
+    assert max(count.values()) <= 7                                                      # exposure cap .35 x 20
+    for i in range(20):
+        for j in range(i + 1, 20):
+            assert len(set(lineups[i]) & set(lineups[j])) <= 5                            # min 3 unique
+    assert "NBA 2026-10-21" in (tmp_path / "README.md").read_text()
+
+
+def test_fetch_dk_nba_picks_the_plain_evening_classic_group():
+    import datetime as dt
+    from sports.fetch_dk import pick_main, classic_type_id
+    E = lambda h, m=0, d=21: dt.datetime(2026, 10, d, h, m, tzinfo=dt.timezone(dt.timedelta(hours=-4)))
+    groups = [
+        {"id": 1, "contest_type": 70, "start": E(19), "games": 9, "tag": "Featured", "suffix": ""},
+        {"id": 2, "contest_type": 70, "start": E(19), "games": 4, "tag": "", "suffix": "(Early Only)"},
+        {"id": 3, "contest_type": 70, "start": E(22), "games": 3, "tag": "", "suffix": "(Late Night)"},
+        {"id": 4, "contest_type": 70, "start": E(19), "games": 11, "tag": "", "suffix": "(Thu-Fri)"},
+        {"id": 5, "contest_type": 81, "start": E(19), "games": 1, "tag": "Featured", "suffix": "(BOS @ NY)"},
+        {"id": 6, "contest_type": 70, "start": E(19, d=22), "games": 12, "tag": "Featured", "suffix": ""},
+    ]
+    assert pick_main(groups, dt.date(2026, 10, 21), 70)["id"] == 1          # plain group beats the bigger suffixed one
+    assert pick_main([g for g in groups if g["id"] != 1], dt.date(2026, 10, 21), 70)["id"] == 4   # no plain group: biggest evening classic
+    assert pick_main(groups, dt.date(2026, 10, 23), 70) is None
+    lobby = {"GameTypes": [{"GameTypeId": 1, "Name": "Classic", "SportId": 1}, {"GameTypeId": 70, "Name": "Classic", "SportId": 4}],
+             "DraftGroups": [{"DraftGroupId": 9, "SportId": 4}]}
+    assert classic_type_id("NBA", lobby) == 70
+    assert classic_type_id("NBA", {"GameTypes": [{"GameTypeId": 81, "Name": "Showdown Captain Mode", "SportId": 4}], "DraftGroups": []}) == 70

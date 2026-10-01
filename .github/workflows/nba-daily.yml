@@ -1,0 +1,65 @@
+name: nba-daily
+
+# NBA slate day: DraftKings main-slate salaries -> player props (The Odds API + Kalshi) -> projections -> 20 DK lineups,
+# committed under data/sports/nba/<date>/ (salaries, projections.csv, lineups.csv, README.md). See docs/nba.md.
+
+on:
+  workflow_dispatch:
+    inputs:
+      date:
+        description: "Slate date (ET, YYYY-MM-DD); blank = today"
+        required: false
+        default: ""
+      rank:
+        description: "Lineup ranking stat: p98 (backtest best for 20-max) | p90 | mean"
+        required: false
+        default: "p98"
+  # schedule:
+  #   - cron: "0 19 * * *"     # 3:00 PM ET daily (19:00 UTC; 20:00 UTC once DST ends) - enable at tip-off of the 2026-27 season (~Oct 21, 2026)
+
+permissions:
+  contents: write
+
+jobs:
+  nba:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r jobs/requirements.txt
+      - name: Run log (start)
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: python jobs/runlog.py --task nba-daily --status started
+      - name: Salaries, props, projections, lineups
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+        run: |
+          # empty inputs (a scheduled run) mean today / the default ranking
+          python jobs/sports/nba_daily.py --date "${{ github.event.inputs.date }}" --rank "${{ github.event.inputs.rank }}" --seed 7 \
+            || { echo "nba-daily failed"; echo nba_daily >> "$RUNNER_TEMP/failed_steps"; }
+      - name: Commit the slate folder
+        run: |
+          git config user.name "gridiron-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/sports/nba data/slates
+          git diff --cached --quiet || git commit -m "nba-daily: $(date -u +%Y-%m-%d) projections + lineups"
+          git pull --rebase --autostash || true
+          git push || echo "push failed (nothing lost: artifacts are in the job log)"
+      - name: Run log (finish)
+        if: ${{ always() }}
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          FAILED=$(sort -u "$RUNNER_TEMP/failed_steps" 2>/dev/null | tr '\n' ' ' | sed 's/ *$//')
+          WHY="$GITHUB_EVENT_NAME${{ github.event.schedule && format(' {0}', github.event.schedule) || '' }}"
+          if [ "${{ job.status }}" != "success" ]; then S=failed; M="job ${{ job.status }}${FAILED:+ - soft-failed: $FAILED}"
+          elif [ -n "$FAILED" ]; then S=warn; M="soft-failed: $FAILED"
+          else S=ok; M="all steps ok"; fi
+          python jobs/runlog.py --task nba-daily --status $S --summary "$M ($WHY)"
