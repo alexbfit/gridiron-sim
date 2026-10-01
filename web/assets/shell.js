@@ -99,7 +99,7 @@
     return `<div class="inner">
       <div><a class="brand" href="index.html">${LOGO}<span>GameTime<b class="brand-win">Win</b></span></a>
         <p style="margin-top:10px;max-width:320px">NFL DFS lineups built from 10,000 simulated games per slate. Now in free beta at gametimewin.com.</p></div>
-      <div><h4>Product</h4><a href="lineups.html">Lineup Builder</a><a href="simple.html">Simple Mode</a><a href="stats.html">Player Stats</a><a href="results.html">Track Record</a><a href="backtest.html">Accuracy</a><a href="pricing.html">Pricing</a></div>
+      <div><h4>Product</h4><a href="lineups.html">Lineup Builder</a><a href="simple.html">Simple Mode</a><a href="stats.html">Player Stats</a><a href="results.html">Track Record</a><a href="backtest.html">Accuracy</a><a href="edges.html">Prop Edges</a><a href="pricing.html">Pricing</a></div>
       <div><h4>Learn</h4><a href="guide.html">Quick-start guide</a><a href="index.html#how">How it works</a><a href="pricing.html#faq">Pricing FAQ</a><a href="index.html#faq">FAQ</a></div>
       <div><h4>Company</h4><a href="index.html#join">Join the beta</a><a href="terms.html">Terms of Service</a><a href="privacy.html">Privacy</a><a href="responsible.html">Responsible play</a>${cfg.CONTACT_EMAIL ? `<a href="mailto:${cfg.CONTACT_EMAIL}">Contact</a>` : ""}</div>
       <div class="legal">${legal}</div></div>`;
