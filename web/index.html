@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>GameTime Win · We build your tournament lineups. You win them.</title>
+<title>GameTime Win · We build lineups for your fantasy tournaments. You win them.</title>
 <meta name="description" content="We build your DraftKings tournament lineups from 10,000 simulated games. You win them. Every week's result is published. Free during the beta.">
-<meta property="og:title" content="GameTime Win — we build your tournament lineups. You win them.">
+<meta property="og:title" content="GameTime Win — we build lineups for your fantasy tournaments. You win them.">
 <meta property="og:description" content="10,000 simulated games. Three taps. Graded in public every Monday. Free during the beta.">
 <meta property="og:url" content="https://gametimewin.com/">
 <meta name="theme-color" content="#0a2214">
@@ -27,7 +27,7 @@
     <div class="hero-inner">
       <div>
         <span class="eyebrow"><span class="dot live"></span><span id="heroSlate">Free beta · DraftKings NFL</span></span>
-        <h1>We build your <em>tournament lineups.</em><br>You win them.</h1>
+        <h1>We build lineups for your <em>fantasy tournaments.</em><br>You win them.</h1>
         <p class="sub">10,000 simulated games. Three taps. Every week's result published — wins and misses.</p>
 
         <form class="beta-form" data-beta-form="hero" novalidate>
@@ -44,15 +44,12 @@
         </ul>
       </div>
 
-      <!-- the graphic: where our lineups land in a real DraftKings field -->
-      <figure class="fieldchart" aria-label="Where our lineups scored inside a real DraftKings tournament field">
-        <figcaption><b id="fcTitle">Where our lineups land in a real tournament</b><span id="fcSub">Loading last week's field…</span></figcaption>
+      <!-- the graphic: two seasons of real Millionaire Maker fields, replayed with our settings -->
+      <figure class="fieldchart" aria-label="Share of the real tournament field our average lineup beat, week by week, in a two-season backtest">
+        <figcaption><b id="fcTitle">How much of a real DraftKings field our lineups beat</b><span id="fcSub">Loading…</span></figcaption>
         <svg id="fieldSvg" viewBox="0 0 640 300" role="img" preserveAspectRatio="xMidYMid meet"></svg>
-        <div class="fc-legend">
-          <span><i class="sw field"></i>Real entries (<span id="fcN">—</span>)</span>
-          <span><i class="sw ours"></i>Our 50 lineups</span>
-          <span><i class="sw top"></i>Top 1%</span>
-        </div>
+        <div class="fc-stats" id="fcStats"></div>
+        <p class="fc-disc" id="fcDisc">Backtested, not live results: our current settings replayed against 36 real Millionaire Maker fields (2024–25), two builds per week. Live results are graded weekly on the <a class="link" href="results.html">track record</a>.</p>
       </figure>
     </div>
   </section>
@@ -97,50 +94,34 @@
   }
   document.querySelectorAll("[data-beta-form]").forEach(f => f.addEventListener("submit", e => { e.preventDefault(); join(f); }));
 
-  // ---- the chart: a real tournament field's score distribution with our lineups' average and the top-1% zone marked.
-  // Numbers come from web/data/ledger.json (last graded week); the field shape is a skewed bell around the field median.
+  // ---- the chart: web/data/backtest_field.json — our live settings replayed on real Millionaire Maker fields.
   const num = x => Number(x).toLocaleString();
-  function draw(L) {
-    const W = 640, H = 300, px = 34, py = 18, bottom = 236;
-    const med = L.field_median_pts, ours = L.avg_pts, best = L.best_pts, n = L.entries;
-    const lo = Math.min(med - 48, 70), hi = Math.max(best + 30, med + 95);
-    const x = v => px + (v - lo) / (hi - lo) * (W - 2 * px);
-    const sd = 17, sdL = 14, sdR = 24;                     // two-piece normal: tighter below the median, longer right tail
-    const f = v => { const z = (v - med) / (v < med ? sdL : sdR); return Math.exp(-0.5 * z * z); };
-    let pts = [], peak = 0;
-    for (let v = lo; v <= hi; v += 1) { const yy = f(v); peak = Math.max(peak, yy); pts.push([v, yy]); }
-    const y = yy => bottom - yy / peak * (bottom - py - 30);
-    const path = "M" + pts.map(([v, yy]) => `${x(v).toFixed(1)},${y(yy).toFixed(1)}`).join(" L");
-    const area = path + ` L${x(hi).toFixed(1)},${bottom} L${x(lo).toFixed(1)},${bottom} Z`;
-    const top1 = med + 2.33 * sd * 0.9;
-    const tpath = "M" + pts.filter(([v]) => v >= top1).map(([v, yy]) => `${x(v).toFixed(1)},${y(yy).toFixed(1)}`).join(" L") + ` L${x(hi).toFixed(1)},${bottom} L${x(top1).toFixed(1)},${bottom} Z`;
+  const pct = x => Math.round(100 * x) + "%";
+  function draw(B) {
+    const W = 640, H = 300, px = 40, top = 26, bottom = 250, weeks = B.weeks;
+    const n = weeks.length, gap = 3, bw = (W - 2 * px - gap * (n - 1)) / n;
+    const y = v => bottom - v * (bottom - top);
     const s = [];
-    s.push(`<defs><linearGradient id="gf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="currentColor" stop-opacity=".22"/><stop offset="1" stop-color="currentColor" stop-opacity=".04"/></linearGradient>
-            <linearGradient id="gt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f2c94c" stop-opacity=".85"/><stop offset="1" stop-color="#f2c94c" stop-opacity=".25"/></linearGradient></defs>`);
-    s.push(`<path d="${area}" fill="url(#gf)"/><path d="${path}" fill="none" stroke="currentColor" stroke-opacity=".55" stroke-width="2"/>`);
-    s.push(`<path d="${tpath}" fill="url(#gt)"/>`);
+    for (const g of [0.25, 0.5, 0.75, 1]) s.push(`<line x1="${px}" y1="${y(g)}" x2="${W - px}" y2="${y(g)}" stroke="currentColor" stroke-opacity="${g === 0.5 ? .45 : .12}" ${g === 0.5 ? 'stroke-dasharray="5 4"' : ""}/>
+      <text x="${px - 6}" y="${y(g) + 4}" text-anchor="end" fill="currentColor" fill-opacity=".6" font-size="11">${Math.round(g * 100)}%</text>`);
+    s.push(`<text x="${px + 4}" y="${y(0.5) - 6}" fill="currentColor" fill-opacity=".7" font-size="11" font-weight="600">field median</text>`);
+    weeks.forEach((w, i) => {
+      const x = px + i * (bw + gap), v = w.avg_pct, up = v >= 0.5;
+      s.push(`<rect x="${x.toFixed(1)}" y="${y(v).toFixed(1)}" width="${bw.toFixed(1)}" height="${(bottom - y(v)).toFixed(1)}" rx="2" fill="${up ? "var(--accent)" : "#e0634a"}" fill-opacity="${up ? .9 : .8}"><title>${w.season} week ${w.week}: average lineup beat ${pct(v)} of ${num(w.entries)} entries · best finish #${num(w.best_rank)}</title></rect>`);
+      if (w.best_rank <= 50) s.push(`<text x="${(x + bw / 2).toFixed(1)}" y="${y(v) - 5}" text-anchor="middle" fill="#f2c94c" font-size="10" font-weight="800">#${w.best_rank}</text>`);
+    });
+    const s24 = weeks.filter(w => w.season === 2024).length;
     s.push(`<line x1="${px}" y1="${bottom}" x2="${W - px}" y2="${bottom}" stroke="currentColor" stroke-opacity=".3"/>`);
-    s.push(`<line x1="${x(med)}" y1="${y(f(med)) - 6}" x2="${x(med)}" y2="${bottom}" stroke="currentColor" stroke-opacity=".5" stroke-dasharray="4 4"/>
-            <text x="${x(med)}" y="${bottom + 18}" text-anchor="middle" fill="currentColor" fill-opacity=".7" font-size="12" font-weight="600">field median ${med.toFixed(1)}</text>`);
-    s.push(`<line x1="${x(ours)}" y1="${py + 10}" x2="${x(ours)}" y2="${bottom}" stroke="var(--accent)" stroke-width="3"/>
-            <circle cx="${x(ours)}" cy="${y(f(ours))}" r="7" fill="var(--accent)" stroke="var(--bg)" stroke-width="3"/>
-            <text x="${x(ours)}" y="${py + 2}" text-anchor="middle" fill="var(--accent)" font-size="13" font-weight="800">our average ${ours.toFixed(1)}</text>`);
-    s.push(`<line x1="${x(best)}" y1="${y(f(best)) - 6}" x2="${x(best)}" y2="${bottom - 54}" stroke="#f2c94c" stroke-opacity=".6"/>
-            <circle cx="${x(best)}" cy="${y(f(best))}" r="6" fill="#f2c94c" stroke="var(--bg)" stroke-width="3"/>
-            <text x="${Math.min(x(best), W - px - 4)}" y="${bottom - 60}" text-anchor="end" fill="#f2c94c" font-size="12" font-weight="700">our best ${best.toFixed(1)} · #${num(L.best_rank)} of ${num(n)}</text>`);
-    s.push(`<text x="${x(top1) + 6}" y="${bottom - 10}" fill="#f2c94c" font-size="11" font-weight="700">top 1% →</text>`);
-    s.push(`<text x="${px}" y="${bottom + 18}" fill="currentColor" fill-opacity=".6" font-size="11">${Math.round(lo)} pts</text><text x="${W - px}" y="${bottom + 18}" text-anchor="end" fill="currentColor" fill-opacity=".6" font-size="11">${Math.round(hi)} pts</text>`);
+    s.push(`<text x="${px}" y="${bottom + 16}" fill="currentColor" fill-opacity=".6" font-size="11">2024 season, wk 1–${s24}</text>
+            <text x="${W - px}" y="${bottom + 16}" text-anchor="end" fill="currentColor" fill-opacity=".6" font-size="11">2025 season, wk 1–${n - s24}</text>
+            <text x="${W / 2}" y="${bottom + 34}" text-anchor="middle" fill="currentColor" fill-opacity=".55" font-size="11">each bar = % of that week's real entries our average lineup outscored · gold = a top-50 finish</text>`);
     document.getElementById("fieldSvg").innerHTML = s.join("");
-    document.getElementById("fcN").textContent = num(n);
+    const S = B.summary;
+    document.getElementById("fcSub").textContent = `Our average lineup beat ${pct(S.mean_beat_pct)} of the real field across 36 weeks; above the field median in ${S.builds_above_median} of ${S.builds} builds.`;
+    document.getElementById("fcStats").innerHTML = [[pct(S.mean_beat_pct), "of the real field beaten, on average"], [`${S.builds_best_top1} of ${S.builds}`, "builds put a lineup in the top 1%"], [`#${S.best_rank}`, `best finish, of ${num(S.best_rank_entries)} entries`]]
+      .map(([v, l]) => `<div><b>${v}</b><span>${l}</span></div>`).join("");
   }
-  const fallback = { week: 3, field_median_pts: 124.6, avg_pts: 138.5, best_pts: 184.9, best_rank: 3115, entries: 296894, beat_pct: 0.647 };
-  fetch("data/ledger.json", { cache: "no-cache" }).then(r => r.json()).then(L => {
-    const w = (L.weeks || []).filter(w => w.lineups && w.lineups.n >= 20).pop();
-    const lu = w ? Object.assign({ week: w.week }, w.lineups) : fallback;
-    draw(lu);
-    document.getElementById("fcSub").textContent = `Week ${lu.week}: our lineups beat ${Math.round(100 * lu.beat_pct)}% of ${num(lu.entries)} real entries. Updated every Monday.`;
-    document.getElementById("heroSlate").textContent = `Free beta · Week ${lu.week}: beat ${Math.round(100 * lu.beat_pct)}% of a real ${num(lu.entries)}-entry field`;
-  }).catch(() => { draw(fallback); document.getElementById("fcSub").textContent = `Week 3: our lineups beat 65% of 296,894 real entries.`; });
+  fetch("data/backtest_field.json", { cache: "no-cache" }).then(r => r.json()).then(draw).catch(() => { document.getElementById("fcSub").textContent = "Backtest chart unavailable right now — see the track record."; });
 })();
 </script>
 </body>
