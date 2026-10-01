@@ -8,3 +8,6 @@ Videos/
 
 # archived third-party contest data (large; lives in OneDrive Desktop/DFS DATA, not in git)
 data/archive/
+
+# multi-sport backtest outputs (jsonl per sport; the summary is kept in data/sports_backtest/)
+bt/
