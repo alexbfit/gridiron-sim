@@ -78,7 +78,7 @@
 
   function header(kind) {
     const nav = kind === "marketing"
-      ? [["index.html#offer", "What you get"], ["index.html#how", "How it works"], ["index.html#proof", "Proof"], ["pricing.html", "Pricing"], ["index.html#faq", "FAQ"]]
+      ? [["index.html#how", "How it works"], ["results.html", "Track record"], ["pricing.html", "Pricing"], ["pricing.html#faq", "FAQ"]]
       : APP_NAV;
     const cta = kind === "marketing"
       ? `<a class="btn btn-primary btn-sm" href="index.html#join"><span>Join<span class="hide-sm"> the free</span> beta</span></a>`

@@ -83,3 +83,27 @@
   .guarantee .g-badge { width: 56px; height: 56px; }
   .stack-row h3 .val { display: inline-block; margin-top: 4px; }
 }
+
+/* ---- one-screen landing (10/1 pm): hook + chart + email ---- */
+.simple-landing .hero-inner { min-height: calc(100vh - 64px); padding: 48px 20px 56px; grid-template-columns: 1fr 1.05fr; gap: 48px; }
+.simple-landing .hero h1 { font-size: clamp(44px, 6vw, 76px); }
+.simple-landing .hero .sub { font-size: 19px; }
+.fieldchart { margin: 0; padding: 18px 18px 14px; border-radius: 18px; background: var(--surface); border: 1px solid var(--border-strong); box-shadow: var(--shadow-pop); color: var(--text); }
+.fieldchart figcaption { display: flex; flex-direction: column; gap: 2px; margin-bottom: 8px; }
+.fieldchart figcaption b { font: 700 15px var(--font-display); }
+.fieldchart figcaption span { font-size: 12.5px; color: var(--muted); }
+.fieldchart svg { width: 100%; height: auto; display: block; }
+.fc-legend { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 10px; font-size: 12px; color: var(--muted); }
+.fc-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.fc-legend .sw { width: 12px; height: 12px; border-radius: 3px; display: inline-block; background: color-mix(in srgb, var(--text) 25%, transparent); }
+.fc-legend .sw.ours { background: var(--accent); }
+.fc-legend .sw.top { background: #f2c94c; }
+.strip { border-bottom: 1px solid var(--border); background: var(--bg-2); }
+.strip-inner { max-width: 1040px; margin: 0 auto; padding: 34px 20px 10px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.strip-inner div { display: flex; align-items: center; gap: 12px; font-weight: 600; font-size: 15px; }
+.strip-inner b { flex: 0 0 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent-line); font: 800 15px var(--font-display); }
+.strip .small { padding: 10px 20px 28px; }
+@media (max-width: 900px) {
+  .simple-landing .hero-inner { grid-template-columns: 1fr; min-height: 0; padding: 40px 20px 48px; gap: 34px; }
+  .strip-inner { grid-template-columns: 1fr; }
+}
