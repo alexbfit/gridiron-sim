@@ -25,7 +25,7 @@ def db(monkeypatch):
     client = FakeClient(d)
     import common
     monkeypatch.setattr(common, "get_client", lambda need_write=False: client)
-    for mod in ("build_lineups", "late_swap", "flashback", "props", "results", "preflight", "ext_projections", "runlog"):
+    for mod in ("build_lineups", "late_swap", "flashback", "props", "results", "preflight", "ext_projections", "runlog", "recap"):
         try:
             m = __import__(mod)
         except Exception:

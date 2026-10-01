@@ -1,0 +1,333 @@
+{
+ "season": 2026,
+ "built_at": "2026-10-01T13:34:10.392402+00:00",
+ "source": "claude/gpp",
+ "weeks": [
+  {
+   "season": 2026,
+   "week": 2,
+   "slate_key": "DK-2026-02-main",
+   "site": "DK",
+   "scored_at": "2026-09-23T23:29:06.258422+00:00",
+   "lineups": {
+    "n": 20,
+    "avg_pts": 115.4,
+    "best_pts": 144.9,
+    "avg_proj": 134.1,
+    "beat_pct": 0.512,
+    "best_beat_pct": 0.859,
+    "sim_pct": 0.261,
+    "best_rank": 24336,
+    "entries": 172692,
+    "field_median_pts": 113.82,
+    "top1_lineups": 0,
+    "cash_pct": 0.1,
+    "real_roi": -0.8485,
+    "avg_vs_field_median": 1.58
+   },
+   "flashback": {
+    "present": true,
+    "consensus_roi": -0.5078,
+    "field_mean_roi": -0.2643,
+    "field_median_roi": -0.5081,
+    "field_p90_roi": -0.1576,
+    "beats_pct": 0.5,
+    "consensus_cash": 0.2592,
+    "consensus_top1": 0.0078,
+    "model_roi": 11.779,
+    "model_beats_pct": 1.0,
+    "model_top1": 0.0882,
+    "fee": 20.0,
+    "payout": "milly",
+    "sims": 2000
+   },
+   "dupes": null,
+   "real_money": {
+    "entries": 1,
+    "fee": 20.0,
+    "best_rank": 87892,
+    "mean_pts": 113.18,
+    "roi": -1.0,
+    "in": 20.0,
+    "out": 0.0,
+    "basis": "payout curve on real ranks"
+   },
+   "accuracy": {
+    "n": 131,
+    "r": 0.48,
+    "mae": 5.35,
+    "bias": 0.53,
+    "coverage": {
+     "p10": 0.122,
+     "p90": 0.924
+    },
+    "by_method": {
+     "sim": {
+      "r": 0.48,
+      "mae": 5.35,
+      "bias": 0.53,
+      "n": 131
+     },
+     "baseline": {
+      "r": 0.498,
+      "mae": 5.46,
+      "bias": 0.81,
+      "n": 131
+     }
+    },
+    "actual_source": "contest"
+   },
+   "news": null,
+   "what_won": {
+    "game_id": "2026_02_MIA_SF",
+    "matchup": "SF vs MIA",
+    "qb": "Brock Purdy",
+    "qb_team": "SF",
+    "qb_actual": 28.48,
+    "stack_partner": "George Kittle",
+    "top_lineups": 10,
+    "lineups_in_game": 3,
+    "lineups_with_qb": 3,
+    "line": "Brock Purdy (SF) stacks with George Kittle \u2014 3 of our top 10 lineups; Brock Purdy scored 28.5"
+   },
+   "misses": {
+    "over": [
+     {
+      "player": "Bijan Robinson",
+      "pos": "RB",
+      "team": "ATL",
+      "proj": 24.5,
+      "actual": 11.1,
+      "diff": -13.4
+     },
+     {
+      "player": "Trevor Lawrence",
+      "pos": "QB",
+      "team": "JAX",
+      "proj": 17.87,
+      "actual": 7.16,
+      "diff": -10.71
+     },
+     {
+      "player": "Dallas Goedert",
+      "pos": "TE",
+      "team": "PHI",
+      "proj": 11.71,
+      "actual": 1.4,
+      "diff": -10.31
+     }
+    ],
+    "under": [
+     {
+      "player": "Jaxon Smith-Njigba",
+      "pos": "WR",
+      "team": "SEA",
+      "proj": 19.9,
+      "actual": 45.5,
+      "diff": 25.6
+     },
+     {
+      "player": "CeeDee Lamb",
+      "pos": "WR",
+      "team": "DAL",
+      "proj": 13.39,
+      "actual": 38.3,
+      "diff": 24.91
+     },
+     {
+      "player": "DeVonta Smith",
+      "pos": "WR",
+      "team": "PHI",
+      "proj": 10.34,
+      "actual": 30.7,
+      "diff": 20.36
+     }
+    ]
+   },
+   "recap": "recap_2026_wk02.md"
+  },
+  {
+   "season": 2026,
+   "week": 3,
+   "slate_key": "DK-2026-03-main",
+   "site": "DK",
+   "scored_at": "2026-09-29T00:13:26.467752+00:00",
+   "lineups": {
+    "n": 50,
+    "avg_pts": 138.5,
+    "best_pts": 184.9,
+    "avg_proj": 136.5,
+    "beat_pct": 0.647,
+    "best_beat_pct": 0.99,
+    "sim_pct": 0.631,
+    "best_rank": 3115,
+    "entries": 296894,
+    "field_median_pts": 124.64,
+    "top1_lineups": 0,
+    "cash_pct": 0.32,
+    "real_roi": -0.367,
+    "avg_vs_field_median": 13.86
+   },
+   "flashback": {
+    "present": true,
+    "consensus_roi": 0.0975,
+    "field_mean_roi": -0.2142,
+    "field_median_roi": -0.4307,
+    "field_p90_roi": 0.3567,
+    "beats_pct": 0.843,
+    "consensus_cash": 0.2651,
+    "consensus_top1": 0.0177,
+    "model_roi": 0.0152,
+    "model_beats_pct": 0.814,
+    "model_top1": 0.0192,
+    "fee": 3.0,
+    "payout": "gpp",
+    "sims": 2000
+   },
+   "dupes": null,
+   "real_money": {
+    "entries": 20,
+    "fee": 3.0,
+    "best_rank": 3114,
+    "mean_pts": 150.722,
+    "roi": 0.6843,
+    "in": 60.0,
+    "out": 101.058,
+    "basis": "payout curve on real ranks"
+   },
+   "accuracy": {
+    "n": 143,
+    "r": 0.592,
+    "mae": 5.29,
+    "bias": -0.21,
+    "coverage": {
+     "p10": 0.098,
+     "p90": 0.895
+    },
+    "by_method": {
+     "sim": {
+      "r": 0.592,
+      "mae": 5.29,
+      "bias": -0.21,
+      "n": 143
+     },
+     "props": {
+      "r": 0.518,
+      "mae": 5.76,
+      "bias": -0.08,
+      "n": 118
+     },
+     "baseline": {
+      "r": 0.603,
+      "mae": 5.46,
+      "bias": -0.16,
+      "n": 143
+     }
+    },
+    "actual_source": "contest"
+   },
+   "news": {
+    "graded": 23,
+    "helped": 12,
+    "helped_pct": 0.5217,
+    "hi_conf_graded": 14,
+    "hi_conf_helped_pct": 0.6429,
+    "notes_filed": 77
+   },
+   "what_won": {
+    "game_id": "2026_03_NYJ_DET",
+    "matchup": "NYJ vs DET",
+    "qb": "Geno Smith",
+    "qb_team": "NYJ",
+    "qb_actual": 30.04,
+    "stack_partner": "Garrett Wilson",
+    "top_lineups": 10,
+    "lineups_in_game": 8,
+    "lineups_with_qb": 7,
+    "line": "Geno Smith (NYJ) stacks with Garrett Wilson \u2014 7 of our top 10 lineups; Geno Smith scored 30.0"
+   },
+   "misses": {
+    "over": [
+     {
+      "player": "De'Von Achane",
+      "pos": "RB",
+      "team": "MIA",
+      "proj": 17.98,
+      "actual": 1.7,
+      "diff": -16.28
+     },
+     {
+      "player": "Jonathan Taylor",
+      "pos": "RB",
+      "team": "IND",
+      "proj": 20.09,
+      "actual": 9.2,
+      "diff": -10.89
+     },
+     {
+      "player": "Drake Maye",
+      "pos": "QB",
+      "team": "NE",
+      "proj": 16.98,
+      "actual": 6.76,
+      "diff": -10.22
+     }
+    ],
+    "under": [
+     {
+      "player": "Sam Darnold",
+      "pos": "QB",
+      "team": "SEA",
+      "proj": 15.74,
+      "actual": 32.66,
+      "diff": 16.92
+     },
+     {
+      "player": "Jaxon Smith-Njigba",
+      "pos": "WR",
+      "team": "SEA",
+      "proj": 21.85,
+      "actual": 38.36,
+      "diff": 16.51
+     },
+     {
+      "player": "Jahmyr Gibbs",
+      "pos": "RB",
+      "team": "DET",
+      "proj": 25.72,
+      "actual": 41.4,
+      "diff": 15.68
+     }
+    ]
+   },
+   "recap": "recap_2026_wk03.md"
+  }
+ ],
+ "totals": {
+  "weeks": 2,
+  "weeks_with_flashback": 2,
+  "lineups": 70,
+  "consensus_roi": -0.2051,
+  "field_mean_roi": -0.2392,
+  "consensus_roi_vs_field": 0.0341,
+  "weeks_above_field_median": 2,
+  "weeks_with_field_median": 2,
+  "weeks_consensus_above_field_median": 2,
+  "weeks_consensus_scored": 2,
+  "beats_pct": 0.6715,
+  "avg_beat_pct": 0.5795,
+  "top1_lineups": 0,
+  "best_finish": {
+   "rank": 3115,
+   "entries": 296894,
+   "week": 3
+  },
+  "real_money": {
+   "in": 80.0,
+   "out": 101.058,
+   "weeks": 2,
+   "roi": 0.2632,
+   "basis": "payout curve on real ranks"
+  }
+ }
+}

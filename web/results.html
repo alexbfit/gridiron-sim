@@ -17,7 +17,23 @@
   .owner-zone { margin-top: 44px; padding-top: 8px; border-top: 1px dashed var(--border-strong); }
   .owner-zone > .badge { margin-bottom: 4px; }
   #status { color: var(--muted); font-size: 13px; margin-top: 6px; }
-  @media (max-width: 640px) { .rs-filters .field, .rs-filters .field.wide { width: calc(50% - 5px); } }
+  .ledger { margin: 18px 0 8px; padding: 18px 18px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+  .ledger > h2 { font-size: 18px; font-weight: 700; margin-bottom: 4px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .ledger .tiles { margin: 10px 0 14px; }
+  .ledger .tile .v.up { color: var(--accent); } .ledger .tile .v.down { color: var(--danger); }
+  .ledger table.m td.l a { color: var(--text); font-weight: 600; text-decoration: none; } .ledger table.m td.l a:hover { text-decoration: underline; }
+  .ledger .fine { color: var(--muted); font-size: 12px; margin-top: 10px; }
+  .ledger details { margin-top: 12px; border-top: 1px solid var(--border); padding-top: 10px; }
+  .ledger details summary { cursor: pointer; font-weight: 600; font-size: 13px; color: var(--text-2); list-style: none; display: flex; align-items: center; gap: 8px; }
+  .ledger details summary::before { content: "▸"; font-size: 11px; color: var(--muted); transition: transform .15s; } .ledger details[open] summary::before { transform: rotate(90deg); }
+  .ledger details summary::-webkit-details-marker { display: none; }
+  .ledger .method { color: var(--muted); font-size: 13px; max-width: 820px; } .ledger .method p { margin: 8px 0; } .ledger .method b { color: var(--text); }
+  .ledger .recap { margin-top: 12px; padding: 12px 14px; background: var(--surface-2); border-radius: var(--radius); font-size: 13.5px; max-width: 820px; }
+  .ledger .recap h3 { font-size: 15px; margin: 0 0 6px; } .ledger .recap h4 { font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin: 12px 0 4px; }
+  .ledger .recap ul { margin: 4px 0 0 18px; } .ledger .recap li, .ledger .recap p { margin: 3px 0; } .ledger .recap em { color: var(--muted); }
+  .ledger .recap-nav { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; } .ledger .recap-nav .badge { cursor: pointer; }
+  .ledger .recap-nav .badge.active { background: var(--accent-soft); color: var(--accent); border-color: var(--accent-line); }
+  @media (max-width: 640px) { .rs-filters .field, .rs-filters .field.wide { width: calc(50% - 5px); } .ledger { padding: 14px 12px; } }
 </style>
 <script src="config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -30,6 +46,25 @@
     <div><h1>Track record</h1><p>Every projection, graded after the games against the real box scores (and, when available, DraftKings' exact contest points). Wins and misses, nothing hidden.</p></div>
     <div class="rs-filters"><label class="field wide"><span>Slate</span><select id="slate" class="input"></select></label></div>
   </div>
+  <section class="ledger" id="ledger" hidden>
+    <h2>Season ledger <span class="badge info" id="ledgerMeta"></span></h2>
+    <p class="lead" style="margin-bottom:0">The public GPP portfolio — the lineups built before kickoff every Sunday — graded week by week against the real DraftKings field. Built from the database by <code>jobs/recap.py</code> after each slate is scored; nothing here is typed in.</p>
+    <div class="tiles" id="ledgerTiles"></div>
+    <div class="table-wrap"><table class="m" id="ledgerTable"></table></div>
+    <p class="fine" id="ledgerFine"></p>
+    <div id="ledgerRecap"></div>
+    <details>
+      <summary>Methodology — what each column means</summary>
+      <div class="method">
+        <p><b>Consensus view</b> (the number to watch): every lineup — ours and every real entry in the contest standings — is re-scored in the same simulated games with every player set to the <i>market</i> projection (his props line, or the salary-implied line). Our opinions are removed, so it measures lineup <i>construction</i> alone: stacks, uniqueness, leverage against what the field actually played. Expected ROI after rake; the field averages roughly −15% to −25%. “Beats X% of field” is where our portfolio's expected ROI sits among a random sample of real entries' expected ROI.</p>
+        <p><b>Model view</b>: the same replay on our own projections. Model view minus consensus view, over many weeks, is how over-confident our projections are.</p>
+        <p><b>Realized</b>: what actually happened on Sunday — average points vs the field's median entry, the share of real entries each lineup beat, best finish, and lineups that finished in the top 1%. One Sunday is mostly variance; the consensus column is the signal.</p>
+        <p><b>Dupes</b>: exact copies of our lineups among the real entries. A prize is split across copies, so “winnings lost to splits” is the share of the payout curve given up to duplication. A rising duplicate rate means the field has converged on the same optimizer consensus.</p>
+        <p><b>Real $</b>: the owner's own entries in the same contest, matched by DraftKings username in the standings export. Dollars are the contest's payout curve applied to the real finishing ranks at the recorded entry fee — a reconstruction from the standings file, not an account statement, and only the contests with an imported standings file are counted.</p>
+        <p>Projection accuracy over past seasons, replayed the same way, is on the <a href="backtest.html">backtest page</a>.</p>
+      </div>
+    </details>
+  </section>
   <p id="status">Loading…</p>
   <div class="tiles" id="tiles"></div>
 

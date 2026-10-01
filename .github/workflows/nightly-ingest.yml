@@ -10,6 +10,9 @@ on:
         required: false
         default: ""
 
+permissions:
+  contents: write          # the season ledger (web/data/ledger.json + recaps) is committed back after scoring
+
 jobs:
   ingest:
     runs-on: ubuntu-latest
@@ -50,7 +53,19 @@ jobs:
           python jobs/project.py --latest || { echo "no slate yet"; echo project >> "$RUNNER_TEMP/failed_steps"; }
           python jobs/simulate.py --latest || { echo "no slate yet"; echo simulate >> "$RUNNER_TEMP/failed_steps"; }
           python jobs/results.py --all || { echo "results skipped"; echo results >> "$RUNNER_TEMP/failed_steps"; }
+          # public season ledger + weekly recaps for the Track Record page (anon read is enough; committed below)
+          python jobs/recap.py || { echo "recap skipped"; echo recap >> "$RUNNER_TEMP/failed_steps"; }
           python jobs/fit_ownership.py || { echo "fit skipped"; echo fit_ownership >> "$RUNNER_TEMP/failed_steps"; }
+      - name: Commit season ledger
+        if: ${{ always() && github.event.inputs.seasons == '' }}
+        run: |
+          git config user.name "gametimewin-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add web/data/ledger.json web/data/recap_*.md 2>/dev/null || true
+          if git diff --cached --quiet; then echo "ledger unchanged"; exit 0; fi
+          git commit -m "ledger: nightly recap $(date -u +%Y-%m-%d) [skip ci]"
+          git pull --rebase origin main || { git rebase --abort 2>/dev/null; true; }
+          git push || { echo "ledger push failed"; echo ledger-commit >> "$RUNNER_TEMP/failed_steps"; }
       - name: Run log (finish)
         if: ${{ always() }}
         env:
