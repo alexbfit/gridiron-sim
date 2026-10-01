@@ -1,7 +1,7 @@
 /* GameTime Win — multi-sport engine for the browser (port of jobs/sports/: rules, sim, optimizer).
    Used by Simple Mode for every sport except NFL (which keeps the Supabase slate + NFL model).
    Inputs: a DraftKings entries/salaries file for the sport plus a projections CSV (name, proj [, p25 p50 p75 p85 p95 p99,
-   team, opp, line, order]). Missing percentiles come from SHAPES, the per-sport distribution fitted on the SaberSim archive. */
+   team, opp, line, order]). Missing percentiles come from SHAPES, the per-sport distribution fitted on two seasons of archived DraftKings slates. */
 
 export const RULES = {
   NBA:    { slots: [["PG", ["PG"]], ["SG", ["SG"]], ["SF", ["SF"]], ["PF", ["PF"]], ["C", ["C"]], ["G", ["G"]], ["F", ["F"]], ["UTIL", ["UTIL"]]], minGames: 2, maxTeam: 8, stack: "game", stackN: 3,

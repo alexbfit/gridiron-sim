@@ -193,6 +193,29 @@ def lineup_draws(L, draws):
     return draws[L].sum(axis=0)
 
 
+def assign_slots(sport, ps):
+    """Players -> roster slots (backtracking over the hardest slots first; Hall made a perfect assignment exist).
+    Returns [(slot name, player)] or None when no assignment exists."""
+    slots = RULES[sport]["slots"]
+    elig = [[j for j, (_, tok) in enumerate(slots) if p["pos"] & tok] for p in ps]
+    order = sorted(range(len(slots)), key=lambda j: sum(1 for e in elig if j in e))
+    out, used = [None] * len(slots), set()
+
+    def go(i):
+        if i == len(order):
+            return True
+        j = order[i]
+        for k, p in enumerate(ps):
+            if k in used or j not in elig[k]:
+                continue
+            used.add(k); out[j] = p
+            if go(i + 1):
+                return True
+            used.discard(k); out[j] = None
+        return False
+    return [(slots[j][0], out[j]) for j in range(len(slots))] if go(0) else None
+
+
 def _stats(L, ps, draws, w=0.0, fill=False):
     tot = lineup_draws(L, draws)
     q = np.percentile(tot, [50, 90, 98])

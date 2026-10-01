@@ -106,19 +106,9 @@ def read_live(sport, dk_path, proj_path):
 
 
 def assign_slots(sport, ps):
-    """Players -> roster slots by maximum bipartite matching (Hall's condition made the lineup feasible)."""
-    from scipy.optimize import linear_sum_assignment
-    slots = RULES[sport]["slots"]
-    cost = np.full((len(ps), len(slots)), 1e6)
-    for i, p in enumerate(ps):
-        for j, (_, tok) in enumerate(slots):
-            if p["pos"] & tok:
-                cost[i, j] = 0
-    r, c = linear_sum_assignment(cost)
-    out = [None] * len(slots)
-    for i, j in zip(r, c):
-        out[j] = ps[i]
-    return out
+    """Players in roster-slot order (see sports.optimize.assign_slots)."""
+    from sports.optimize import assign_slots as _assign
+    return [p for _, p in _assign(sport, ps)]
 
 
 def main(argv=None):

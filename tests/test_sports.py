@@ -11,7 +11,7 @@ from conftest import JOBS
 sys.path.insert(0, str(JOBS))
 from sports import RULES, Opts, build, corr_matrix, sim_matrix          # noqa: E402
 from sports.archive import Field                                         # noqa: E402
-from sports.optimize import hall_constraints, solve_one                  # noqa: E402
+from sports.optimize import assign_slots, hall_constraints, solve_one    # noqa: E402
 
 POS = {
     "NBA": ["PG/G/UTIL", "SG/G/UTIL", "SF/F/UTIL", "PF/F/UTIL", "C/UTIL", "PG/SG/G/UTIL", "SF/PF/F/UTIL", "PF/C/F/UTIL"],
@@ -50,14 +50,8 @@ def valid(sport, ps, L):
     assert len(L) == len(slots)
     assert sum(ps[k]["salary"] for k in L) <= 50000
     # a perfect slot assignment exists
-    from scipy.optimize import linear_sum_assignment
-    cost = np.full((len(L), len(slots)), 1e6)
-    for i, k in enumerate(L):
-        for j, (_, tok) in enumerate(slots):
-            if ps[k]["pos"] & tok:
-                cost[i, j] = 0
-    r, c = linear_sum_assignment(cost)
-    assert cost[r, c].sum() == 0, "no slot assignment"
+    a = assign_slots(sport, [ps[k] for k in L])
+    assert a is not None and all(p is not None for _, p in a), "no slot assignment"
 
 
 @pytest.mark.parametrize("sport", ["NBA", "NHL", "MLB", "TEN"])

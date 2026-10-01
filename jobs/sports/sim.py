@@ -99,6 +99,11 @@ def corr_matrix(sport: str, ps: list[dict]) -> np.ndarray:
     return R
 
 
+def _norm_cdf(z: np.ndarray) -> np.ndarray:
+    from math import erf
+    return 0.5 * (1.0 + np.vectorize(erf)(z / np.sqrt(2.0)))
+
+
 def _chol(R: np.ndarray) -> np.ndarray:
     try:
         return np.linalg.cholesky(R)
@@ -136,8 +141,7 @@ def sim_matrix(slate: dict, n: int = 10000, seed: int | None = None, players: li
     L = _chol(R)
     # one normal per BASE player so CPT rows reuse their driver's / player's draw exactly
     Z = L @ rng.standard_normal((len(ps), n))
-    from scipy.stats import norm
-    U = norm.cdf(Z)
+    U = _norm_cdf(Z)
     out = np.empty((len(ps), n), dtype=np.float32)
     for k, p in enumerate(ps):
         probs, vals = quantile_curve(p)
