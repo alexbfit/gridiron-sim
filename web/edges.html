@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>try{document.documentElement.dataset.theme=localStorage.getItem("gs_theme")||"dark";if(localStorage.getItem("gs_owner")==="1")document.documentElement.classList.add("owner")}catch(e){}</script>
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/ui.css">
+<title>Prop Edges (research) · GameTime Win</title>
+<meta name="description" content="Research screen: where GameTime Win's player simulation disagrees with Kalshi player markets and sportsbook props. Not betting advice.">
+<meta name="robots" content="noindex">
+<style>
+  .eg-filters { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 12px; }
+  .eg-filters .field { width: 150px; } .eg-filters .field.wide { width: 230px; }
+  .eg-filters .switch { height: 38px; gap: 8px; font-size: 13px; color: var(--text-2); font-weight: 600; }
+  #meta { color: var(--muted); font-size: 13px; margin-top: 6px; }
+  td.edge-pos { color: var(--accent); font-weight: 600; }
+  td.ev-pos { font-weight: 600; }
+  .flag { display: inline-flex; height: 20px; padding: 0 7px; border-radius: 999px; font: 600 11px var(--font); margin-left: 6px; vertical-align: middle; }
+  .flag.low { background: var(--warn-soft); color: var(--warn); }
+  .flag.big { background: var(--danger-soft); color: var(--danger); }
+  .flag.hi { background: var(--accent-soft); color: var(--accent); }
+  details.method { margin-top: 14px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
+  details.method summary { cursor: pointer; padding: 12px 16px; font-weight: 600; font-size: 14px; list-style: none; display: flex; align-items: center; gap: 8px; }
+  details.method summary::-webkit-details-marker { display: none; }
+  details.method summary::before { content: "▸"; color: var(--muted); font-size: 12px; transition: transform .15s; }
+  details.method[open] summary::before { transform: rotate(90deg); }
+  details.method .body { padding: 0 16px 16px; color: var(--text-2); font-size: 13.5px; line-height: 1.55; max-width: 900px; }
+  details.method .body h4 { margin: 14px 0 4px; font-size: 13px; color: var(--text); }
+  details.method .body code { font-family: var(--mono); font-size: 12px; background: var(--surface-2); padding: 1px 5px; border-radius: 4px; }
+  details.method table { font-size: 12.5px; border-collapse: collapse; margin-top: 6px; }
+  details.method td, details.method th { padding: 4px 10px 4px 0; text-align: left; color: var(--text-2); }
+  .disclaimer { margin-top: 28px; }
+  .count { color: var(--muted); font-size: 12px; margin-left: 8px; font-weight: 500; }
+  @media (max-width: 640px) { .eg-filters .field, .eg-filters .field.wide { width: calc(50% - 5px); } }
+</style>
+<script src="config.js"></script>
+<script src="assets/shell.js"></script>
+</head>
+<body>
+<header data-shell-header="app"></header>
+<main class="page">
+  <div class="page-head">
+    <div><h1>Prop edges <span class="badge info" style="vertical-align:middle">research</span></h1>
+      <p>Every live Kalshi player market on this week's slate — each rung of each yardage, reception and touchdown ladder, both sides — priced against our player simulation. A row appears when the two disagree by at least a few probability points. This is a screen of <em>disagreements</em>, not a list of good bets: most large gaps are news the model has not seen yet.</p></div>
+  </div>
+  <p id="meta">Loading…</p>
+  <div class="tiles" id="tiles"></div>
+
+  <div class="callout warn disclaimer" role="note">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+    <div><b>Research screen, not advice.</b> Nothing here is a recommendation to trade or wager. The "edge" is only the gap between a model and a market price; the market is usually right and the model is often missing an injury, a depth-chart change or weather. Kalshi and sportsbook availability varies by state and by account, prices move constantly, quotes shown are a snapshot from the last refresh, and past edges say nothing about future results. If you trade, only risk what you can afford to lose.</div>
+  </div>
+
+  <section class="section">
+    <h2>Screen <span class="count" id="count"></span></h2>
+    <div class="eg-filters">
+      <label class="field"><span>Market</span><select id="market" class="input"><option value="ALL">All markets</option></select></label>
+      <label class="field"><span>Team</span><select id="team" class="input"><option value="ALL">All teams</option></select></label>
+      <label class="field"><span>Position</span><select id="pos" class="input"><option value="ALL">All</option><option>QB</option><option>RB</option><option>WR</option><option>TE</option></select></label>
+      <label class="field"><span>Min edge (pts)</span><input id="minEdge" class="input" type="number" min="0" max="60" step="1" value="3"></label>
+      <label class="field wide"><span>Search</span><input id="search" class="input input-search" type="search" placeholder="Player"></label>
+      <label class="switch" title="Rows where the model and the market disagree by 25+ points are almost always the sim missing news"><input id="hideBig" type="checkbox" checked><span>Hide large disagreements</span></label>
+      <label class="switch"><input id="hiOnly" type="checkbox"><span>Sportsbook-backed only</span></label>
+    </div>
+    <div class="table-wrap table-tall"><table class="data" id="rows"><thead></thead><tbody></tbody></table></div>
+    <p class="lead" style="margin-top:10px"><b>Ours</b> = our probability for the side shown. <b>Market</b> = Kalshi mid (or a de-vigged sportsbook price). <b>Edge</b> = ours − market, in probability points. <b>EV</b> = expected return per $1 at the actual ask plus Kalshi's taker fee. <b>Kelly</b> = quarter-Kelly stake as a share of bankroll, capped at 2%. <span class="flag low">sim-only</span> no sportsbook line informed the model (lower confidence). <span class="flag big">large gap</span> 25+ point disagreement — treat as a model miss until you know why.</p>
+  </section>
+
+  <details class="method">
+    <summary>Methodology</summary>
+    <div class="body">
+      <h4>What is compared</h4>
+      <p>Kalshi lists each player stat as a ladder of binary markets ("70+ receiving yards", "80+", …). The mid of the yes bid and ask is the market's probability that the player clears that rung. Sportsbook player props (when a line pull has run — Sunday mornings) are Over/Under pairs; the two prices are de-vigged within each book (<code>p_over / (p_over + p_under)</code>). Anytime-touchdown "Yes" prices are one-sided and get the same 12% vig adjustment the projections use.</p>
+      <h4>Our probability</h4>
+      <p>The simulation stores DraftKings points per sim, not per-stat draws, so each stat gets a parametric distribution around a blended mean. The mean is the sim's expected stat line for the player, pulled 85% toward the sportsbook-implied line when one exists (the same pull the lineup builder uses, which backtested best). When only Kalshi has a line the model is shrunk half-way toward it — the sim alone is known to be weaker than market lines, and ignoring the market would overstate every gap — and the row is marked <i>sim-only</i>. Means are conditional on the player playing (Kalshi settles at the pre-game price if an active player never takes a snap).</p>
+      <p>Shapes: yardage is lognormal (right-skewed, positive) with a coefficient of variation per market and position; receptions, passing touchdowns and touchdowns are Poisson. The CVs are tunable in <code>jobs/edges.py</code>; the live run also fits a lognormal to each Kalshi ladder and reports the market-implied CV next to the table value so they can be re-tuned.</p>
+      <table id="shapes"></table>
+      <h4>EV and stake</h4>
+      <p>Kalshi charges a taker fee of about <code>0.07 × price × (1 − price)</code> per contract (1.75¢ at 50¢), so EV is computed at the ask plus fee, not the mid: <code>EV = p × 1 / (ask + fee) − 1</code>. Sportsbook EV uses the book's decimal price. The stake column is a quarter-Kelly fraction <code>¼ × (p·b − q) / b</code>, capped at 2% of bankroll; it is a sizing convention on a research screen, not a recommendation.</p>
+      <h4>Known weaknesses</h4>
+      <p>The sim's usage shares lag news (a starter ruled out on Friday, a backfield change), its passing-yard means run low for some quarterbacks, and lognormal tails are thinner than the market's for low-volume receivers. Edges above 25 points are flagged and hidden by default for exactly this reason. Nothing here has been forward-tested against settled markets yet; the Track Record page grades the projections themselves.</p>
+    </div>
+  </details>
+</main>
+<footer data-shell-footer="site"></footer>
+<script src="edges.js"></script>
+</body>
+</html>

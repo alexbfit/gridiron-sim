@@ -44,6 +44,7 @@ jobs:
           python jobs/props.py --source kalshi || { echo "kalshi props skipped"; echo props >> "$RUNNER_TEMP/failed_steps"; }
           python jobs/project.py --latest || { echo "no slate"; echo project >> "$RUNNER_TEMP/failed_steps"; }
           python jobs/simulate.py --latest || { echo "no slate"; echo simulate >> "$RUNNER_TEMP/failed_steps"; }
+          python jobs/edges.py --out web/data/edges.json || { echo "edges skipped"; echo edges >> "$RUNNER_TEMP/failed_steps"; }
       - name: Sportsbook player props merged with Kalshi (Sunday 7 AM ET, or on request)
         if: ${{ always() && (github.event.schedule == '0 11 * * 0' || github.event.inputs.props == 'true') }}
         env:
@@ -68,6 +69,8 @@ jobs:
           PY
           then echo "fresh sportsbook props already landed - skipping the paid pull"
           else python jobs/props.py --source both --force || { echo "props skipped"; echo props >> "$RUNNER_TEMP/failed_steps"; }; fi
+          # re-screen with the sportsbook lines behind the model (rows flip from sim-only to book-backed)
+          python jobs/edges.py --out web/data/edges.json || { echo "edges skipped"; echo edges >> "$RUNNER_TEMP/failed_steps"; }
       - name: Pre-lock checklist (Sunday 7 AM run) — fails this job loudly if the 9:30 build's inputs are missing
         if: ${{ always() && (github.event.schedule == '0 11 * * 0' || github.event.inputs.props == 'true') }}
         env:
@@ -76,6 +79,16 @@ jobs:
         run: |
           if [ "$(TZ=America/New_York date +%u)" != "7" ]; then echo "not Sunday - checklist skipped"; exit 0; fi
           python jobs/preflight.py --mode sun --skip news --skip tasks --log preflight-7am
+      - name: Publish the edge screen (web/data/edges.json, same path backtest.yml uses for backtest.json)
+        if: ${{ always() }}
+        run: |
+          git config user.name "gridiron-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add web/data/edges.json
+          if git diff --cached --quiet; then echo "edges.json unchanged"; exit 0; fi
+          git commit -m "edges: $(python -c 'import json;d=json.load(open("web/data/edges.json"));print(d["slate"], len(d["rows"]), "sides")')"
+          git pull --rebase --autostash || true
+          git push || { echo "edges push failed - the file is still in the run"; echo edges-publish >> "$RUNNER_TEMP/failed_steps"; }
       - name: Run log (finish)
         if: ${{ always() }}
         env:
