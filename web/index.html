@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>GameTime Win · Free beta: NFL DFS lineups from 10,000 simulated games</title>
-<meta name="description" content="GameTime Win simulates every NFL game on the slate 10,000 times and builds DraftKings tournament lineups in under a minute. Join the free beta.">
-<meta property="og:title" content="GameTime Win — build tournament lineups from 10,000 simulated games">
-<meta property="og:description" content="Pick your contest, click build, upload. Join the free beta and lock in founding-member pricing.">
+<title>GameTime Win · Your DraftKings tournament lineups, built before kickoff and graded in public</title>
+<meta name="description" content="For DraftKings tournament players who don't have six hours on Sunday: 10,000 simulated games, sportsbook-anchored projections and upload-ready lineups in three taps — with every week's result published, wins and misses.">
+<meta property="og:title" content="GameTime Win — tournament lineups the sharps would build, in three taps">
+<meta property="og:description" content="10,000 simulated games. Upload-ready DraftKings files. A public scorecard every Monday. Free during the beta; founding price locked for life.">
 <meta property="og:url" content="https://gametimewin.com/">
 <meta name="theme-color" content="#0a2214">
 <script>try{document.documentElement.dataset.theme=localStorage.getItem("gs_theme")||"dark";if(localStorage.getItem("gs_owner")==="1")document.documentElement.classList.add("owner")}catch(e){}</script>
@@ -25,26 +25,32 @@
 <header data-shell-header="marketing"></header>
 
 <main>
-  <!-- ============================================ hero: dream outcome + one action -->
+  <!-- ============================================ hero: avatar + dream outcome + speed + proof -->
   <section class="hero beta-hero">
     <div class="hero-inner">
       <div>
-        <span class="eyebrow"><span class="dot live"></span><span id="heroSlate">Free beta · NFL DFS on DraftKings</span></span>
-        <h1>Build tournament lineups from <em>10,000 simulated games</em>, in under a minute.</h1>
-        <p class="sub">GameTime Win plays out every game on the slate thousands of times, prices each player off the betting markets, and hands you DraftKings-ready lineups for your contest. Pick the contest. Click build. Upload.</p>
+        <span class="eyebrow"><span class="dot live"></span><span id="heroSlate">For DraftKings tournament players who don't have six hours on Sunday</span></span>
+        <h1>Your tournament lineups, built from <em>10,000 simulated games</em>, before your coffee's done.</h1>
+        <p class="sub">Upload your DraftKings entries file, pick two players you like, and get every entry filled with lineups built the way the top 0.1% of the Millionaire Maker builds them — QB + 2 stacks, bring-backs, full salary. Then watch us grade the result in public on Monday.</p>
 
         <form class="beta-form" data-beta-form="hero" novalidate>
           <label class="sr-only" for="emailHero">Email address</label>
           <input class="input beta-input" id="emailHero" name="email" type="email" inputmode="email" autocomplete="email" placeholder="you@email.com" required>
           <input class="hp" name="company" tabindex="-1" autocomplete="off" aria-hidden="true">
-          <button class="btn btn-primary btn-lg" type="submit">Get free beta access <span data-icon="arrow"></span></button>
+          <button class="btn btn-primary btn-lg" type="submit">Get my free beta spot <span data-icon="arrow"></span></button>
           <p class="beta-msg" role="status" aria-live="polite"></p>
         </form>
         <ul class="risk-row">
-          <li><span data-icon="check"></span>Free during the beta</li>
+          <li><span data-icon="check"></span>$0 during the beta</li>
           <li><span data-icon="check"></span>No credit card</li>
-          <li><span data-icon="check"></span>Founding-member price locked in</li>
+          <li><span data-icon="check"></span>Founding price locked for life</li>
         </ul>
+
+        <div class="hero-proof" id="heroProof" hidden>
+          <div><b id="hpBeat">—</b>of real entries our lineups outscored last week</div>
+          <div><b id="hpVs">—</b>points above the field's median lineup</div>
+          <div><b id="hpBest">—</b>best finish, out of <span id="hpEntries">—</span> entries</div>
+        </div>
       </div>
 
       <div class="mock" aria-hidden="true">
@@ -69,47 +75,51 @@
     </div>
   </section>
 
-  <!-- ============================================ the problem -->
+  <!-- ============================================ the problem, agitated -->
   <section class="band" id="problem">
     <div class="band-inner narrow">
-      <div class="band-head center"><span class="kicker">The problem</span><h2>Most DFS players lose Sunday before kickoff.</h2></div>
+      <div class="band-head center"><span class="kicker">Why you keep finishing 40,000th</span><h2>The field has the same optimizer you do.</h2>
+        <p>Thousands of entries are built from the same consensus projections, so the "optimal" lineup is the most duplicated one on the slate. Meanwhile you spent your Sunday morning on it.</p></div>
       <div class="pain">
-        <div class="card"><b>Hours of spreadsheets</b><p>Copying projections, hand-building stacks, and still second-guessing every lineup at 12:55.</p></div>
-        <div class="card"><b>Averages, not outcomes</b><p>Most optimizers add up one number per player. Tournaments are won by how players hit <em>together</em>, and averages can't see that.</p></div>
-        <div class="card"><b>Late news breaks lineups</b><p>An inactive at 11:30 and your entries are dead money, unless you can swap fast.</p></div>
+        <div class="card"><b>Six hours, then second-guessing at 12:55</b><p>Projection tabs, injury refreshes, hand-built stacks. By lock you've spent a workday and you're still not sure #14 is any good.</p></div>
+        <div class="card"><b>Averages don't win tournaments</b><p>A single number per player can't see that the QB, his WR and the bring-back hit <em>together</em>. The top 0.1% of the Milly Maker stack QB + 2 with a bring-back 43% of the time. The field: 36%.</p></div>
+        <div class="card"><b>One 11:30 inactive kills 14 entries</b><p>The news breaks, you're at brunch, and your lineups are dead money unless somebody swaps them for you — fast.</p></div>
       </div>
     </div>
   </section>
 
-  <!-- ============================================ the offer: value stack -->
+  <!-- ============================================ the offer: value stack with anchors -->
   <section class="band alt" id="offer">
     <div class="band-inner">
-      <div class="band-head center"><span class="kicker">What beta players get</span><h2>Everything the sharps use, with none of the busywork.</h2>
-        <p>Pro-grade DFS simulators run $97 a month and up. During the beta, all of this is free.</p></div>
+      <div class="band-head center"><span class="kicker">The offer</span><h2>Everything the $297-a-month sims sell. Three taps. Public receipts.</h2>
+        <p>Here's exactly what you get, what each piece costs elsewhere, and what you pay.</p></div>
       <div class="stack">
-        <div class="stack-row"><div class="ic" data-icon="dice"></div><div><h3>10,000-game simulator</h3><p>Every game is played out from the Vegas spread and total: pace, game script, targets, carries and touchdowns. Every player gets a full range of outcomes, not one number.</p></div></div>
-        <div class="stack-row"><div class="ic" data-icon="chart"></div><div><h3>Market-anchored projections</h3><p>Sportsbook and prediction-market player props are built into every projection, refreshed Sunday morning before lock.</p></div></div>
-        <div class="stack-row"><div class="ic" data-icon="layers"></div><div><h3>Tournament lineup builder, 1 to 150 lineups</h3><p>QB stacks, bring-backs, exposure caps and uniqueness are set for your contest type automatically. Tweak anything you like.</p></div></div>
-        <div class="stack-row"><div class="ic" data-icon="download"></div><div><h3>Upload-ready DraftKings files</h3><p>Download a CSV and upload it in one go. No retyping lineups.</p></div></div>
-        <div class="stack-row"><div class="ic" data-icon="trophy"></div><div><h3>A public, weekly scorecard</h3><p>Every projection is graded against what actually happened, every week. You see the misses too.</p></div></div>
-        <div class="stack-row bonus"><div class="ic" data-icon="star"></div><div><h3>Founding-member price, locked in <span class="badge gold">Beta only</span></h3><p>When paid plans launch, beta players keep the lowest price we ever offer, for as long as they stay.</p></div></div>
+        <div class="stack-row"><div class="ic" data-icon="dice"></div><div><h3>10,000-game Monte Carlo simulator <span class="val">sims like this: $97–$297/mo</span></h3><p>Every game on the slate is played out 10,000 times from the Vegas spread and total — pace, game script, targets, carries, touchdowns. Every player gets a full range of outcomes, so lineups are built for ceilings, not averages.</p></div></div>
+        <div class="stack-row"><div class="ic" data-icon="chart"></div><div><h3>Sportsbook-anchored projections <span class="val">projection subscriptions: $40–$90/mo</span></h3><p>Sunday-morning player props from the books and prediction markets are blended into every projection, backtested on two seasons of real contest fields to find the weight that actually wins.</p></div></div>
+        <div class="stack-row"><div class="ic" data-icon="layers"></div><div><h3>Upload your entries, get them all filled <span class="val">saves ~3 hours every Sunday</span></h3><p>Drop in your DraftKings entries file. Every contest you're in gets its lineups in rank order — your 20-max gets #1–20, your single entry gets #1 — in one file you upload straight back. No retyping, ever.</p></div></div>
+        <div class="stack-row"><div class="ic" data-icon="trophy"></div><div><h3>Contest simulator <span class="val">gated behind $230+ tiers elsewhere</span></h3><p>Your lineups scored against a simulated field for the exact contest you're entering. See top-1% odds and which lineups carry the ceiling before you pay an entry fee.</p></div></div>
+        <div class="stack-row"><div class="ic" data-icon="download"></div><div><h3>Late-swap files at 11:48 AM and 3:50 PM <span class="val">the piece that saved 14 entries in week 3</span></h3><p>After the inactives drop, your entries file comes back with the scratched players swapped and your stacks kept intact. Upload, done. You're never the last to know.</p></div></div>
+        <div class="stack-row"><div class="ic" data-icon="star"></div><div><h3>Sunday-morning news desk <span class="val">included</span></h3><p>Before the build, beat-reporter coverage of every game is read and turned into sourced notes: snap counts, role changes, game-time decisions. Only confirmed reporting moves a projection — and every note is graded afterward.</p></div></div>
+        <div class="stack-row bonus"><div class="ic" data-icon="check"></div><div><h3>Public scorecard, every Monday <span class="badge gold">Nobody else does this</span></h3><p>Our lineups vs the real field median, % of real entries beaten, best finish, dollars in and out, projection misses. Published whether we win or lose. You never have to take our word for anything.</p></div></div>
       </div>
       <div class="stack-total">
-        <div><span class="muted">Your price during the beta</span><b>$0</b></div>
-        <a class="btn btn-primary btn-lg" href="#join">Claim a beta spot <span data-icon="arrow"></span></a>
+        <div><span class="muted">Comparable tools, added up</span><b class="strike">$370+<small>/mo</small></b></div>
+        <div><span class="muted">Starter when paid plans open</span><b>$29<small>/mo</small></b></div>
+        <div><span class="muted">Your price in the beta</span><b class="free">$0</b></div>
+        <a class="btn btn-primary btn-lg" href="#join">Claim a founding spot <span data-icon="arrow"></span></a>
       </div>
     </div>
   </section>
 
-  <!-- ============================================ how: low effort, fast -->
+  <!-- ============================================ how: three taps -->
   <section class="band" id="how">
     <div class="band-inner">
-      <div class="band-head center"><span class="kicker">How it works</span><h2>Slate to upload in three steps.</h2>
-        <p>No spreadsheets and no settings homework. The builder starts from sensible defaults for the contest you're entering.</p></div>
+      <div class="band-head center"><span class="kicker">How it works</span><h2>Three taps between you and lock.</h2>
+        <p>No spreadsheets, no settings homework. The builder already uses the construction that backtested best on two seasons of real Millionaire Maker fields.</p></div>
       <div class="steps">
-        <div class="card step"><div class="n">1</div><h3>Pick your contest</h3><p>Cash or tournament, single entry or 150-max. Stacking, diversity and exposure rules are set to fit it.</p></div>
-        <div class="card step"><div class="n">2</div><h3>Make it yours</h3><p>Lock the players you love, fade the ones you don't, edit any projection, cap how often anyone appears.</p></div>
-        <div class="card step"><div class="n">3</div><h3>Download &amp; upload</h3><p>Every lineup is scored across the same simulated games and the best are kept. One CSV, one upload.</p></div>
+        <div class="card step"><div class="n">1</div><h3>Upload your DraftKings entries file</h3><p>Lineups → Edit Entries → Download. We read which contests you're in and how many entries each one has.</p></div>
+        <div class="card step"><div class="n">2</div><h3>Pick two players</h3><p>Tap to like or fade any two — your call stays in every lineup. (DraftKings requires it; we think it's where your edge lives anyway.)</p></div>
+        <div class="card step"><div class="n">3</div><h3>Reveal, download, upload</h3><p>Your lineups come back ranked by simulated ceiling. One file fills every entry you hold. Late swaps arrive the same way.</p></div>
       </div>
     </div>
   </section>
@@ -117,25 +127,45 @@
   <!-- ============================================ proof: perceived likelihood -->
   <section class="band alt" id="proof">
     <div class="band-inner">
-      <div class="band-head center"><span class="kicker">Proof, not promises</span><h2>We grade ourselves in public.</h2>
-        <p>Tournament lineups are built for the top of each player's range, so the range has to be honest. Here is how our simulated ranges held up on a full season replayed with only pre-kickoff information.</p></div>
-      <div class="big-stats proof-stats">
-        <div><b id="btCal10">9.6%</b><span>of scores landed under our 10th percentile (target: 10%)</span></div>
-        <div><b id="btCal90">9.5%</b><span>landed over our 90th percentile (target: 10%)</span></div>
+      <div class="band-head center"><span class="kicker">Proof, not promises</span><h2>We grade ourselves in public. Every week.</h2>
+        <p>Every lineup we build is scored against the real contest field after the games. Here is the live ledger — the good weeks and the bad ones.</p></div>
+      <div class="big-stats proof-stats" id="ledgerStats">
+        <div><b id="lgBeat">—</b><span>of real entries outscored by our lineups, on average, this season</span></div>
+        <div><b id="lgAbove">—</b><span>weeks our average lineup beat the field's median lineup</span></div>
+        <div><b id="lgBest">—</b><span>best real finish this season</span></div>
+      </div>
+      <p class="muted small center" id="lgMeta" style="margin-top:14px">Loading the season ledger…</p>
+      <div class="big-stats proof-stats" style="margin-top:22px">
+        <div><b id="btCal10">9.6%</b><span>of real scores landed under our 10th percentile (target 10%) — the ranges are honest</span></div>
+        <div><b id="btCal90">9.5%</b><span>landed over our 90th percentile (target 10%)</span></div>
         <div><b id="btErr">5%</b><span>smaller average miss than a season-average projection</span></div>
       </div>
       <p class="muted small center" id="btMeta" style="margin-top:14px">2025 season backtest, replayed with only pre-kickoff information.</p>
-      <p class="center" style="margin-top:12px"><a class="link small" href="backtest.html">Read the full accuracy report →</a></p>
+      <p class="center" style="margin-top:12px"><a class="link small" href="results.html">See the full Track Record →</a> &nbsp;·&nbsp; <a class="link small" href="backtest.html">Read the accuracy report →</a></p>
     </div>
   </section>
 
-  <!-- ============================================ pricing: three tiers, summarized (full page: pricing.html) -->
+  <!-- ============================================ guarantee: risk reversal -->
+  <section class="band" id="guarantee">
+    <div class="band-inner narrow">
+      <div class="guarantee">
+        <div class="g-badge"><span data-icon="check"></span></div>
+        <div>
+          <span class="kicker">The Beat-the-Field Guarantee</span>
+          <h2>If our lineups don't outscore the field's median in at least 2 of your first 4 paid weeks, your next month is free.</h2>
+          <p>Judged on the public ledger, not our word. We can't promise you'll win — nobody honest can; tournaments have real variance and a rake — but we can promise we'll build you better-than-average lineups or you don't pay for the next month. Every paid plan also starts with a 7-day free trial and cancels in one click.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================ pricing: anchor + scarcity + urgency -->
   <section class="band alt" id="pricing">
     <div class="band-inner">
-      <div class="band-head center"><span class="kicker">Pricing</span><h2>Free to start. Fair when you're ready.</h2>
-        <p id="pricingLede">Everything is free during the beta. These are the plans that open when it ends, and beta players keep the founding price for as long as they stay.</p></div>
+      <div class="band-head center"><span class="kicker">Pricing</span><h2>Free now. $29 later. Founding price for the first 100.</h2>
+        <p id="pricingLede">Everything is free until paid plans open on <b>November 1</b>. The first 100 beta players keep the founding price for as long as they stay subscribed — it never goes up on you, ever. After that, the list price applies.</p></div>
       <div class="pricing-summary" id="pricingSummary"></div>
-      <p class="pricing-more">Plus a <b id="slatePrice">$5</b> Slate Pass: 24 hours of Starter for one slate. 7-day free trial on paid plans · no refunds · no mid-season price changes.<br>
+      <p class="pricing-more">Plus a <b id="slatePrice">$5</b> Slate Pass: 24 hours of Starter for one slate. 7-day free trial on paid plans · no refunds, because you can try it free · no mid-season price changes.<br>
         <a class="link" href="pricing.html">Compare every feature and read the pricing FAQ →</a></p>
     </div>
   </section>
@@ -143,14 +173,15 @@
   <!-- ============================================ faq: objections -->
   <section class="band" id="faq">
     <div class="band-inner">
-      <div class="band-head center"><span class="kicker">FAQ</span><h2>Questions, answered.</h2></div>
+      <div class="band-head center"><span class="kicker">FAQ</span><h2>What's the catch?</h2></div>
       <div class="faq">
-        <details><summary>What does the beta cost?</summary><p>Nothing. No credit card. When paid plans launch you'll get an email first, and beta players keep founding-member pricing. If you'd rather not continue, you simply don't subscribe. <a href="pricing.html">See the plans →</a></p></details>
-        <details><summary>Which sites and slates are supported?</summary><p>DraftKings NFL classic main slates today. FanDuel and showdown slates are next.</p></details>
-        <details><summary>How do I get my lineups onto DraftKings?</summary><p>Build, then press <b>Download CSV</b>. On DraftKings, use <b>Upload lineups</b> for new entries or <b>Lineups → Edit Entries</b> to replace lineups you've already entered.</p></details>
-        <details><summary>Can I use my own opinions?</summary><p>Yes. Edit any projection, lock or exclude any player, and set minimum or maximum exposure. Your changes flow into every lineup.</p></details>
-        <details><summary>When will I get access?</summary><p>We're letting players in in small groups so we can help each one get set up. You'll get an email with your link when your spot opens.</p></details>
-        <details><summary>Will this guarantee I win?</summary><p>No, and nobody honest can promise that. Daily fantasy has real variance and a rake. GameTime Win gives you calibrated projections and disciplined lineup construction, and publishes its own results every week so you can judge for yourself. Only play with money you can afford to lose.</p></details>
+        <details><summary>Why is this $29 when SaberSim is $97 and Stokastic is $150+?</summary><p>They run media companies, Discords and sales teams. We run a simulator and publish the receipts. We'd rather have a thousand players at a price they call a no-brainer than a hundred at a price they resent — and the founding price is how we thank the people who show up first.</p></details>
+        <details><summary>Will this guarantee I win?</summary><p>No, and nobody honest can promise that. Daily fantasy has real variance and a rake. What we guarantee is better-than-average lineups, judged on the public ledger — see the Beat-the-Field Guarantee above. Only play with money you can afford to lose.</p></details>
+        <details><summary>Do you upload to DraftKings for me?</summary><p>No. You always make the final calls and you always do the upload. You pick at least two players yourself on every build (DraftKings requires it) and you can edit anything. We hand you the file; you press the button.</p></details>
+        <details><summary>Which sites and slates are supported?</summary><p>DraftKings NFL main slates (the Sunday 1 PM classic slate) today. Showdown, FanDuel and the NBA are next; the engine already backtests every major sport.</p></details>
+        <details><summary>What does the beta cost, really?</summary><p>Nothing. No credit card. When paid plans open you'll get an email first; if you'd rather not continue, you simply don't subscribe. <a href="pricing.html">See the plans →</a></p></details>
+        <details><summary>When will I get access?</summary><p>We let players in in small groups so each one gets set up properly. You'll get an email with your link when your spot opens — usually within a few days.</p></details>
+        <details><summary>Which states?</summary><p>Wherever DraftKings offers paid DFS. It isn't available in HI, ID, MT, NV or WA, and a few states restrict certain contest types. <a href="responsible.html">Details and responsible-play resources →</a></p></details>
       </div>
     </div>
   </section>
@@ -158,14 +189,14 @@
   <!-- ============================================ final CTA -->
   <section class="band cta-band" id="join">
     <div class="band-inner">
-      <span class="kicker">Next slate is Sunday</span>
-      <h2>Get your lineups built before kickoff.</h2>
-      <p>Join the free beta. We'll email your access link and a two-minute setup guide.</p>
+      <span class="kicker">Next slate is Sunday · founding price ends November 1</span>
+      <h2>Stop building lineups. Start uploading them.</h2>
+      <p>Join the free beta. We'll email your access link and a two-minute setup guide, and lock your founding price.</p>
       <form class="beta-form center" data-beta-form="footer" novalidate>
         <label class="sr-only" for="emailFooter">Email address</label>
         <input class="input beta-input" id="emailFooter" name="email" type="email" inputmode="email" autocomplete="email" placeholder="you@email.com" required>
         <input class="hp" name="company" tabindex="-1" autocomplete="off" aria-hidden="true">
-        <button class="btn btn-primary btn-lg" type="submit">Get free beta access <span data-icon="arrow"></span></button>
+        <button class="btn btn-primary btn-lg" type="submit">Get my free beta spot <span data-icon="arrow"></span></button>
         <p class="beta-msg" role="status" aria-live="polite"></p>
       </form>
       <p class="muted small" style="margin-top:14px">Free · No credit card · Unsubscribe in one click · Must be of legal age in your state</p>
@@ -198,7 +229,7 @@
       });
       if (r.ok || r.status === 409) {                                    // 409 = already on the list
         form.classList.add("done");
-        msg.textContent = r.status === 409 ? "You're already on the list. We'll email you when your spot opens." : "You're in! Watch your inbox for your beta access link.";
+        msg.textContent = r.status === 409 ? "You're already on the list — your founding price is locked. We'll email you when your spot opens." : "You're in! Your founding price is locked. Watch your inbox for your beta access link.";
         msg.classList.add("ok");
         try { localStorage.setItem("gtw_beta", email); } catch (e) {}
       } else { throw new Error(r.status); }
@@ -215,10 +246,37 @@
     sum.innerHTML = GP.cards("monthly", { compact: false });
     GP.wireCheckout(sum);
     const sl = GP.PLANS.slate; if (sl?.price?.once) document.getElementById("slatePrice").textContent = sl.price.once;
-    if (cfg.BILLING_LIVE) document.getElementById("pricingLede").textContent = "Start free, upgrade when you want more lineups and the DraftKings edit file. Every paid plan has a 7-day free trial.";
+    if (cfg.BILLING_LIVE) document.getElementById("pricingLede").innerHTML = "Start free, upgrade when you want more lineups and the DraftKings edit file. Every paid plan has a 7-day free trial and the <b>Beat-the-Field Guarantee</b>.";
   }
 
-  // live numbers for the proof section (backtest file shipped with the site)
+  // live proof: the season ledger the nightly job publishes (web/data/ledger.json)
+  const pct = x => (x == null || isNaN(x)) ? "—" : Math.round(100 * x) + "%";
+  const num = x => (x == null || isNaN(x)) ? "—" : Number(x).toLocaleString();
+  fetch("data/ledger.json", { cache: "no-cache" }).then(r => r.json()).then(L => {
+    const weeks = (L.weeks || []).filter(w => w.lineups && w.lineups.n);
+    if (!weeks.length) throw new Error("no weeks");
+    const t = L.season || L.totals || {};
+    const last = weeks[weeks.length - 1], lu = last.lineups || {};
+    // hero chips: last week
+    if (lu.beat_pct != null) {
+      document.getElementById("hpBeat").textContent = pct(lu.beat_pct);
+      document.getElementById("hpVs").textContent = (lu.avg_pts != null && lu.field_median_pts != null) ? (lu.avg_pts - lu.field_median_pts >= 0 ? "+" : "") + (lu.avg_pts - lu.field_median_pts).toFixed(1) : "—";
+      document.getElementById("hpBest").textContent = lu.best_rank ? "#" + num(lu.best_rank) : "—";
+      document.getElementById("hpEntries").textContent = num(lu.entries);
+      document.getElementById("heroProof").hidden = false;
+      document.getElementById("heroSlate").textContent = `Week ${last.week}: our lineups beat ${pct(lu.beat_pct)} of ${num(lu.entries)} real entries · for DraftKings tournament players`;
+    }
+    // season tiles
+    const beats = weeks.map(w => w.lineups?.beat_pct).filter(x => x != null);
+    document.getElementById("lgBeat").textContent = beats.length ? pct(beats.reduce((a, b) => a + b, 0) / beats.length) : "—";
+    const above = weeks.filter(w => w.lineups?.avg_pts != null && w.lineups?.field_median_pts != null && w.lineups.avg_pts > w.lineups.field_median_pts).length;
+    document.getElementById("lgAbove").textContent = `${above} of ${weeks.length}`;
+    const best = weeks.map(w => w.lineups).filter(x => x && x.best_rank).sort((a, b) => a.best_rank - b.best_rank)[0];
+    document.getElementById("lgBest").textContent = best ? `#${num(best.best_rank)}` : "—";
+    document.getElementById("lgMeta").textContent = best ? `${L.season_label || L.season || ""} season · ${weeks.length} week${weeks.length === 1 ? "" : "s"} graded against real DraftKings fields · best finish #${num(best.best_rank)} of ${num(best.entries)} entries. Updated every Monday.` : "Updated every Monday after the games are scored.";
+  }).catch(() => { document.getElementById("lgMeta").textContent = "The season ledger publishes after the first graded week. Until then, see the backtest below."; });
+
+  // backtest calibration (web/data/backtest.json)
   fetch("data/backtest.json", { cache: "no-cache" }).then(r => r.json()).then(bt => {
     const all = bt.positions.ALL, cov = all.calibration.coverage;
     document.getElementById("btCal10").textContent = (100 * cov.p10).toFixed(1) + "%";
