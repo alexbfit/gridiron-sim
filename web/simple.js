@@ -35,6 +35,7 @@ let file = null;                 // parsed upload
 let slate = null, players = [], byId = new Map(), props = new Map(), sim = null, simPromise = null;
 let likes = new Set(), fades = new Set();
 let nWanted = 20;
+let cap = Infinity;              // Free-tier lineup cap (config FREE_LINEUPS) once accounts + gating are switched on; Infinity otherwise
 let lineups = [];
 let pickPos = "ALL";
 
@@ -324,7 +325,10 @@ function assignEntries() {
 }
 function downloadCSV() {
   let text, fname;
-  if (file.kind === "entries") {
+  if (file.kind === "entries" && GS.Account.plan() === "free") {
+    GS.toast("The DraftKings entries edit file is a Starter feature. Downloading a plain lineups CSV instead — use Upload Lineups in the contest lobby.");
+  }
+  if (file.kind === "entries" && GS.Account.plan() !== "free") {
     const cols = file.lastCol + 1;
     const head = file.H.slice(0, cols);
     const body = file.entries.map(e => { const r = e.row.slice(0, cols); while (r.length < cols) r.push("");
@@ -339,7 +343,7 @@ function downloadCSV() {
   const a = document.createElement("a");
   a.href = URL.createObjectURL(new Blob([text], { type: "text/csv" })); a.download = fname; a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 1500);
-  GS.toast(file.kind === "entries" ? "Downloaded — upload it on DraftKings under Edit Entries." : "Downloaded — upload it in the contest lobby under Upload Lineups.", "ok");
+  GS.toast(file.kind === "entries" && GS.Account.plan() !== "free" ? "Downloaded — upload it on DraftKings under Edit Entries." : "Downloaded — upload it in the contest lobby under Upload Lineups.", "ok");
 }
 
 // ============================================================ UI: steps
@@ -365,7 +369,7 @@ async function handleFile(f) {
     const s = await findSlate(file.ids);
     await loadSlate(s);
     likes = new Set(); fades = new Set();
-    nWanted = file.kind === "entries" ? Math.max(...file.contests.map(c => c.n)) : 20;
+    nWanted = clampN(file.kind === "entries" ? Math.max(...file.contests.map(c => c.n)) : 20);
     renderPick(); step("pick");
   } catch (e) {
     console.error(e); err.textContent = e.message || String(e); err.hidden = false;
@@ -400,7 +404,7 @@ async function handleProjFile(f) {
     projFile = true;
     $("dropProj").classList.add("ok"); $("dropProj").querySelector(".drop-title").textContent = `${n} players projected ✓`;
     likes = new Set(); fades = new Set();
-    nWanted = file.kind === "entries" ? Math.max(...file.contests.map(c => c.n)) : 20;
+    nWanted = clampN(file.kind === "entries" ? Math.max(...file.contests.map(c => c.n)) : 20);
     renderPick(); step("pick");
   } catch (e) { console.error(e); err.textContent = e.message || String(e); err.hidden = false; }
   finally { $("fileProj").value = ""; }
@@ -424,16 +428,31 @@ function renderPick() {
   const games = new Set(players.map(p => p.game_id).filter(Boolean)).size;
   $("pickKicker").textContent = sport === "NFL" ? `DraftKings · Week ${slate.week} · ${games} games` : `DraftKings · ${SP.SPORT_NAMES[sport]} · ${games ? games + " games · " : ""}${players.length} players`;
   if (file.kind === "entries") {
-    const totalE = file.entries.length;
+    const totalE = file.entries.length, want = Math.max(...file.contests.map(c => c.n));
     $("entriesSum").innerHTML = file.contests.map(c => `<span class="chip-c">${esc(shortContest(c.name))} <b>${c.n}</b> ${c.n === 1 ? "entry" : "entries"}</span>`).join("")
-      + `<span class="chip-c">${totalE} entries → <b>${nWanted}</b> lineups${file.contests.length > 1 ? ", best ones play in every contest" : ""}</span>`;
+      + `<span class="chip-c">${totalE} entries → <b>${nWanted}</b> lineups${nWanted < want ? ` <small>(Free plan: ${cap} per slate)</small>` : file.contests.length > 1 ? ", best ones play in every contest" : ""}</span>`;
     $("countRow").hidden = true;
   } else {
     $("entriesSum").innerHTML = `<span class="chip-c">Salaries file · no entries — choose how many lineups below</span>`;
     $("countRow").hidden = false;
+    $("nSeg").querySelectorAll("button").forEach(b => { b.disabled = +b.dataset.n > cap; b.title = b.disabled ? `Starter unlocks up to ${(cfg.PLANS?.starter?.lineups) || 50} lineups` : ""; });
     pressed("nSeg", "n", String(nWanted));
   }
+  renderUpgrade();
   renderGrid(); renderDock();
+}
+// Free-tier upgrade card. Only ever shown when AUTH_ENABLED && REQUIRE_SUBSCRIPTION are on and the visitor has no plan.
+function clampN(n) { return Math.max(1, Math.min(n, cap)); }
+function renderUpgrade() {
+  const el = $("upgradeCard"); if (!el) return;
+  if (!Number.isFinite(cap)) { el.hidden = true; return; }
+  const st = cfg.PLANS?.starter || {}, price = st.price?.monthly || "", slate = cfg.PLANS?.slate?.price?.once;
+  const want = file?.kind === "entries" ? Math.max(...file.contests.map(c => c.n)) : null;
+  el.innerHTML = `<div class="uc-ic" aria-hidden="true">${GS.icon("zap")}</div>
+    <div class="uc-body"><b>You're on the Free plan: ${cap} lineups per slate.</b>
+      <p>${want && want > cap ? `Your file has ${want} entries — the top ${cap} lineups will repeat across them. ` : ""}Starter unlocks ${st.lineups || 50} lineups and the DraftKings edit file that fills every entry${price ? ` (${price}/mo, ${st.trialDays || 7}-day free trial)` : ""}.${slate ? ` Or grab a ${slate} Slate Pass for just this slate.` : ""}</p></div>
+    <a class="btn btn-primary" href="pricing.html">See plans</a>`;
+  el.hidden = false;
 }
 function pressed(groupId, attr, val) { $(groupId).querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset[attr] === val))); }
 function pickList() {
@@ -602,7 +621,7 @@ function showBinder() {
   $("binderSub").textContent = `${lineups.length} lineups · ${sport === "NFL" ? "Week " + slate.week : SP.SPORT_NAMES[sport]} · average salary ${money(avgSal)} · ranked by simulated ceiling`;
   $("tierTabs").innerHTML = [["ALL", "All", lineups.length], ...TIERS.map(t => [t.t, t.name, counts[t.t]])].filter(([, , c]) => c > 0)
     .map(([t, nm, c]) => `<button type="button" data-t="${t}" aria-pressed="${t === tierFilter}">${t === "ALL" ? "" : `<i>${t}</i>`}${nm} <small>${c}</small></button>`).join("");
-  $("uploadNote").innerHTML = file.kind === "entries"
+  $("uploadNote").innerHTML = file.kind === "entries" && GS.Account.plan() !== "free"
     ? `<span aria-hidden="true">ⓘ</span><div><b>To upload:</b> on DraftKings go to <b>My Contests → Upcoming → Edit Entries</b>, choose <b>Upload CSV</b>, and pick the downloaded file. It fills all ${file.entries.length} of your entries${file.contests.length > 1 ? " — your top lineups go into every contest" : ""}. Any lineups already in those entries are replaced.</div>`
     : `<span aria-hidden="true">ⓘ</span><div><b>To upload:</b> open your contest on DraftKings and choose <b>Upload Lineups</b>, then pick the downloaded file. Each row is one lineup, best first.</div>`;
   renderCards();
@@ -700,6 +719,8 @@ function wire() {
 async function init() {
   wire();
   if (!FIXTURE && cfg.SUPABASE_URL && !cfg.SUPABASE_URL.includes("YOUR-PROJECT")) supa = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY);
+  // lineup cap: Infinity while the product switches are off (today), FREE_LINEUPS for signed-out / free visitors once they're on
+  GS.Account.ready.then(() => { cap = GS.Account.lineupCap(); nWanted = clampN(nWanted); if (file) renderPick(); }).catch(() => {});
   try { glpk = await GLPK(); }
   catch (e) { console.error(e); const err = $("uploadError"); err.textContent = "Couldn't load the optimizer. Check your connection and reload the page."; err.hidden = false; }
 }

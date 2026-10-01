@@ -250,3 +250,14 @@
 .sport-note code { background: var(--surface-2); padding: 1px 6px; border-radius: 5px; }
 .drop-proj { margin-top: 14px; min-height: 170px; }
 .drop.ok { border-style: solid; border-color: var(--accent); }
+
+/* Free-plan upgrade card (only rendered when accounts + gating are switched on) */
+.upgrade-card { display: flex; gap: 14px; align-items: center; margin: 14px 0 4px; padding: 14px 16px; border-radius: 14px; background: linear-gradient(135deg, var(--gold-soft), transparent 60%), var(--surface); border: 1px solid color-mix(in srgb, var(--gold) 38%, transparent); }
+.upgrade-card .uc-ic { width: 40px; height: 40px; border-radius: 11px; display: grid; place-items: center; background: var(--gold-soft); color: var(--gold); flex: none; }
+.upgrade-card .uc-ic svg { width: 20px; height: 20px; }
+.upgrade-card .uc-body { flex: 1; min-width: 0; font-size: 13.5px; }
+.upgrade-card .uc-body b { color: var(--text); display: block; margin-bottom: 2px; }
+.upgrade-card .uc-body p { color: var(--muted); line-height: 1.5; }
+.upgrade-card .btn { flex: none; }
+.chip-c small { color: var(--muted); font-weight: 500; }
+@media (max-width: 640px) { .upgrade-card { flex-wrap: wrap; } .upgrade-card .btn { width: 100%; } }

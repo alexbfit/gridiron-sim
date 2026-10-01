@@ -135,3 +135,9 @@
   .gloss { grid-template-columns: 1fr; gap: 2px; }
   .gloss dd { margin-bottom: 10px; }
 }
+
+/* account: upgrade tiles */
+.acct-plans { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 14px; }
+.acct-plans .tile.accent { border-color: var(--accent-line); }
+.app-footer a { color: var(--muted); }
+.app-footer a:hover { color: var(--text); }

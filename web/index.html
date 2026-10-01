@@ -16,8 +16,10 @@
 <link rel="stylesheet" href="assets/ui.css">
 <link rel="stylesheet" href="assets/site.css">
 <link rel="stylesheet" href="assets/beta.css">
+<link rel="stylesheet" href="assets/pricing.css">
 <script src="config.js"></script>
 <script src="assets/shell.js"></script>
+<script src="assets/plans.js"></script>
 </head>
 <body class="beta-page">
 <header data-shell-header="marketing"></header>
@@ -127,12 +129,23 @@
     </div>
   </section>
 
+  <!-- ============================================ pricing: three tiers, summarized (full page: pricing.html) -->
+  <section class="band alt" id="pricing">
+    <div class="band-inner">
+      <div class="band-head center"><span class="kicker">Pricing</span><h2>Free to start. Fair when you're ready.</h2>
+        <p id="pricingLede">Everything is free during the beta. These are the plans that open when it ends, and beta players keep the founding price for as long as they stay.</p></div>
+      <div class="pricing-summary" id="pricingSummary"></div>
+      <p class="pricing-more">Plus a <b id="slatePrice">$5</b> Slate Pass: 24 hours of Starter for one slate. 7-day free trial on paid plans · no refunds · no mid-season price changes.<br>
+        <a class="link" href="pricing.html">Compare every feature and read the pricing FAQ →</a></p>
+    </div>
+  </section>
+
   <!-- ============================================ faq: objections -->
   <section class="band" id="faq">
     <div class="band-inner">
       <div class="band-head center"><span class="kicker">FAQ</span><h2>Questions, answered.</h2></div>
       <div class="faq">
-        <details><summary>What does the beta cost?</summary><p>Nothing. No credit card. When paid plans launch you'll get an email first, and beta players keep founding-member pricing. If you'd rather not continue, you simply don't subscribe.</p></details>
+        <details><summary>What does the beta cost?</summary><p>Nothing. No credit card. When paid plans launch you'll get an email first, and beta players keep founding-member pricing. If you'd rather not continue, you simply don't subscribe. <a href="pricing.html">See the plans →</a></p></details>
         <details><summary>Which sites and slates are supported?</summary><p>DraftKings NFL classic main slates today. FanDuel and showdown slates are next.</p></details>
         <details><summary>How do I get my lineups onto DraftKings?</summary><p>Build, then press <b>Download CSV</b>. On DraftKings, use <b>Upload lineups</b> for new entries or <b>Lineups → Edit Entries</b> to replace lineups you've already entered.</p></details>
         <details><summary>Can I use my own opinions?</summary><p>Yes. Edit any projection, lock or exclude any player, and set minimum or maximum exposure. Your changes flow into every lineup.</p></details>
@@ -195,6 +208,15 @@
     }
   }
   document.querySelectorAll("[data-beta-form]").forEach(f => f.addEventListener("submit", e => { e.preventDefault(); join(f); }));
+
+  // pricing summary: the three tiers from config PLANS (full comparison lives on pricing.html)
+  const GP = window.GTW_PLANS, sum = document.getElementById("pricingSummary");
+  if (GP && sum) {
+    sum.innerHTML = GP.cards("monthly", { compact: false });
+    GP.wireCheckout(sum);
+    const sl = GP.PLANS.slate; if (sl?.price?.once) document.getElementById("slatePrice").textContent = sl.price.once;
+    if (cfg.BILLING_LIVE) document.getElementById("pricingLede").textContent = "Start free, upgrade when you want more lineups and the DraftKings edit file. Every paid plan has a 7-day free trial.";
+  }
 
   // live numbers for the proof section (backtest file shipped with the site)
   fetch("data/backtest.json", { cache: "no-cache" }).then(r => r.json()).then(bt => {

@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pricing · GameTime Win</title>
+<meta name="description" content="Free, Starter and Pro plans for GameTime Win's DFS lineup builder. 7-day free trial, NFL season pass, $5 Slate Pass. No mid-season price changes.">
+<script>try{document.documentElement.dataset.theme=localStorage.getItem("gs_theme")||"dark";if(localStorage.getItem("gs_owner")==="1")document.documentElement.classList.add("owner")}catch(e){}</script>
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/ui.css">
+<link rel="stylesheet" href="assets/site.css">
+<link rel="stylesheet" href="assets/beta.css">
+<link rel="stylesheet" href="assets/pricing.css">
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="assets/shell.js"></script>
+<script src="assets/plans.js"></script>
+</head>
+<body>
+<header data-shell-header="marketing"></header>
+
+<main>
+  <section class="pricing-hero">
+    <span class="kicker">Pricing</span>
+    <h1>Pay for the slates you play. <em>Nothing more.</em></h1>
+    <p id="heroSub">Start free. Upgrade when you want more lineups, the DraftKings edit file and late-swap files. Every paid plan has a 7-day free trial and the price you start the season at is the price you keep.</p>
+    <div class="interval-row">
+      <div class="seg" id="intervalSeg" role="group" aria-label="Billing interval">
+        <button type="button" data-interval="monthly" aria-pressed="true">Monthly</button>
+        <button type="button" data-interval="season" aria-pressed="false">NFL season pass</button>
+      </div>
+      <span class="save" id="saveNote">Season pass: pay once, play through the Super Bowl</span>
+    </div>
+  </section>
+
+  <section class="plans" id="plans" aria-label="Plans"></section>
+
+  <section class="compare" id="compare">
+    <h2>What's in each plan</h2>
+    <p class="lede">The engine is the same everywhere: 10,000 simulated games per slate, market-anchored projections, contest-aware lineup construction. Plans differ in how many lineups you can build and which files you can download.</p>
+    <div class="compare-wrap">
+      <table class="compare-table" id="compareTable"></table>
+    </div>
+  </section>
+
+  <section class="pricing-honest" id="honest">
+    <div class="card">
+      <h2>A straight word about variance</h2>
+      <p><b>No tool can guarantee a win.</b> Daily fantasy has real variance and a rake, and even well-built lineups lose most individual tournaments. What a simulator can do is give you calibrated ranges and disciplined construction so that, over a season, you're making better decisions than the field. We grade every projection against what actually happened and publish it, misses included. Judge us on that record, not on a promise.</p>
+      <div class="links">
+        <a class="btn" href="results.html">See the public Track Record <span data-icon="arrow"></span></a>
+        <a class="btn btn-ghost" href="backtest.html">Read the accuracy report</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="pricing-faq" id="faq">
+    <h2>Pricing questions</h2>
+    <p class="lede">The short version: try it free, cancel whenever, no refunds, you always control your lineups.</p>
+    <div class="faq">
+      <details><summary>How does the free trial work?</summary><p>Starter and Pro both start with a 7-day free trial. You add a card at checkout, you're not charged until day 8, and if you cancel before then you pay nothing. One trial per account.</p></details>
+      <details><summary>Can I cancel any time?</summary><p>Yes, from your account page in two clicks. Monthly plans stay active until the end of the period you've paid for, then stop. Season passes stay active through the Super Bowl.</p></details>
+      <details><summary>Do you offer refunds?</summary><p><b>No.</b> We don't issue refunds on monthly charges, season passes or Slate Passes. That's exactly why the free trial exists: use it to decide before you're billed. If something is genuinely broken on our end, email us and we'll make it right.</p></details>
+      <details><summary>Will the price go up mid-season?</summary><p>No. We don't change prices during the NFL season. And if you're on a founding price, it stays locked for as long as you keep your subscription, even when list prices rise later.</p></details>
+      <details><summary>What's the difference between the season pass and an annual plan?</summary><p>We don't sell annual plans. The NFL season pass is a single payment that covers you from the day you buy through the Super Bowl, and then simply ends — nothing auto-renews next year. Monthly plans renew until you cancel.</p></details>
+      <details><summary>What is the $5 Slate Pass?</summary><p>Twenty-four hours of Starter, bought once, for one slate. No subscription, nothing recurring. It's for the person who plays a handful of Sundays a year, or who wants to see the full product before committing to a trial.</p></details>
+      <details><summary>Which states can use GameTime Win?</summary><p>GameTime Win is a research tool and works anywhere. Whether you can <i>enter paid contests</i> is up to DraftKings and your state: as of this writing DFS isn't offered in Hawaii, Idaho, Montana, Nevada or Washington, pick'em-style contests are restricted in several more, and California's status is unsettled. Check DraftKings' availability for your state and see our <a href="responsible.html">responsible play page</a>.</p></details>
+      <details><summary>Does this follow DraftKings' rules on third-party tools?</summary><p>Yes. DraftKings requires that you make the substantive decisions on your own lineups and that no tool interacts with their site on your behalf. GameTime Win never logs into DraftKings, never uploads anything for you and requires your input on your player pool before it builds. <b>You always make the final calls on your lineups</b> and you upload the file yourself.</p></details>
+      <details><summary>Do beta players keep their founding price?</summary><p>Yes. If you joined the beta, the first price you subscribe at is locked for as long as you stay subscribed.</p></details>
+    </div>
+  </section>
+
+  <section class="pricing-cta">
+    <h2 id="ctaHead">Start with the free plan.</h2>
+    <p id="ctaSub">Simple Mode, three lineups per slate, and the full public record. Upgrade when you're ready.</p>
+    <span id="ctaBtn"></span>
+    <p class="muted small" style="margin-top:14px">Must be of legal age in your state to enter paid contests · <a class="link" href="terms.html">Terms</a> · <a class="link" href="privacy.html">Privacy</a></p>
+  </section>
+</main>
+
+<footer data-shell-footer="site"></footer>
+<script src="pricing.js"></script>
+</body>
+</html>

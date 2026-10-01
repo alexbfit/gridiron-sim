@@ -14,11 +14,12 @@
 <script src="config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="assets/shell.js"></script>
+<script src="assets/plans.js"></script>
 </head>
 <body class="app simple">
 <header data-shell-header="app"></header>
 
-<main class="sm" data-requires-sub>
+<main class="sm">
   <ol class="sm-steps" aria-label="Steps">
     <li data-step="sport" aria-current="step"><b>1</b><span>Sport</span></li>
     <li data-step="upload"><b>2</b><span>Upload</span></li>
@@ -95,6 +96,7 @@
     </div>
 
     <div class="entries-sum" id="entriesSum"></div>
+    <aside class="upgrade-card" id="upgradeCard" hidden></aside>
 
     <div class="pick-bar">
       <div class="seg" id="posSeg" role="group" aria-label="Position">

@@ -71,16 +71,17 @@
     ["stats.html", "Player Stats"],
     ["results.html", "Track Record"],
     ["backtest.html", "Accuracy"],
+    ["pricing.html", "Pricing"],
     ["guide.html", "Guide"],
   ];
   const here = (location.pathname.split("/").pop() || "index.html").toLowerCase();
 
   function header(kind) {
     const nav = kind === "marketing"
-      ? [["#offer", "What you get"], ["#how", "How it works"], ["#proof", "Proof"], ["#faq", "FAQ"]]
+      ? [["index.html#offer", "What you get"], ["index.html#how", "How it works"], ["index.html#proof", "Proof"], ["pricing.html", "Pricing"], ["index.html#faq", "FAQ"]]
       : APP_NAV;
     const cta = kind === "marketing"
-      ? `<a class="btn btn-primary btn-sm" href="#join"><span>Join<span class="hide-sm"> the free</span> beta</span></a>`
+      ? `<a class="btn btn-primary btn-sm" href="index.html#join"><span>Join<span class="hide-sm"> the free</span> beta</span></a>`
       : `<a class="btn btn-ghost btn-sm hide-sm" href="index.html">Home</a>`;
     return `<div class="inner">
       <a class="brand" href="index.html" aria-label="GameTime Win home">${LOGO}<span>GameTime<b class="brand-win">Win</b></span><small class="owner-flag" title="Owner tools visible (?owner=0 to hide)">Owner</small></a>
@@ -94,13 +95,13 @@
   }
   function footer(kind) {
     const legal = `GameTime Win is an independent research tool and is not affiliated with, endorsed by or sponsored by DraftKings, FanDuel or the NFL. Projections are estimates; daily fantasy contests involve risk and past results do not guarantee future results. Play within your means — must be of legal age in your state to enter paid contests. Problem gambling? Call 1-800-GAMBLER.`;
-    if (kind === "app") return `<div class="app-footer">${legal}</div>`;
+    if (kind === "app") return `<div class="app-footer">${legal} <span class="nowrap"><a href="terms.html">Terms</a> · <a href="privacy.html">Privacy</a> · <a href="responsible.html">Responsible play</a> · <a href="pricing.html">Pricing</a></span></div>`;
     return `<div class="inner">
       <div><a class="brand" href="index.html">${LOGO}<span>GameTime<b class="brand-win">Win</b></span></a>
         <p style="margin-top:10px;max-width:320px">NFL DFS lineups built from 10,000 simulated games per slate. Now in free beta at gametimewin.com.</p></div>
-      <div><h4>Product</h4><a href="lineups.html">Lineup Builder</a><a href="simple.html">Simple Mode</a><a href="stats.html">Player Stats</a><a href="results.html">Track Record</a><a href="backtest.html">Accuracy</a></div>
-      <div><h4>Learn</h4><a href="guide.html">Quick-start guide</a><a href="index.html#how">How it works</a><a href="index.html#faq">FAQ</a></div>
-      <div><h4>Beta</h4><a href="index.html#join">Join the beta</a><a href="index.html#faq">FAQ</a></div>
+      <div><h4>Product</h4><a href="lineups.html">Lineup Builder</a><a href="simple.html">Simple Mode</a><a href="stats.html">Player Stats</a><a href="results.html">Track Record</a><a href="backtest.html">Accuracy</a><a href="pricing.html">Pricing</a></div>
+      <div><h4>Learn</h4><a href="guide.html">Quick-start guide</a><a href="index.html#how">How it works</a><a href="pricing.html#faq">Pricing FAQ</a><a href="index.html#faq">FAQ</a></div>
+      <div><h4>Company</h4><a href="index.html#join">Join the beta</a><a href="terms.html">Terms of Service</a><a href="privacy.html">Privacy</a><a href="responsible.html">Responsible play</a>${cfg.CONTACT_EMAIL ? `<a href="mailto:${cfg.CONTACT_EMAIL}">Contact</a>` : ""}</div>
       <div class="legal">${legal}</div></div>`;
   }
 
@@ -142,11 +143,28 @@
       if (!this.client && window.supabase && cfg.SUPABASE_URL) this.client = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY);
       return this.client;
     },
+    // Gating is OFF (everyone counts as fully active) unless AUTH_ENABLED && REQUIRE_SUBSCRIPTION.
+    gating: () => !!cfg.AUTH_ENABLED && !!cfg.REQUIRE_SUBSCRIPTION,
+    slatePassActive() { const u = this.profile?.slate_pass_until; return !!u && new Date(u).getTime() > Date.now(); },
+    subscribed() { const s = this.profile?.subscription_status; return s === "active" || s === "trialing"; },
     active() {
-      if (!this.enabled() || !cfg.REQUIRE_SUBSCRIPTION) return true;
+      if (!this.gating()) return true;
       if (this.profile?.is_owner) return true;   // owner comes from the database, not from ?owner=1
-      const s = this.profile?.subscription_status;
-      return s === "active" || s === "trialing";
+      return this.subscribed() || this.slatePassActive();
+    },
+    // "free" | "starter" | "pro" — what the visitor can use right now. Owner and switches-off read as "pro".
+    plan() {
+      if (!this.gating() || this.profile?.is_owner) return "pro";
+      if (this.subscribed()) { const p = this.profile?.plan; return p === "pro" || p === "starter" ? p : "starter"; }
+      if (this.slatePassActive()) return "starter";
+      return "free";
+    },
+    // lineup cap for the current visitor (Infinity when nothing is gated)
+    lineupCap() {
+      if (!this.gating()) return Infinity;
+      const p = this.plan(), plans = cfg.PLANS || {};
+      if (p === "free") return Number.isFinite(+cfg.FREE_LINEUPS) ? +cfg.FREE_LINEUPS : 3;
+      return plans[p]?.lineups || Infinity;
     },
     async init() {
       const slot = document.getElementById("accountSlot");
@@ -175,10 +193,13 @@
       document.querySelectorAll("[data-requires-sub]").forEach(el => {
         el.classList.add("paywalled");
         const w = document.createElement("div"); w.className = "paywall";
-        w.innerHTML = `<div class="card card-pad" style="max-width:440px;text-align:center">
-          <div class="empty" style="padding:8px 0 0"><div class="icon-wrap">${icon("zap")}</div><h3>${this.user ? "Start your subscription" : "Sign in to build lineups"}</h3>
-          <p>${this.user ? "Your account doesn't have an active plan yet." : "Create a free account or sign in to continue."}</p></div>
-          <a class="btn btn-primary btn-block" style="margin-top:16px" href="account.html">${this.user ? "See plans" : "Sign in"}</a></div>`;
+        const P = cfg.PLANS || {}, st = P.starter || {}, pro = P.pro || {}, sl = P.slate || {};
+        const plansLine = `<b>Starter</b> ${st.price?.monthly || ""}/mo gets you ${st.lineups || 50} lineups and the DraftKings edit file. <b>Pro</b> ${pro.price?.monthly || ""}/mo adds ${pro.lineups || 500} lineups, projections export and every sport.${sl.price?.once ? ` Just here for one slate? A <b>${sl.price.once} Slate Pass</b> unlocks Starter for 24 hours.` : ""}`;
+        w.innerHTML = `<div class="card card-pad" style="max-width:460px;text-align:center">
+          <div class="empty" style="padding:8px 0 0"><div class="icon-wrap">${icon("zap")}</div><h3>${this.user ? "The full builder is on Starter and Pro" : "Sign in to use the full builder"}</h3>
+          <p>${this.user ? plansLine : "Create a free account or sign in to continue. Free accounts get Simple Mode with " + (cfg.FREE_LINEUPS || 3) + " lineups per slate."}</p></div>
+          <a class="btn btn-primary btn-block" style="margin-top:16px" href="${this.user ? "pricing.html" : "account.html"}">${this.user ? "See plans and start a free trial" : "Sign in"}</a>
+          <a class="btn btn-ghost btn-block" style="margin-top:8px" href="simple.html">Try Simple Mode free</a></div>`;
         el.appendChild(w);
       });
     },

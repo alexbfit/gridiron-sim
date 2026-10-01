@@ -126,6 +126,15 @@ def test_web_js_parses(path):
     assert r.returncode == 0, r.stderr[-800:]
 
 
+@pytest.mark.skipif(shutil.which("node") is None, reason="node not installed")
+def test_billing_functions_node_tests():
+    """The Stripe plan mapping + webhook helpers under billing/ have their own node:test suite; run it here so CI covers it."""
+    tests = sorted((ROOT / "billing").rglob("*.test.mjs"))
+    assert tests, "billing/**/*.test.mjs missing"
+    r = subprocess.run(["node", "--test", *map(str, tests)], capture_output=True, text=True, cwd=ROOT)
+    assert r.returncode == 0, (r.stdout + r.stderr)[-1500:]
+
+
 # ------------------------------------------------------------------ run log (017_task_runs.sql)
 class _Resp:
     def __init__(self, body):

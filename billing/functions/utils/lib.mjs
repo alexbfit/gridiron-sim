@@ -1,7 +1,9 @@
 // Shared helpers for the billing functions. No npm dependencies: Stripe and Supabase are called over HTTPS.
 // Environment variables (Netlify → Site configuration → Environment variables):
-//   STRIPE_SECRET_KEY, STRIPE_PRICE_ID, STRIPE_WEBHOOK_SECRET,
-//   SUPABASE_URL, SUPABASE_ANON_KEY (public key), SUPABASE_SERVICE_ROLE_KEY, SITE_URL (e.g. https://gridiron-sim.netlify.app)
+//   STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET,
+//   STRIPE_PRICE_STARTER_MONTHLY, STRIPE_PRICE_STARTER_SEASON, STRIPE_PRICE_PRO_MONTHLY, STRIPE_PRICE_PRO_SEASON, STRIPE_PRICE_SLATE
+//   (see utils/plans.mjs; the old single STRIPE_PRICE_ID still works as a fallback for Starter monthly),
+//   SUPABASE_URL, SUPABASE_ANON_KEY (public key), SUPABASE_SERVICE_ROLE_KEY, SITE_URL (e.g. https://gametimewin.com)
 
 export const env = (k) => {
   const v = process.env[k];
