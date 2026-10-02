@@ -59,6 +59,21 @@
     </div>
   </section>
 
+  <!-- validation: every number here comes from real DraftKings fields (data/backtest_field.json, data/ledger.json) -->
+  <section class="proofband" id="proof">
+    <div class="proof-inner">
+      <span class="kicker">Proof, not promises</span>
+      <h2>Tested against real DraftKings fields. Graded in public.</h2>
+      <div class="proof-grid">
+        <div><b id="pvEntries">5.9M</b><span>real entries our lineups were scored against: <span id="pvWeeks">36</span> actual Millionaire Maker contests, 2024–25</span></div>
+        <div><b id="pvAbove">56 of 72</b><span>backtested builds scored above the field's median lineup</span></div>
+        <div><b id="pvLive">65%</b><span id="pvLiveL">of 296,894 real entries beaten in our last live week</span></div>
+        <div><b>43% vs 36%</b><span>how often the top 0.1% of the Millionaire Maker stacks a QB with two of his receivers, versus the field. Every lineup we build does it.</span></div>
+      </div>
+      <p class="proof-foot">We publish every week's result, wins and misses, on the <a class="link" href="results.html">track record</a>. No tool can guarantee a win, and we won't pretend otherwise.</p>
+    </div>
+  </section>
+
   <section class="strip" id="how">
     <div class="strip-inner">
       <div><b>1</b>Upload your DraftKings entries file</div>
@@ -98,6 +113,19 @@
       } else { throw new Error(r.status); }
     } catch (e) { msg.textContent = "Something went wrong saving your email. Please try again in a minute."; msg.classList.add("err"); btn.disabled = false; }
   }
+  // proof band numbers, straight from the published data files
+  const big = n => n >= 1e6 ? (Math.floor(n / 1e5) / 10).toFixed(1) + "M" : Number(n).toLocaleString();
+  fetch("data/backtest_field.json", { cache: "no-cache" }).then(r => r.json()).then(B => {
+    document.getElementById("pvEntries").textContent = big(B.weeks.reduce((a, w) => a + w.entries, 0));
+    document.getElementById("pvWeeks").textContent = B.weeks.length;
+    document.getElementById("pvAbove").textContent = `${B.summary.builds_above_median} of ${B.summary.builds}`;
+  }).catch(() => {});
+  fetch("data/ledger.json", { cache: "no-cache" }).then(r => r.json()).then(L => {
+    const w = (L.weeks || []).filter(w => w.lineups && w.lineups.n >= 20 && w.lineups.beat_pct != null).pop(); if (!w) return;
+    document.getElementById("pvLive").textContent = Math.round(100 * w.lineups.beat_pct) + "%";
+    document.getElementById("pvLiveL").textContent = `of ${Number(w.lineups.entries).toLocaleString()} real entries beaten by our average lineup in our last live week (week ${w.week})`;
+  }).catch(() => {});
+
   document.querySelectorAll("[data-beta-form]").forEach(f => f.addEventListener("submit", e => { e.preventDefault(); join(f); }));
 
   // ---- the chart: a real tournament field's score distribution with our lineups' average and the top-1% zone marked.
