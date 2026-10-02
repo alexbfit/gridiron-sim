@@ -4,4 +4,6 @@
 [[headers]]
   for = "/*"
   [headers.values]
-    Cache-Control = "public, max-age=300"
+    # always revalidate: a deploy changes the HTML, CSS and JS together, and a browser holding a 5-minute-old
+    # stylesheet against new HTML showed the page unstyled (10/1). ETags make the re-check a cheap 304.
+    Cache-Control = "public, max-age=0, must-revalidate"

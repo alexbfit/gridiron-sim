@@ -85,7 +85,7 @@
 }
 
 /* ---- one-screen landing (10/1 pm): hook + chart + email ---- */
-.simple-landing .hero-inner { min-height: calc(100vh - 64px); padding: 48px 20px 56px; grid-template-columns: 1fr 1.05fr; gap: 48px; }
+.simple-landing .hero-inner { min-height: min(calc(100vh - 64px), 700px); padding: 48px 20px 56px; grid-template-columns: 1fr 1.05fr; gap: 48px; }
 .simple-landing .hero h1 { font-size: clamp(44px, 6vw, 76px); }
 .simple-landing .hero .sub { font-size: 19px; }
 .fieldchart { margin: 0; padding: 18px 18px 14px; border-radius: 18px; background: var(--surface); border: 1px solid var(--border-strong); box-shadow: var(--shadow-pop); color: var(--text); }
