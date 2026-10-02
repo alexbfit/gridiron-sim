@@ -63,7 +63,7 @@ def test_week3_row_with_flashback_and_real_money(db, monkeypatch, tmp_path, caps
     assert w["dupes"]["lineups_with_copy"] == 4 and w["dupes"]["winnings_lost_pct"] == 0.03
     rm = w["real_money"]
     assert rm["in"] == 60.0 and abs(rm["out"] - 60 * 1.6843) < 1e-6 and rm["best_rank"] == 3114
-    assert w["accuracy"]["r"] == 0.592 and w["accuracy"]["by_method"]["sim"]["mae"] == 5.29
+    assert w["accuracy"]["r"] == 0.592 and "by_method" not in w["accuracy"]   # per-source accuracy is not published
     t = led["totals"]
     assert t["weeks_above_field_median"] == 1 and t["weeks_consensus_above_field_median"] == 1
     assert t["real_money"]["in"] == 60.0 and abs(t["real_money"]["roi"] - 0.6843) < 1e-6

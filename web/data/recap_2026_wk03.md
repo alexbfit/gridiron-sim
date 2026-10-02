@@ -10,12 +10,12 @@ _50 GPP lineups built before kickoff, graded against the real DraftKings field (
 - Flashback consensus ROI: **+10%** vs field mean −21% (median −43%) · beats 84% of real entries in expectation
 - Model-view ROI: +2% · realized ROI: −37% · cashed 32% of lineups
 - Real money (payout curve on real ranks): 20 entries × $3 = $60.00 in → **$101.06** out (+68%) · best rank 3,114
-- Projections: r 0.592, MAE 5.29, bias -0.21 on 143 relevant players · sim MAE 5.29 · props MAE 5.76 · baseline MAE 5.46
-- News agents: 12/23 graded adjustments beat the sim (52%); confidence ≥ .7: 64% of 14
+- Projections: r 0.592, MAE 5.29, bias -0.21 on 143 relevant players
+- Late-news adjustments: 12/23 improved the projection (52%); confidence ≥ .7: 64% of 14
 
 ## What won
 
-Geno Smith (NYJ) stacks with Garrett Wilson — 7 of our top 10 lineups; Geno Smith scored 30.0.
+Geno Smith (NYJ) was in 7 of our top 10 lineups and scored 30.0.
 
 ## What missed
 

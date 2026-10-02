@@ -56,10 +56,10 @@
     <details>
       <summary>Methodology — what each column means</summary>
       <div class="method">
-        <p><b>Consensus view</b> (the number to watch): every lineup — ours and every real entry in the contest standings — is re-scored in the same simulated games with every player set to the <i>market</i> projection (his props line, or the salary-implied line). Our opinions are removed, so it measures lineup <i>construction</i> alone: stacks, uniqueness, leverage against what the field actually played. Expected ROI after rake; the field averages roughly −15% to −25%. “Beats X% of field” is where our portfolio's expected ROI sits among a random sample of real entries' expected ROI.</p>
+        <p><b>Consensus view</b> (the number to watch): every lineup — ours and every real entry in the contest standings — is re-scored in the same simulated games on neutral market projections. Our own opinions are removed, so it measures how well the lineups are put together against what the field actually played. Expected ROI after rake; the field averages roughly −15% to −25%. “Beats X% of field” is where our portfolio's expected ROI sits among a random sample of real entries' expected ROI.</p>
         <p><b>Model view</b>: the same replay on our own projections. Model view minus consensus view, over many weeks, is how over-confident our projections are.</p>
         <p><b>Realized</b>: what actually happened on Sunday — average points vs the field's median entry, the share of real entries each lineup beat, best finish, and lineups that finished in the top 1%. One Sunday is mostly variance; the consensus column is the signal.</p>
-        <p><b>Dupes</b>: exact copies of our lineups among the real entries. A prize is split across copies, so “winnings lost to splits” is the share of the payout curve given up to duplication. A rising duplicate rate means the field has converged on the same optimizer consensus.</p>
+        <p><b>Dupes</b>: exact copies of our lineups among the real entries. A prize is split across copies, so “winnings lost to splits” is the share of the payout curve given up to duplication. </p>
         <p><b>Real $</b>: the owner's own entries in the same contest, matched by DraftKings username in the standings export. Dollars are the contest's payout curve applied to the real finishing ranks at the recorded entry fee — a reconstruction from the standings file, not an account statement, and only the contests with an imported standings file are counted.</p>
         <p>Members get the full projection-accuracy backtests, replayed the same way, in their account.</p>
       </div>
@@ -74,7 +74,7 @@
     <div class="trend" id="trend"></div>
   </section>
 
-  <section class="section">
+  <section class="section" data-owner-only>
     <h2>Which projection was closest?</h2>
     <p class="lead">Every projection source scored on the same players. <b>sim</b> = the Monte Carlo game simulation, <b>baseline</b> = a simpler recent-form model. Give it several weeks before trusting the ranking — one Sunday is noisy.</p>
     <div class="table-wrap"><table class="m" id="sources"></table></div>

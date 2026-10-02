@@ -1,6 +1,6 @@
 {
  "season": 2026,
- "built_at": "2026-10-01T13:34:10.392402+00:00",
+ "built_at": "2026-10-02T03:35:04.364180+00:00",
  "source": "claude/gpp",
  "weeks": [
   {
@@ -61,20 +61,6 @@
      "p10": 0.122,
      "p90": 0.924
     },
-    "by_method": {
-     "sim": {
-      "r": 0.48,
-      "mae": 5.35,
-      "bias": 0.53,
-      "n": 131
-     },
-     "baseline": {
-      "r": 0.498,
-      "mae": 5.46,
-      "bias": 0.81,
-      "n": 131
-     }
-    },
     "actual_source": "contest"
    },
    "news": null,
@@ -84,11 +70,10 @@
     "qb": "Brock Purdy",
     "qb_team": "SF",
     "qb_actual": 28.48,
-    "stack_partner": "George Kittle",
     "top_lineups": 10,
     "lineups_in_game": 3,
     "lineups_with_qb": 3,
-    "line": "Brock Purdy (SF) stacks with George Kittle \u2014 3 of our top 10 lineups; Brock Purdy scored 28.5"
+    "line": "Brock Purdy (SF) was in 3 of our top 10 lineups and scored 28.5"
    },
    "misses": {
     "over": [
@@ -204,26 +189,6 @@
      "p10": 0.098,
      "p90": 0.895
     },
-    "by_method": {
-     "sim": {
-      "r": 0.592,
-      "mae": 5.29,
-      "bias": -0.21,
-      "n": 143
-     },
-     "props": {
-      "r": 0.518,
-      "mae": 5.76,
-      "bias": -0.08,
-      "n": 118
-     },
-     "baseline": {
-      "r": 0.603,
-      "mae": 5.46,
-      "bias": -0.16,
-      "n": 143
-     }
-    },
     "actual_source": "contest"
    },
    "news": {
@@ -240,11 +205,10 @@
     "qb": "Geno Smith",
     "qb_team": "NYJ",
     "qb_actual": 30.04,
-    "stack_partner": "Garrett Wilson",
     "top_lineups": 10,
     "lineups_in_game": 8,
     "lineups_with_qb": 7,
-    "line": "Geno Smith (NYJ) stacks with Garrett Wilson \u2014 7 of our top 10 lineups; Geno Smith scored 30.0"
+    "line": "Geno Smith (NYJ) was in 7 of our top 10 lineups and scored 30.0"
    },
    "misses": {
     "over": [

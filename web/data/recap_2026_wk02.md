@@ -10,11 +10,11 @@ _20 GPP lineups built before kickoff, graded against the real DraftKings field (
 - Flashback consensus ROI: **−51%** vs field mean −26% (median −51%) · beats 50% of real entries in expectation
 - Model-view ROI: +1178% · realized ROI: −85% · cashed 10% of lineups
 - Real money (payout curve on real ranks): 1 entry × $20 = $20.00 in → **$0.00** out (−100%) · best rank 87,892
-- Projections: r 0.480, MAE 5.35, bias +0.53 on 131 relevant players · sim MAE 5.35 · baseline MAE 5.46
+- Projections: r 0.480, MAE 5.35, bias +0.53 on 131 relevant players
 
 ## What won
 
-Brock Purdy (SF) stacks with George Kittle — 3 of our top 10 lineups; Brock Purdy scored 28.5.
+Brock Purdy (SF) was in 3 of our top 10 lineups and scored 28.5.
 
 ## What missed
 

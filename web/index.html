@@ -68,7 +68,7 @@
         <div><b id="pvEntries">5.9M</b><span>real entries our lineups were scored against: <span id="pvWeeks">36</span> actual Millionaire Maker contests, 2024–25</span></div>
         <div><b id="pvAbove">56 of 72</b><span>backtested builds scored above the field's median lineup</span></div>
         <div><b id="pvLive">65%</b><span id="pvLiveL">of 296,894 real entries beaten in our last live week</span></div>
-        <div><b>43% vs 36%</b><span>how often the top 0.1% of the Millionaire Maker stacks a QB with two of his receivers, versus the field. Every lineup we build does it.</span></div>
+        <div><b id="pvLineups">3,600</b><span>lineups graded one by one against those real fields, every result kept</span></div>
       </div>
       <p class="proof-foot">We publish every week's result, wins and misses, on the <a class="link" href="results.html">track record</a>. No tool can guarantee a win, and we won't pretend otherwise.</p>
     </div>
@@ -119,6 +119,7 @@
     document.getElementById("pvEntries").textContent = big(B.weeks.reduce((a, w) => a + w.entries, 0));
     document.getElementById("pvWeeks").textContent = B.weeks.length;
     document.getElementById("pvAbove").textContent = `${B.summary.builds_above_median} of ${B.summary.builds}`;
+    document.getElementById("pvLineups").textContent = (B.summary.builds * 50).toLocaleString();
   }).catch(() => {});
   fetch("data/ledger.json", { cache: "no-cache" }).then(r => r.json()).then(L => {
     const w = (L.weeks || []).filter(w => w.lineups && w.lineups.n >= 20 && w.lineups.beat_pct != null).pop(); if (!w) return;

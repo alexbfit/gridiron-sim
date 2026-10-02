@@ -136,7 +136,6 @@ def accuracy_block(slate):
     rm = slate.get("results_meta") or {}
     bm = rm.get("by_method") or {}
     return {"n": rm.get("n"), "r": rm.get("r"), "mae": rm.get("mae"), "bias": rm.get("bias"), "coverage": rm.get("coverage"),
-            "by_method": {k: {"r": v.get("r"), "mae": v.get("mae"), "bias": v.get("bias"), "n": v.get("n")} for k, v in bm.items()},
             "actual_source": rm.get("actual_source")}
 
 
@@ -180,10 +179,11 @@ def what_won(lineups, board, results, top_n=10):
                     mates[i] += 1
     mate = b[mates.most_common(1)[0][0]]["player_name"] if mates else None
     matchup = f"{qb.get('team')} vs {qb.get('opponent')}" if qb.get("opponent") else qb.get("team")
-    line = (f"{qb['player_name']} ({qb['team']}) stacks" + (f" with {mate}" if mate else "")
-            + f" — {n_qb} of our top {len(top)} lineups" + (f"; {qb['player_name']} scored {float(act[qid]):.1f}" if act.get(qid) is not None else ""))
+    # public wording: names the player the best lineups shared, not how the lineups are constructed
+    line = (f"{qb['player_name']} ({qb['team']}) was in {n_qb} of our top {len(top)} lineups"
+            + (f" and scored {float(act[qid]):.1f}" if act.get(qid) is not None else ""))
     return {"game_id": game, "matchup": matchup, "qb": qb["player_name"], "qb_team": qb["team"], "qb_actual": act.get(qid),
-            "stack_partner": mate, "top_lineups": len(top), "lineups_in_game": n_game, "lineups_with_qb": n_qb, "line": line}
+            "top_lineups": len(top), "lineups_in_game": n_game, "lineups_with_qb": n_qb, "line": line}
 
 
 def misses(results, k=3):
@@ -308,10 +308,9 @@ def recap_md(row, totals):
         L += [f"- Real money (payout curve on real ranks): {rm['entries']} entr{'y' if rm['entries'] == 1 else 'ies'} × ${rm['fee']:g} = {money(rm['in'])} in → **{money(rm['out'])}** out ({roi(rm['roi'])}) · best rank {fnum(rm['best_rank'])}"]
     if acc.get("r") is not None:
         bm = acc.get("by_method") or {}
-        L += [f"- Projections: r {acc['r']:.3f}, MAE {acc['mae']:.2f}, bias {acc['bias']:+.2f} on {acc['n']} relevant players"
-              + (" · " + " · ".join(f"{k} MAE {v['mae']:.2f}" for k, v in bm.items() if v.get("mae") is not None) if bm else "")]
+        L += [f"- Projections: r {acc['r']:.3f}, MAE {acc['mae']:.2f}, bias {acc['bias']:+.2f} on {acc['n']} relevant players"]   # per-source accuracy stays out of the public recap (owner sees it on the page)
     if nw:
-        L += [f"- News agents: {nw['helped']}/{nw['graded']} graded adjustments beat the sim ({pct(nw['helped_pct'])})"
+        L += [f"- Late-news adjustments: {nw['helped']}/{nw['graded']} improved the projection ({pct(nw['helped_pct'])})"
               + (f"; confidence ≥ .7: {pct(nw['hi_conf_helped_pct'])} of {nw['hi_conf_graded']}" if nw["hi_conf_helped_pct"] is not None else "")]
     L += ["", "## What won", ""]
     L += [row["what_won"]["line"] + "." if row["what_won"] else "Not derivable this week (no lineup/board data)."]

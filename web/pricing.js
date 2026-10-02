@@ -21,7 +21,7 @@
       ["Simple Mode (drop in your DraftKings file, pick 2, build)", yes, yes, yes],
       ["Public Track Record and backtests", yes, yes, yes],
       ["Player stats and simulated ranges", yes, yes, yes],
-      ["Full Lineup Builder (locks, exposure, stacks, settings)", no, yes, yes],
+      ["Full Lineup Builder (your locks, fades and settings)", no, yes, yes],
       ["DraftKings entries edit file (fills every entry)", no, yes, yes],
       ["1 PM and 4 PM late-swap files", no, yes, yes],
       ["Contest simulator", no, yes, yes],
