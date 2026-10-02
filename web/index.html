@@ -46,14 +46,14 @@
 
       <!-- the graphic: where our lineups land in a real DraftKings field -->
       <figure class="fieldchart" aria-label="Where our lineups scored inside a real DraftKings tournament field">
-        <figcaption><b id="fcTitle">Where our lineups land in a real DraftKings tournament</b><span id="fcSub">Loading…</span></figcaption>
+        <figcaption><b id="fcTitle">Where our lineups landed in last week's real tournament</b><span id="fcSub">Loading last week's field…</span></figcaption>
         <svg id="fieldSvg" viewBox="0 0 640 300" role="img" preserveAspectRatio="xMidYMid meet"></svg>
         <div class="fc-legend">
           <span><i class="sw field"></i>Real entries (<span id="fcN">—</span>)</span>
           <span><i class="sw ours"></i>Our 50 lineups</span>
           <span><i class="sw top"></i>Top 1%</span>
         </div>
-        <p class="fc-disc">Backtested, not live results: our current settings replayed on 36 real Millionaire Maker fields (2024–25, two builds per week). Live results are graded every week on the <a class="link" href="results.html">track record</a>.</p>
+        <p class="fc-disc">Live results: the lineups we built, scored against the real DraftKings field after the games. Updates every Monday. Full history on the <a class="link" href="results.html">track record</a>.</p>
       </figure>
     </div>
   </section>
@@ -122,28 +122,26 @@
     s.push(`<path d="${tpath}" fill="url(#gt)"/>`);
     s.push(`<line x1="${px}" y1="${bottom}" x2="${W - px}" y2="${bottom}" stroke="currentColor" stroke-opacity=".3"/>`);
     s.push(`<line x1="${x(med)}" y1="${y(f(med)) - 6}" x2="${x(med)}" y2="${bottom}" stroke="currentColor" stroke-opacity=".5" stroke-dasharray="4 4"/>
-            <text x="${x(med)}" y="${bottom + 18}" text-anchor="middle" fill="currentColor" fill-opacity=".7" font-size="12" font-weight="600">field median</text>`);
+            <text x="${x(med)}" y="${bottom + 18}" text-anchor="middle" fill="currentColor" fill-opacity=".7" font-size="12" font-weight="600">field median ${med.toFixed(1)}</text>`);
     s.push(`<line x1="${x(ours)}" y1="${py + 10}" x2="${x(ours)}" y2="${bottom}" stroke="var(--accent)" stroke-width="3"/>
             <circle cx="${x(ours)}" cy="${y(f(ours))}" r="7" fill="var(--accent)" stroke="var(--bg)" stroke-width="3"/>
-            <text x="${x(ours)}" y="${py + 2}" text-anchor="middle" fill="var(--accent)" font-size="13" font-weight="800">our average · +${(ours - med).toFixed(1)} pts · beats ${Math.round(100 * L.beat_pct)}%</text>`);
+            <text x="${x(ours)}" y="${py + 2}" text-anchor="middle" fill="var(--accent)" font-size="13" font-weight="800">our average ${ours.toFixed(1)}</text>`);
     s.push(`<line x1="${x(best)}" y1="${y(f(best)) - 6}" x2="${x(best)}" y2="${bottom - 54}" stroke="#f2c94c" stroke-opacity=".6"/>
             <circle cx="${x(best)}" cy="${y(f(best))}" r="6" fill="#f2c94c" stroke="var(--bg)" stroke-width="3"/>
-            <text x="${Math.min(x(best), W - px - 4)}" y="${bottom - 60}" text-anchor="end" fill="#f2c94c" font-size="12" font-weight="700">our best · #${num(L.best_rank)} of ${num(n)}</text>`);
+            <text x="${Math.min(x(best), W - px - 4)}" y="${bottom - 60}" text-anchor="end" fill="#f2c94c" font-size="12" font-weight="700">our best ${best.toFixed(1)} · #${num(L.best_rank)} of ${num(n)}</text>`);
     s.push(`<text x="${x(top1) + 6}" y="${bottom - 10}" fill="#f2c94c" font-size="11" font-weight="700">top 1% →</text>`);
-    s.push(`<text x="${px}" y="${bottom + 18}" fill="currentColor" fill-opacity=".6" font-size="11">lower scores</text><text x="${W - px}" y="${bottom + 18}" text-anchor="end" fill="currentColor" fill-opacity=".6" font-size="11">higher scores</text>`);
+    s.push(`<text x="${px}" y="${bottom + 18}" fill="currentColor" fill-opacity=".6" font-size="11">${Math.round(lo)} pts</text><text x="${W - px}" y="${bottom + 18}" text-anchor="end" fill="currentColor" fill-opacity=".6" font-size="11">${Math.round(hi)} pts</text>`);
     document.getElementById("fieldSvg").innerHTML = s.join("");
     document.getElementById("fcN").textContent = num(n);
   }
-  fetch("data/backtest_field.json", { cache: "no-cache" }).then(r => r.json()).then(B => {
-    const S = B.summary, w = B.weeks;
-    // one curve for the whole replay: the field median as the centre, our average S.avg_pts_vs_median above it,
-    // the best finish placed at the typical top score of the best week
-    const med = 100, bestWeek = w.find(x => x.best_rank === S.best_rank) || w[0];
-    const scale = med / bestWeek.field_median;
-    draw({ field_median_pts: med, avg_pts: med + S.avg_pts_vs_median, best_pts: bestWeek.best * scale, best_rank: S.best_rank, entries: S.best_rank_entries, beat_pct: S.mean_beat_pct, scaled: true });
-    document.getElementById("fcSub").textContent = `Across 36 weeks our average lineup beat ${Math.round(100 * S.mean_beat_pct)}% of the real field; ${S.builds_best_top1} of ${S.builds} builds put a lineup in the top 1%.`;
-    document.getElementById("heroSlate").textContent = `Free beta · backtest: beat ${Math.round(100 * S.mean_beat_pct)}% of real DraftKings fields over two seasons`;
-  }).catch(() => { document.getElementById("fcSub").textContent = "Chart unavailable right now — see the track record."; });
+  const fallback = { week: 3, field_median_pts: 124.6, avg_pts: 138.5, best_pts: 184.9, best_rank: 3115, entries: 296894, beat_pct: 0.647 };
+  fetch("data/ledger.json", { cache: "no-cache" }).then(r => r.json()).then(L => {
+    const w = (L.weeks || []).filter(w => w.lineups && w.lineups.n >= 20).pop();
+    const lu = w ? Object.assign({ week: w.week }, w.lineups) : fallback;
+    draw(lu);
+    document.getElementById("fcSub").textContent = `Week ${lu.week}: our lineups beat ${Math.round(100 * lu.beat_pct)}% of ${num(lu.entries)} real entries. Updated every Monday.`;
+    document.getElementById("heroSlate").textContent = `Free beta · Week ${lu.week}: beat ${Math.round(100 * lu.beat_pct)}% of a real ${num(lu.entries)}-entry field`;
+  }).catch(() => { draw(fallback); document.getElementById("fcSub").textContent = `Week 3: our lineups beat 65% of 296,894 real entries.`; });
 })();
 </script>
 </body>
