@@ -5,7 +5,8 @@ window.GRIDIRON_CONFIG = {
   SUPABASE_ANON_KEY: "sb_publishable_45X4VDNlLYDp9yJERH40oA_yeTF4Jcz",
 
   // ---- product switches (all off = the site behaves exactly as before: free, no sign-in) ----
-  AUTH_ENABLED: false,          // show Sign in / Account (needs supabase/pending/012_accounts.sql + Supabase Auth email set up)
+  AUTH_ENABLED: true,           // accounts on: the builders, data pages and backtests live in the account area (sign-in required; ?owner=1 also gets in)
+  AUTH_PROVIDERS: ["google", "apple", "discord", "facebook"],   // sign-in buttons, in this order; a button only shows once that provider is enabled in Supabase > Authentication > Providers. Email link is always offered.
   REQUIRE_SUBSCRIPTION: false,  // gate paid features for visitors without an active plan (needs AUTH_ENABLED)
   BILLING_LIVE: false,          // show real prices + checkout buttons (needs the Netlify functions in billing/ + Stripe keys)
 

@@ -94,6 +94,7 @@
         msg.textContent = r.status === 409 ? "You're already on the list. We'll email you when your spot opens." : "You're in! Watch your inbox for your access link.";
         msg.classList.add("ok");
         try { localStorage.setItem("gtw_beta", email); } catch (e) {}
+        if (cfg.AUTH_ENABLED) { msg.textContent = "You're on the list. Taking you to create your account…"; setTimeout(() => { location.href = "signup.html?email=" + encodeURIComponent(email); }, 700); }
       } else { throw new Error(r.status); }
     } catch (e) { msg.textContent = "Something went wrong saving your email. Please try again in a minute."; msg.classList.add("err"); btn.disabled = false; }
   }

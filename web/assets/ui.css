@@ -402,3 +402,6 @@ table.data th[data-key]:hover { color: var(--text); }
 
 /* brand wordmark: "GameTime" + highlighted "Win" */
 .brand .brand-win { font-weight: 800; color: var(--gold); margin-left: 1px; }
+
+.show-sm { display: none !important; }
+@media (max-width: 860px) { .show-sm { display: revert !important; } }

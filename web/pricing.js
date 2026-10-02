@@ -42,7 +42,7 @@
     if (!cfg.BILLING_LIVE) {
       $("ctaHead").textContent = "Paid plans open soon. The beta is free.";
       $("ctaSub").textContent = "Join now and your founding price is locked in the day paid plans launch.";
-      $("ctaBtn").innerHTML = `<a class="btn btn-primary btn-lg" href="index.html#join">Join the free beta <span data-icon="arrow"></span></a>`;
+      $("ctaBtn").innerHTML = (cfg.AUTH_ENABLED ? `<a class="btn btn-primary btn-lg" href="signup.html">Create free account <span data-icon="arrow"></span></a>` : `<a class="btn btn-primary btn-lg" href="index.html#join">Join the free beta <span data-icon="arrow"></span></a>`);
     } else if (free) {
       $("ctaBtn").innerHTML = GP.ctaHTML(free, interval, "btn btn-lg btn-primary");
     }

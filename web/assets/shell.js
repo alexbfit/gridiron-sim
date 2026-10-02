@@ -66,27 +66,37 @@
 
   // ------------------------------------------------------------ header / footer
   const APP_NAV = [
-    ["lineups.html", "Lineup Builder"],
+    ["account.html", "Account"],
     ["simple.html", "Simple Mode"],
-    ["stats.html", "Player Stats"],
-    ["results.html", "Track Record"],
-    ["backtest.html", "Accuracy"],
-    ["pricing.html", "Pricing"],
+    ["lineups.html", "Builder"],
+    ["stats.html", "Stats"],
+    ["results.html", "Results"],
+    ["edges.html", "Edges"],
+    ["backtest.html", "Backtests"],
     ["guide.html", "Guide"],
   ];
   const here = (location.pathname.split("/").pop() || "index.html").toLowerCase();
-  const PUBLIC_PAGES = new Set(["index.html", "pricing.html", "results.html", "backtest.html", "terms.html", "privacy.html", "responsible.html"]);
+  const PUBLIC_PAGES = new Set(["index.html", "pricing.html", "results.html", "signup.html", "terms.html", "privacy.html", "responsible.html"]);
+  // the account area: every builder, the data pages and the backtests. With AUTH_ENABLED a visitor must be signed in
+  // to open any of these (the owner flag, ?owner=1, also gets in); signed-out visitors are sent to signup.html.
+  const MEMBER_PAGES = new Set(["lineups.html", "simple.html", "stats.html", "edges.html", "backtest.html", "guide.html", "status.html"]);
+  const memberGated = () => !!cfg.AUTH_ENABLED && MEMBER_PAGES.has(here) && !isOwner();
+  if (memberGated()) {                     // hide the page until the session check finishes (no flash of the tool)
+    root.classList.add("gate-pending");
+    const st = document.createElement("style"); st.textContent = "html.gate-pending main, html.gate-pending [data-shell-footer]{visibility:hidden}"; document.head.appendChild(st);
+  }
 
   function header(kind) {
     const nav = kind === "marketing"
-      ? [["index.html#how", "How it works"], ["results.html", "Track record"], ["pricing.html", "Pricing"], ["pricing.html#faq", "FAQ"]]
+      ? [["index.html#how", "How it works"], ["results.html", "Track record"], ["pricing.html", "Pricing"], ["pricing.html#faq", "FAQ"]].concat(cfg.AUTH_ENABLED ? [["signup.html?mode=signin", "Sign in", "show-sm"]] : [])
       : APP_NAV;
     const cta = kind === "marketing"
-      ? `<a class="btn btn-primary btn-sm" href="index.html#join"><span>Join<span class="hide-sm"> the free</span> beta</span></a>`
+      ? (cfg.AUTH_ENABLED ? `<a class="btn btn-primary btn-sm" href="signup.html"><span class="hide-sm">Create free account</span><span class="show-sm">Sign up</span></a>`
+                          : `<a class="btn btn-primary btn-sm" href="index.html#join"><span>Join<span class="hide-sm"> the free</span> beta</span></a>`)
       : `<a class="btn btn-ghost btn-sm hide-sm" href="index.html">Home</a>`;
     return `<div class="inner">
       <a class="brand" href="index.html" aria-label="GameTime Win home">${LOGO}<span>GameTime<b class="brand-win">Win</b></span><small class="owner-flag" title="Owner tools visible (?owner=0 to hide)">Owner</small></a>
-      <nav class="main-nav" id="mainNav" aria-label="Main">${nav.map(([h, l]) => `<a href="${h}"${h.toLowerCase() === here ? ' aria-current="page"' : ""}>${l}</a>`).join("")}</nav>
+      <nav class="main-nav" id="mainNav" aria-label="Main">${nav.map(([h, l, c]) => `<a href="${h}"${c ? ` class="${c}"` : ""}${h.toLowerCase() === here ? ' aria-current="page"' : ""}>${l}</a>`).join("")}</nav>
       <div class="header-actions">
         <span id="accountSlot"></span>
         <button class="btn btn-ghost btn-icon btn-sm" data-theme-toggle aria-label="Toggle light / dark theme" title="Light / dark"></button>
@@ -100,9 +110,9 @@
     return `<div class="inner">
       <div><a class="brand" href="index.html">${LOGO}<span>GameTime<b class="brand-win">Win</b></span></a>
         <p style="margin-top:10px;max-width:320px">NFL DFS lineups built from 10,000 simulated games per slate. Now in free beta at gametimewin.com.</p></div>
-      <div><h4>GameTime Win</h4><a href="index.html#how">How it works</a><a href="results.html">Track record</a><a href="backtest.html">Accuracy report</a><a href="pricing.html">Pricing</a><a href="pricing.html#faq">FAQ</a></div>
-      <div><h4>Company</h4><a href="index.html">Join the free beta</a><a href="terms.html">Terms of Service</a><a href="privacy.html">Privacy</a><a href="responsible.html">Responsible play</a>${cfg.CONTACT_EMAIL ? `<a href="mailto:${cfg.CONTACT_EMAIL}">Contact</a>` : ""}</div>
-      ${isOwner() ? `<div><h4>Owner tools</h4><a href="lineups.html">Lineup Builder</a><a href="simple.html">Simple Mode</a><a href="stats.html">Player Stats</a><a href="edges.html">Prop Edges</a><a href="guide.html">Guide</a><a href="status.html">Status</a></div>` : ""}
+      <div><h4>GameTime Win</h4><a href="index.html#how">How it works</a><a href="results.html">Track record</a><a href="pricing.html">Pricing</a><a href="pricing.html#faq">FAQ</a></div>
+      <div><h4>Company</h4>${cfg.AUTH_ENABLED ? `<a href="signup.html">Create account</a><a href="signup.html?mode=signin">Sign in</a>` : `<a href="index.html">Join the free beta</a>`}<a href="terms.html">Terms of Service</a><a href="privacy.html">Privacy</a><a href="responsible.html">Responsible play</a>${cfg.CONTACT_EMAIL ? `<a href="mailto:${cfg.CONTACT_EMAIL}">Contact</a>` : ""}</div>
+      ${isOwner() ? `<div><h4>Owner tools</h4><a href="account.html">Account area</a><a href="lineups.html">Lineup Builder</a><a href="simple.html">Simple Mode</a><a href="stats.html">Player Stats</a><a href="edges.html">Prop Edges</a><a href="backtest.html">Backtests</a><a href="guide.html">Guide</a><a href="status.html">Status</a></div>` : ""}
       <div class="legal">${legal}</div></div>`;
   }
 
@@ -146,6 +156,13 @@
       if (!this.client && window.supabase && cfg.SUPABASE_URL) this.client = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY);
       return this.client;
     },
+    // pages that don't ship supabase-js themselves (guide, backtests, prop edges ...) get it loaded here
+    loadLib() {
+      if (window.supabase) return Promise.resolve(true);
+      return new Promise(res => { const sc = document.createElement("script"); sc.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js";
+        sc.onload = () => res(true); sc.onerror = () => res(false); document.head.appendChild(sc); });
+    },
+    signupUrl(next) { const n = next || (MEMBER_PAGES.has(here) ? here : ""); return "signup.html" + (n ? "?next=" + encodeURIComponent(n) : ""); },
     // Gating is OFF (everyone counts as fully active) unless AUTH_ENABLED && REQUIRE_SUBSCRIPTION.
     gating: () => !!cfg.AUTH_ENABLED && !!cfg.REQUIRE_SUBSCRIPTION,
     slatePassActive() { const u = this.profile?.slate_pass_until; return !!u && new Date(u).getTime() > Date.now(); },
@@ -172,16 +189,22 @@
     async init() {
       const slot = document.getElementById("accountSlot");
       if (!this.enabled()) { this._done(); return; }
-      const c = this.getClient(); if (!c) { this._done(); return; }
       (async () => {
+        await this.loadLib();
+        const c = this.getClient();
+        if (!c) { if (memberGated()) location.replace(this.signupUrl()); return; }      // fail closed: no library, no tool
         const { data } = await c.auth.getSession();
         this.user = data?.session?.user || null;
+        if (memberGated()) {
+          if (!this.user) { location.replace(this.signupUrl()); return; }
+          root.classList.remove("gate-pending");
+        }
         if (this.user) {
           try { const { data: p } = await c.from("profiles").select("*").eq("id", this.user.id).maybeSingle(); this.profile = p; } catch (e) { /* table not created yet */ }
         }
         if (slot) slot.innerHTML = this.user
           ? `<a class="btn btn-ghost btn-sm" href="account.html" title="${this.user.email}">${icon("user")}<span class="hide-sm">Account</span></a>`
-          : `<a class="btn btn-outline btn-sm" href="account.html">Sign in</a>`;
+          : `<a class="btn btn-outline btn-sm hide-sm" href="${this.signupUrl()}${this.signupUrl().includes("?") ? "&" : "?"}mode=signin">Sign in</a>`;
         this.gate();
         // reload only on a real sign-in / sign-out after the page settled (not the initial session event)
         c.auth.onAuthStateChange((event, session) => {
@@ -201,7 +224,7 @@
         w.innerHTML = `<div class="card card-pad" style="max-width:460px;text-align:center">
           <div class="empty" style="padding:8px 0 0"><div class="icon-wrap">${icon("zap")}</div><h3>${this.user ? "The full builder is on Starter and Pro" : "Sign in to use the full builder"}</h3>
           <p>${this.user ? plansLine : "Create a free account or sign in to continue. Free accounts get Simple Mode with " + (cfg.FREE_LINEUPS || 3) + " lineups per slate."}</p></div>
-          <a class="btn btn-primary btn-block" style="margin-top:16px" href="${this.user ? "pricing.html" : "account.html"}">${this.user ? "See plans and start a free trial" : "Sign in"}</a>
+          <a class="btn btn-primary btn-block" style="margin-top:16px" href="${this.user ? "pricing.html" : "signup.html"}">${this.user ? "See plans and start a free trial" : "Create a free account"}</a>
           <a class="btn btn-ghost btn-block" style="margin-top:8px" href="simple.html">Try Simple Mode free</a></div>`;
         el.appendChild(w);
       });
@@ -209,6 +232,6 @@
   };
 
   Account.ready = new Promise(r => { Account._done = r; });
-  window.GS = { icon, toast, isOwner, store, Account, cfg };
+  window.GS = { icon, toast, isOwner, store, Account, cfg, MEMBER_PAGES };
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", mount); else mount();
 })();

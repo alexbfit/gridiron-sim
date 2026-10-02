@@ -9,6 +9,18 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/ui.css">
 <link rel="stylesheet" href="assets/site.css">
+<style>
+  .auth-card.acct-hub { max-width: 720px; }
+  .hub-h { font-size: 15px; margin: 24px 0 10px; }
+  .hub-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .hub-tool { display: grid; grid-template-columns: 40px 1fr; gap: 12px; align-items: start; padding: 14px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--border); color: inherit; text-decoration: none; }
+  .hub-tool:hover { border-color: var(--accent-line); }
+  .hub-tool .ic { width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent-line); }
+  .hub-tool .ic svg { width: 18px; height: 18px; }
+  .hub-tool b { display: block; font: 700 14.5px var(--font-display); }
+  .hub-tool small { display: block; color: var(--muted); font-size: 12.5px; line-height: 1.45; margin-top: 2px; }
+  @media (max-width: 620px) { .hub-grid { grid-template-columns: 1fr; } }
+</style>
 <title>Account · GameTime Win</title>
 <meta name="robots" content="noindex">
 <script src="config.js"></script>
@@ -35,7 +47,7 @@
     box.innerHTML = `<div class="empty" style="padding:6px 0 0"><div class="icon-wrap">${GS.icon("user")}</div>
       <h1>Accounts are coming soon</h1>
       <p style="margin-top:6px">GameTime Win is free while it's in beta — no sign-up needed. Your locks, edits and settings are saved in this browser automatically.</p></div>
-      <a class="btn btn-primary btn-block" style="margin-top:22px" href="lineups.html">Open the lineup builder</a>
+      <a class="btn btn-primary btn-block" style="margin-top:22px" href="index.html">Join the beta list</a>
       <a class="btn btn-ghost btn-block" style="margin-top:8px" href="pricing.html">See pricing plans</a>`;
     return;
   }
@@ -47,23 +59,11 @@
   if (qs.get("checkout") === "success") GS.toast("Thanks for subscribing! It can take a few seconds for your plan to show.", "ok");
   if (qs.get("checkout") === "cancel") GS.toast("Checkout canceled — you weren't charged.");
 
-  if (!user) {
-    box.innerHTML = `<h1>Sign in</h1>
-      <p class="muted">We'll email you a one-time sign-in link — no password needed. New here? The same link creates your account.</p>
-      <form id="signin" style="margin-top:20px;display:grid;gap:12px">
-        <label class="field"><span>Email</span><input class="input" type="email" id="email" required autocomplete="email" placeholder="you@example.com"></label>
-        <button class="btn btn-primary btn-block" type="submit" id="sendBtn">Email me a sign-in link</button>
-      </form>
-      <p class="hint" style="margin-top:14px">By continuing you agree to use GameTime Win for research only. Must be of legal age to play paid contests in your state.</p>`;
-    document.getElementById("signin").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const btn = document.getElementById("sendBtn"); btn.disabled = true; btn.innerHTML = `<span class="spinner"></span> Sending…`;
-      const { error } = await supa.auth.signInWithOtp({ email: document.getElementById("email").value.trim(), options: { emailRedirectTo: location.origin + "/account.html" } });
-      if (error) { GS.toast(error.message, "error"); btn.disabled = false; btn.textContent = "Email me a sign-in link"; return; }
-      box.innerHTML = `<div class="empty" style="padding:6px 0"><div class="icon-wrap">${GS.icon("check")}</div><h1>Check your email</h1><p style="margin-top:6px">We sent a sign-in link to <b>${esc(document.getElementById("email")?.value || "your inbox")}</b>. Open it on this device to finish signing in.</p></div>`;
-    });
-    return;
-  }
+  const owner = GS.isOwner();
+  // straight to the page they were trying to open (only pages inside the account area)
+  const nextRaw = (qs.get("next") || "").toLowerCase();
+  if (user && GS.MEMBER_PAGES.has(nextRaw)) { location.replace(nextRaw); return; }
+  if (!user && !owner) { location.replace("signup.html" + (qs.get("plan") ? "?mode=signin" : "")); return; }
 
   const status = profile?.subscription_status || "none";
   const subscribed = status === "active" || status === "trialing";
@@ -97,21 +97,35 @@
        <p class="hint" style="margin-top:10px">${esc(cfg.PRICING_NOTES?.trial || "")} ${esc(cfg.PRICING_NOTES?.refunds || "")} <a class="link" href="pricing.html">Compare plans</a>.</p>`
     : "";
 
+  const TOOLS = [
+    ["simple.html", "zap", "Simple Mode", "Upload your DraftKings entries, pick two players, get every entry filled."],
+    ["lineups.html", "layers", "Lineup Builder", "The full builder: locks, exposures, stacks, contest simulator."],
+    ["stats.html", "chart", "Player Stats", "Projections, simulated ranges and usage for every player on the slate."],
+    ["edges.html", "dice", "Prop Edges", "Prediction-market and sportsbook props against our distributions."],
+    ["backtest.html", "trophy", "Backtests", "Projection accuracy and calibration, replayed on past seasons."],
+    ["guide.html", "info", "Quick-start guide", "Two minutes from slate to upload."],
+  ];
+  box.classList.add("acct-hub");
   box.innerHTML = `<h1>Your account</h1>
-    <p class="muted">${esc(user.email)}</p>
+    <p class="muted">${user ? esc(user.email) : "Owner mode — not signed in on this device"}</p>
     <div class="tile" style="margin-top:20px">
       <div class="k">Plan</div>
-      <div class="v" style="font-size:20px">${esc(planName)} ${subscribed ? `<span class="badge ok" style="vertical-align:4px">${status === "trialing" ? "Trial" : "Active"}</span>` : slateActive ? `<span class="badge ok" style="vertical-align:4px">Slate Pass</span>` : ""}</div>
-      <div class="s">${line}</div>
+      <div class="v" style="font-size:20px">${esc(user ? planName : "Owner")} ${subscribed ? `<span class="badge ok" style="vertical-align:4px">${status === "trialing" ? "Trial" : "Active"}</span>` : slateActive ? `<span class="badge ok" style="vertical-align:4px">Slate Pass</span>` : ""}</div>
+      <div class="s">${user ? line : "Full access."}</div>
     </div>
     ${upgradeCards}
+    <h2 class="hub-h">Your tools</h2>
+    <div class="hub-grid">
+      ${TOOLS.map(([href, ic, name, desc]) => `<a class="hub-tool" href="${href}"><span class="ic">${GS.icon(ic)}</span><span><b>${name}</b><small>${desc}</small></span></a>`).join("")}
+    </div>
     <div style="display:grid;gap:8px;margin-top:18px">
-      ${active ? `<a class="btn btn-primary btn-block" href="lineups.html">Open the lineup builder</a>` : `<a class="btn btn-primary btn-block" href="simple.html">Open Simple Mode</a>`}
+      <a class="btn btn-ghost btn-block" href="results.html">Public track record</a>
       ${profile?.stripe_customer_id ? `<button class="btn btn-block" id="portal">Manage billing</button>` : ""}
-      <button class="btn btn-ghost btn-block" id="signout">${GS.icon("logout")} Sign out</button>
+      ${user ? `<button class="btn btn-ghost btn-block" id="signout">${GS.icon("logout")} Sign out</button>` : `<a class="btn btn-ghost btn-block" href="signup.html?mode=signin">Sign in on this device</a>`}
     </div>`;
   const call = async (fn) => {
     const { data } = await supa.auth.getSession();
+    if (!data?.session) throw new Error("Sign in first.");
     const res = await fetch(`/.netlify/functions/${fn}`, { method: "POST", headers: { Authorization: "Bearer " + data.session.access_token } });
     const j = await res.json().catch(() => ({}));
     if (!res.ok || !j.url) throw new Error(j.error || "Billing is not set up yet.");
@@ -125,7 +139,7 @@
     GS.toast(`Taking you to checkout for ${PLANS[intent.plan].name}…`);
     GP.checkout(intent.plan, intent.interval).catch(err => GS.toast(err.message, "error"));
   }
-  document.getElementById("signout").addEventListener("click", async () => { await supa.auth.signOut(); location.href = "index.html"; });
+  document.getElementById("signout")?.addEventListener("click", async () => { await supa.auth.signOut(); location.href = "index.html"; });
 })();
 </script>
 </body>

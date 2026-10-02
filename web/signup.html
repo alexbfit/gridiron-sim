@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>try{document.documentElement.dataset.theme=localStorage.getItem("gs_theme")||"dark";if(localStorage.getItem("gs_owner")==="1")document.documentElement.classList.add("owner")}catch(e){}</script>
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/ui.css">
+<link rel="stylesheet" href="assets/site.css">
+<title>Create your account · GameTime Win</title>
+<meta name="description" content="Create a free GameTime Win account with Google or your email to open the lineup builders, player data and backtests.">
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="assets/shell.js"></script>
+<style>
+  .auth-wrap { max-width: 460px; margin: 36px auto; padding: 0 16px; }
+  .auth-card { margin: 0; }
+  .auth-card .lede { color: var(--muted); font-size: 14.5px; line-height: 1.55; }
+  .providers { display: grid; gap: 10px; margin-top: 20px; }
+  .providers .btn { justify-content: center; min-height: 46px; height: auto; padding-top: 8px; padding-bottom: 8px; white-space: normal; font-size: 15px; font-weight: 650; }
+  .auth-card { min-width: 0; } .auth-card .btn { white-space: normal; height: auto; min-height: 44px; }
+  .providers .btn[disabled] { opacity: .5; }
+  .providers .mark { width: 22px; height: 22px; border-radius: 6px; display: inline-grid; place-items: center; font: 800 12px var(--font-display); background: var(--surface-3); color: var(--text); margin-right: 4px; }
+  .or { display: flex; align-items: center; gap: 12px; margin: 20px 0 16px; color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .08em; }
+  .or::before, .or::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+  .auth-switch { margin-top: 16px; font-size: 14px; color: var(--muted); text-align: center; }
+  .perks { list-style: none; padding: 0; margin: 14px 0 0; display: grid; gap: 6px; font-size: 13.5px; color: var(--text-2); }
+  .perks li { display: flex; gap: 8px; align-items: center; }
+  .perks svg { width: 15px; height: 15px; color: var(--accent); flex: 0 0 15px; }
+</style>
+</head>
+<body>
+<header data-shell-header="marketing"></header>
+<main class="page">
+  <div class="auth-wrap">
+    <div class="card auth-card" id="box">
+      <div class="skeleton" style="height:28px;width:60%"></div>
+      <div class="skeleton" style="height:14px;width:90%;margin-top:14px"></div>
+    </div>
+  </div>
+</main>
+<footer data-shell-footer="site"></footer>
+<script>
+(async function () {
+  const cfg = window.GRIDIRON_CONFIG || {}, GS = window.GS, box = document.getElementById("box");
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const qs = new URLSearchParams(location.search);
+  // where to land after sign-in: only pages inside the account area are allowed (never an outside URL)
+  const nextRaw = (qs.get("next") || "").toLowerCase();
+  const next = GS.MEMBER_PAGES.has(nextRaw) ? nextRaw : "";
+  const after = "account.html" + (next ? "?next=" + encodeURIComponent(next) : "");
+  let mode = qs.get("mode") === "signin" ? "signin" : "signup";
+
+  if (!cfg.AUTH_ENABLED) {
+    box.innerHTML = `<h1>Accounts aren't open yet</h1><p class="lede">Join the beta list on the home page and we'll email you when they are.</p>
+      <a class="btn btn-primary btn-block" style="margin-top:18px" href="index.html">Back to the home page</a>`;
+    return;
+  }
+  const supa = GS.Account.getClient();
+  await GS.Account.ready;
+  if (GS.Account.user) { location.replace(after); return; }
+  if (!supa) { box.innerHTML = `<h1>Sign-in is unavailable</h1><p class="lede">We couldn't load the sign-in service. Check your connection and reload.</p>`; return; }
+
+  // which sign-in providers are switched on in Supabase (public settings endpoint)
+  const NAMES = { google: "Google", apple: "Apple", discord: "Discord", facebook: "Facebook", twitter: "X", github: "GitHub", azure: "Microsoft" };
+  let enabled = {};
+  try {
+    const r = await fetch(`${cfg.SUPABASE_URL}/auth/v1/settings`, { headers: { apikey: cfg.SUPABASE_ANON_KEY } });
+    enabled = (await r.json()).external || {};
+  } catch (e) {}
+  const wanted = (cfg.AUTH_PROVIDERS || ["google"]).filter(p => NAMES[p]);
+  const shown = wanted.filter(p => enabled[p] || GS.isOwner());        // the owner also sees the ones still to be switched on
+
+  function render() {
+    const up = mode === "signup";
+    box.innerHTML = `<h1>${up ? "Create your free account" : "Welcome back"}</h1>
+      <p class="lede">${up ? "One account opens the lineup builders, player data and backtests. No password to remember, no credit card." : "Sign in to open your builders, data and backtests."}</p>
+      ${up ? `<ul class="perks"><li>${GS.icon("check")}Simple Mode and the full lineup builder</li><li>${GS.icon("check")}Player stats, prop edges and every backtest</li><li>${GS.icon("check")}Free during the beta</li></ul>` : ""}
+      ${shown.length ? `<div class="providers">${shown.map(p => `<button type="button" class="btn" data-provider="${p}" ${enabled[p] ? "" : "disabled title='Not switched on in Supabase yet (only you see this)'"}><span class="mark">${NAMES[p][0]}</span>Continue with ${NAMES[p]}${enabled[p] ? "" : " (not enabled yet)"}</button>`).join("")}</div>
+      <div class="or">or</div>` : `<div style="height:18px"></div>`}
+      <form id="emailForm" style="display:grid;gap:12px">
+        <label class="field"><span>Email</span><input class="input" type="email" id="email" required autocomplete="email" inputmode="email" placeholder="you@email.com" value="${esc(qs.get("email") || "")}"></label>
+        <button class="btn btn-primary btn-block" type="submit" id="sendBtn">${up ? "Email me a link to create my account" : "Email me a sign-in link"}</button>
+      </form>
+      <p class="hint" style="margin-top:14px">By continuing you agree to the <a class="link" href="terms.html">Terms</a> and <a class="link" href="privacy.html">Privacy Policy</a>. Must be of legal age to play paid contests in your state.</p>
+      <p class="auth-switch">${up ? `Already have an account? <a class="link" href="#" id="swap">Sign in</a>` : `New here? <a class="link" href="#" id="swap">Create a free account</a>`}</p>`;
+    document.title = (up ? "Create your account" : "Sign in") + " · GameTime Win";
+    document.getElementById("swap").addEventListener("click", (e) => { e.preventDefault(); mode = up ? "signin" : "signup"; render(); });
+    box.querySelectorAll("[data-provider]").forEach(b => b.addEventListener("click", async () => {
+      b.disabled = true;
+      const { error } = await supa.auth.signInWithOAuth({ provider: b.dataset.provider, options: { redirectTo: location.origin + "/" + after } });
+      if (error) { GS.toast(error.message, "error"); b.disabled = false; }
+    }));
+    document.getElementById("emailForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById("sendBtn"), email = document.getElementById("email").value.trim().toLowerCase(), label = btn.textContent;
+      btn.disabled = true; btn.innerHTML = `<span class="spinner"></span> Sending…`;
+      const { error } = await supa.auth.signInWithOtp({ email, options: { emailRedirectTo: location.origin + "/" + after } });
+      if (error) { GS.toast(error.message, "error"); btn.disabled = false; btn.textContent = label; return; }
+      box.innerHTML = `<div class="empty" style="padding:6px 0"><div class="icon-wrap">${GS.icon("check")}</div><h1>Check your email</h1>
+        <p style="margin-top:6px">We sent a link to <b>${esc(email)}</b>. Open it on this device to ${up ? "finish creating your account" : "sign in"}. It can take a minute; check spam if you don't see it.</p></div>
+        <a class="btn btn-ghost btn-block" style="margin-top:16px" href="signup.html${location.search}">Use a different email</a>`;
+    });
+  }
+  render();
+})();
+</script>
+</body>
+</html>
