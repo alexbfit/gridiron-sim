@@ -23,7 +23,7 @@
   //  - billing on, free plan → account.html (sign in) or simple.html
   //  - billing on, paid plan → checkout (handled by the page via data-checkout attributes)
   function cta(plan, interval) {
-    if (!cfg.BILLING_LIVE) return { label: plan.key === "free" ? "Start free" : "Join the free beta", href: plan.key === "free" ? "simple.html" : "index.html#join" };
+    if (!cfg.BILLING_LIVE) return { label: "Join the free beta", href: "index.html" };   // beta is invite-only: no public door into the tool
     if (plan.key === "free") return { label: "Start free", href: cfg.AUTH_ENABLED ? "account.html" : "simple.html" };
     const trial = plan.trialDays && plan.key !== "slate";
     return { label: plan.key === "slate" ? "Buy a Slate Pass" : (trial ? `Start ${plan.trialDays}-day free trial` : `Choose ${plan.name}`), checkout: { plan: plan.key, interval: plan.key === "slate" ? "once" : interval } };

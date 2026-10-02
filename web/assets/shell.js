@@ -75,6 +75,7 @@
     ["guide.html", "Guide"],
   ];
   const here = (location.pathname.split("/").pop() || "index.html").toLowerCase();
+  const PUBLIC_PAGES = new Set(["index.html", "pricing.html", "results.html", "backtest.html", "terms.html", "privacy.html", "responsible.html"]);
 
   function header(kind) {
     const nav = kind === "marketing"
@@ -99,15 +100,17 @@
     return `<div class="inner">
       <div><a class="brand" href="index.html">${LOGO}<span>GameTime<b class="brand-win">Win</b></span></a>
         <p style="margin-top:10px;max-width:320px">NFL DFS lineups built from 10,000 simulated games per slate. Now in free beta at gametimewin.com.</p></div>
-      <div><h4>Product</h4><a href="lineups.html">Lineup Builder</a><a href="simple.html">Simple Mode</a><a href="stats.html">Player Stats</a><a href="results.html">Track Record</a><a href="backtest.html">Accuracy</a><a href="edges.html">Prop Edges</a><a href="pricing.html">Pricing</a></div>
-      <div><h4>Learn</h4><a href="guide.html">Quick-start guide</a><a href="index.html#how">How it works</a><a href="pricing.html#faq">Pricing FAQ</a><a href="index.html#faq">FAQ</a></div>
-      <div><h4>Company</h4><a href="index.html#join">Join the beta</a><a href="terms.html">Terms of Service</a><a href="privacy.html">Privacy</a><a href="responsible.html">Responsible play</a>${cfg.CONTACT_EMAIL ? `<a href="mailto:${cfg.CONTACT_EMAIL}">Contact</a>` : ""}</div>
+      <div><h4>GameTime Win</h4><a href="index.html#how">How it works</a><a href="results.html">Track record</a><a href="backtest.html">Accuracy report</a><a href="pricing.html">Pricing</a><a href="pricing.html#faq">FAQ</a></div>
+      <div><h4>Company</h4><a href="index.html">Join the free beta</a><a href="terms.html">Terms of Service</a><a href="privacy.html">Privacy</a><a href="responsible.html">Responsible play</a>${cfg.CONTACT_EMAIL ? `<a href="mailto:${cfg.CONTACT_EMAIL}">Contact</a>` : ""}</div>
+      ${isOwner() ? `<div><h4>Owner tools</h4><a href="lineups.html">Lineup Builder</a><a href="simple.html">Simple Mode</a><a href="stats.html">Player Stats</a><a href="edges.html">Prop Edges</a><a href="guide.html">Guide</a><a href="status.html">Status</a></div>` : ""}
       <div class="legal">${legal}</div></div>`;
   }
 
   function mount() {
     const h = document.querySelector("[data-shell-header]");
-    if (h) { h.classList.add("site-header"); h.innerHTML = header(h.dataset.shellHeader || "app"); }
+    // public pages (landing, pricing, track record, accuracy, legal) never show the tool's navigation to visitors;
+    // the owner (?owner=1) keeps the app nav everywhere except the landing and pricing pages
+    if (h) { h.classList.add("site-header"); h.innerHTML = header(PUBLIC_PAGES.has(here) && !isOwner() ? "marketing" : (h.dataset.shellHeader || "app")); }
     const f = document.querySelector("[data-shell-footer]");
     if (f) { const kind = f.dataset.shellFooter || "site"; f.classList.add(kind === "app" ? "app-shell-footer" : "site-footer"); f.innerHTML = footer(kind); }
     document.querySelectorAll("[data-icon]").forEach(el => { el.insertAdjacentHTML("afterbegin", icon(el.dataset.icon)); });
