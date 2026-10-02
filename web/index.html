@@ -46,14 +46,15 @@
 
       <!-- the graphic: where our lineups land in a real DraftKings field -->
       <figure class="fieldchart" aria-label="Where our lineups scored inside a real DraftKings tournament field">
-        <figcaption><b id="fcTitle">Where our lineups landed in last week's real tournament</b><span id="fcSub">Loading last week's field…</span></figcaption>
+        <figcaption><b id="fcTitle">Our best backtested week</b><span id="fcSub">Loading…</span></figcaption>
         <svg id="fieldSvg" viewBox="0 0 640 300" role="img" preserveAspectRatio="xMidYMid meet"></svg>
         <div class="fc-legend">
           <span><i class="sw field"></i>Real entries (<span id="fcN">—</span>)</span>
-          <span><i class="sw ours"></i>Our 50 lineups</span>
+          <span><i class="sw ours"></i>Our lineups</span>
           <span><i class="sw top"></i>Top 1%</span>
         </div>
-        <p class="fc-disc">Live results: the lineups we built, scored against the real DraftKings field after the games. Updates every Monday. Full history on the <a class="link" href="results.html">track record</a>.</p>
+        <div class="fc-stats" id="fcStats"></div>
+        <p class="fc-disc" id="fcDisc">Backtested, not live results.</p>
       </figure>
     </div>
   </section>
@@ -134,14 +135,19 @@
     document.getElementById("fieldSvg").innerHTML = s.join("");
     document.getElementById("fcN").textContent = num(n);
   }
-  const fallback = { week: 3, field_median_pts: 124.6, avg_pts: 138.5, best_pts: 184.9, best_rank: 3115, entries: 296894, beat_pct: 0.647 };
-  fetch("data/ledger.json", { cache: "no-cache" }).then(r => r.json()).then(L => {
-    const w = (L.weeks || []).filter(w => w.lineups && w.lineups.n >= 20).pop();
-    const lu = w ? Object.assign({ week: w.week }, w.lineups) : fallback;
-    draw(lu);
-    document.getElementById("fcSub").textContent = `Week ${lu.week}: our lineups beat ${Math.round(100 * lu.beat_pct)}% of ${num(lu.entries)} real entries. Updated every Monday.`;
-    document.getElementById("heroSlate").textContent = `Free beta · Week ${lu.week}: beat ${Math.round(100 * lu.beat_pct)}% of a real ${num(lu.entries)}-entry field`;
-  }).catch(() => { draw(fallback); document.getElementById("fcSub").textContent = `Week 3: our lineups beat 65% of 296,894 real entries.`; });
+  // "Our best stats": the best week of the two-season backtest (highest share of the real field beaten), drawn on that
+  // week's real field, plus the best numbers of the whole replay. Source: web/data/backtest_field.json.
+  fetch("data/backtest_field.json", { cache: "no-cache" }).then(r => r.json()).then(B => {
+    const S = B.summary, w = B.weeks.reduce((a, x) => x.avg_pct > a.avg_pct ? x : a);
+    draw({ field_median_pts: w.field_median, avg_pts: w.avg, best_pts: w.best, best_rank: w.best_rank, entries: w.entries, beat_pct: w.avg_pct });
+    const p = x => Math.round(100 * x) + "%";
+    document.getElementById("fcTitle").textContent = `Our best backtested week: ${w.season}, week ${w.week}`;
+    document.getElementById("fcSub").textContent = `Our average lineup beat ${p(w.avg_pct)} of ${num(w.entries)} real entries; best finish #${num(w.best_rank)}.`;
+    document.getElementById("fcStats").innerHTML = [[p(w.avg_pct), "of the real field beaten, best week"], [`#${num(S.best_rank)}`, `best finish, of ${num(S.best_rank_entries)} entries`], [`${S.builds_best_top1} of ${S.builds}`, "builds put a lineup in the top 1%"]]
+      .map(([v, l]) => `<div><b>${v}</b><span>${l}</span></div>`).join("");
+    document.getElementById("fcDisc").innerHTML = `Backtested, not live results, and this is our best week of 36: across both seasons (2024–25, real Millionaire Maker fields) the average was ${p(S.mean_beat_pct)} of the field beaten. Live results are graded weekly on the <a class="link" href="results.html">track record</a>.`;
+    document.getElementById("heroSlate").textContent = `Free beta · best backtested week: beat ${p(w.avg_pct)} of a real ${num(w.entries)}-entry field`;
+  }).catch(() => { document.getElementById("fcSub").textContent = "Chart unavailable right now — see the track record."; });
 })();
 </script>
 </body>
