@@ -16,6 +16,9 @@ on:
         required: false
         default: "false"
 
+permissions:
+  contents: write          # web/data/edges.json is committed back after each refresh (same as nightly-ingest and backtest)
+
 jobs:
   refresh:
     runs-on: ubuntu-latest
