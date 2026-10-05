@@ -1,6 +1,6 @@
 {
  "season": 2026,
- "built_at": "2026-10-02T03:35:04.364180+00:00",
+ "built_at": "2026-10-05T09:01:53.674218+00:00",
  "source": "claude/gpp",
  "weeks": [
   {
@@ -265,12 +265,138 @@
     ]
    },
    "recap": "recap_2026_wk03.md"
+  },
+  {
+   "season": 2026,
+   "week": 4,
+   "slate_key": "DK-2026-04-main",
+   "site": "DK",
+   "scored_at": "2026-10-05T09:01:24.578446+00:00",
+   "lineups": {
+    "n": 50,
+    "avg_pts": 118.3,
+    "best_pts": 167.6,
+    "avg_proj": 135.7,
+    "beat_pct": null,
+    "best_beat_pct": null,
+    "sim_pct": 0.391,
+    "best_rank": null,
+    "entries": null,
+    "field_median_pts": null,
+    "top1_lineups": null,
+    "cash_pct": null,
+    "real_roi": null,
+    "avg_vs_field_median": null
+   },
+   "flashback": {
+    "present": false,
+    "consensus_roi": null,
+    "field_mean_roi": null,
+    "field_median_roi": null,
+    "field_p90_roi": null,
+    "beats_pct": null,
+    "consensus_cash": null,
+    "consensus_top1": null,
+    "model_roi": null,
+    "model_beats_pct": null,
+    "model_top1": null,
+    "fee": null,
+    "payout": null,
+    "sims": null
+   },
+   "dupes": null,
+   "real_money": null,
+   "accuracy": {
+    "n": 129,
+    "r": 0.465,
+    "mae": 5.86,
+    "bias": -0.08,
+    "coverage": {
+     "p10": 0.101,
+     "p90": 0.915
+    },
+    "actual_source": "stats"
+   },
+   "news": {
+    "graded": 53,
+    "helped": 25,
+    "helped_pct": 0.4717,
+    "hi_conf_graded": 35,
+    "hi_conf_helped_pct": 0.4857,
+    "notes_filed": 173
+   },
+   "what_won": {
+    "game_id": "2026_04_JAX_CIN",
+    "matchup": "CIN vs JAX",
+    "qb": "Joe Burrow",
+    "qb_team": "CIN",
+    "qb_actual": 28.72,
+    "top_lineups": 10,
+    "lineups_in_game": 7,
+    "lineups_with_qb": 7,
+    "line": "Joe Burrow (CIN) was in 7 of our top 10 lineups and scored 28.7"
+   },
+   "misses": {
+    "over": [
+     {
+      "player": "Garrett Wilson",
+      "pos": "WR",
+      "team": "NYJ",
+      "proj": 22.46,
+      "actual": 5.7,
+      "diff": -16.76
+     },
+     {
+      "player": "Ja'Marr Chase",
+      "pos": "WR",
+      "team": "CIN",
+      "proj": 18.15,
+      "actual": 5.7,
+      "diff": -12.45
+     },
+     {
+      "player": "Davante Adams",
+      "pos": "WR",
+      "team": "LA",
+      "proj": 19.27,
+      "actual": 7.2,
+      "diff": -12.07
+     }
+    ],
+    "under": [
+     {
+      "player": "CeeDee Lamb",
+      "pos": "WR",
+      "team": "DAL",
+      "proj": 15.31,
+      "actual": 44.3,
+      "diff": 28.99
+     },
+     {
+      "player": "Kyren Williams",
+      "pos": "RB",
+      "team": "LA",
+      "proj": 15.64,
+      "actual": 36.7,
+      "diff": 21.06
+     },
+     {
+      "player": "Puka Nacua",
+      "pos": "WR",
+      "team": "LA",
+      "proj": 11.15,
+      "actual": 30.7,
+      "diff": 19.55
+     }
+    ]
+   },
+   "recap": "recap_2026_wk04.md"
   }
  ],
  "totals": {
-  "weeks": 2,
+  "weeks": 3,
   "weeks_with_flashback": 2,
-  "lineups": 70,
+  "lineups": 120,
   "consensus_roi": -0.2051,
   "field_mean_roi": -0.2392,
   "consensus_roi_vs_field": 0.0341,
