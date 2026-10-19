@@ -1,6 +1,6 @@
 {
  "season": 2026,
- "built_at": "2026-10-12T09:01:27.604521+00:00",
+ "built_at": "2026-10-19T09:01:55.128187+00:00",
  "source": "claude/gpp",
  "weeks": [
   {
@@ -533,12 +533,138 @@
     ]
    },
    "recap": "recap_2026_wk05.md"
+  },
+  {
+   "season": 2026,
+   "week": 6,
+   "slate_key": "DK-2026-06-main",
+   "site": "DK",
+   "scored_at": "2026-10-19T09:01:22.756210+00:00",
+   "lineups": {
+    "n": 50,
+    "avg_pts": 128.8,
+    "best_pts": 172.1,
+    "avg_proj": 133.1,
+    "beat_pct": null,
+    "best_beat_pct": null,
+    "sim_pct": 0.601,
+    "best_rank": null,
+    "entries": null,
+    "field_median_pts": null,
+    "top1_lineups": null,
+    "cash_pct": null,
+    "real_roi": null,
+    "avg_vs_field_median": null
+   },
+   "flashback": {
+    "present": false,
+    "consensus_roi": null,
+    "field_mean_roi": null,
+    "field_median_roi": null,
+    "field_p90_roi": null,
+    "beats_pct": null,
+    "consensus_cash": null,
+    "consensus_top1": null,
+    "model_roi": null,
+    "model_beats_pct": null,
+    "model_top1": null,
+    "fee": null,
+    "payout": null,
+    "sims": null
+   },
+   "dupes": null,
+   "real_money": null,
+   "accuracy": {
+    "n": 112,
+    "r": 0.534,
+    "mae": 5.28,
+    "bias": 1.07,
+    "coverage": {
+     "p10": 0.134,
+     "p90": 0.946
+    },
+    "actual_source": "stats"
+   },
+   "news": {
+    "graded": 50,
+    "helped": 36,
+    "helped_pct": 0.72,
+    "hi_conf_graded": 21,
+    "hi_conf_helped_pct": 0.7619,
+    "notes_filed": 170
+   },
+   "what_won": {
+    "game_id": "2026_06_NO_NYG",
+    "matchup": "LV vs BUF",
+    "qb": "Kirk Cousins",
+    "qb_team": "LV",
+    "qb_actual": 22.52,
+    "top_lineups": 10,
+    "lineups_in_game": 3,
+    "lineups_with_qb": 3,
+    "line": "Kirk Cousins (LV) was in 3 of our top 10 lineups and scored 22.5"
+   },
+   "misses": {
+    "over": [
+     {
+      "player": "Bijan Robinson",
+      "pos": "RB",
+      "team": "ATL",
+      "proj": 21.72,
+      "actual": 7.3,
+      "diff": -14.42
+     },
+     {
+      "player": "Derrick Henry",
+      "pos": "RB",
+      "team": "BAL",
+      "proj": 18.6,
+      "actual": 6.0,
+      "diff": -12.6
+     },
+     {
+      "player": "Juwan Johnson",
+      "pos": "TE",
+      "team": "NO",
+      "proj": 10.76,
+      "actual": 0.0,
+      "diff": -10.76
+     }
+    ],
+    "under": [
+     {
+      "player": "Malik Nabers",
+      "pos": "WR",
+      "team": "NYG",
+      "proj": 13.02,
+      "actual": 31.5,
+      "diff": 18.48
+     },
+     {
+      "player": "Tre Tucker",
+      "pos": "WR",
+      "team": "LV",
+      "proj": 10.59,
+      "actual": 26.7,
+      "diff": 16.11
+     },
+     {
+      "player": "Michael Penix Jr.",
+      "pos": "QB",
+      "team": "ATL",
+      "proj": 15.14,
+      "actual": 25.1,
+      "diff": 9.96
+     }
+    ]
+   },
+   "recap": "recap_2026_wk06.md"
   }
  ],
  "totals": {
-  "weeks": 4,
+  "weeks": 5,
   "weeks_with_flashback": 3,
-  "lineups": 170,
+  "lineups": 220,
   "consensus_roi": -0.342,
   "field_mean_roi": -0.2252,
   "consensus_roi_vs_field": -0.1169,

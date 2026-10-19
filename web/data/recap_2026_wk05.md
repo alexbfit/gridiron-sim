@@ -32,6 +32,6 @@ Biggest under-projections:
 ## Honest read
 
 - Projection accuracy this week: r 0.57, MAE 6.6 DK points on 124 relevant players.
-- Season so far: 4 scored weeks, consensus ROI −34% vs field −23%, 3/3 weeks above the field median on points. Give it a full season before reading anything into it.
+- Season so far: 5 scored weeks, consensus ROI −34% vs field −23%, 3/3 weeks above the field median on points. Give it a full season before reading anything into it.
 
 _Every number above is read from the database by `jobs/recap.py`; nothing is typed in. Methodology on the Track Record page._
