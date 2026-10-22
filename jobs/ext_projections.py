@@ -33,11 +33,11 @@ import sys
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-from preflight import Rest, parse_ts
+from preflight import Rest, parse_ts, min_book_props
 
 ET = ZoneInfo("America/New_York")
 ALIAS = {"LAR": "LA", "JAC": "JAX", "WSH": "WAS"}
-MIN_BOOKS = 150
+MIN_BOOKS = 150             # 12-game slate; the live threshold is preflight.min_book_props(games on the slate)
 MIN_PROPS_FILE = 100
 RB_K, RB_BASE, RB_LO, RB_HI = 0.0115, 22.5, 0.85, 1.15
 PROPS_FLAGS = "--props 0 --props-missing= --ext-file {f} --ext-sim 0.55 --ext-missing QB=0.15,RB=0.8,WR=0.4,TE=0.5 --max-te 1 --min-uniq 3"
@@ -101,7 +101,7 @@ def write_props(board, props, imp, out):
 
 def choose(rest, slate_key=None, setup="auto", out_dir="/tmp", fresh_since=None, now=None, root=REPO):
     """Returns (flags, info dict)."""
-    params = {"select": "slate_id,slate_key,season,week", "order": "imported_at.desc", "limit": "1"}
+    params = {"select": "slate_id,slate_key,season,week,game_ids", "order": "imported_at.desc", "limit": "1"}
     if slate_key:
         params["slate_key"] = f"eq.{slate_key}"
     s = rest.get("slates", params)[0]
@@ -133,8 +133,9 @@ def choose(rest, slate_key=None, setup="auto", out_dir="/tmp", fresh_since=None,
         cutoff = dt.datetime.combine(today, dt.time(hh, mm), ET)
     books = [r for r in props if "odds" in (((r.get("components") or {}).get("src")) or [])
              and (cutoff is None or parse_ts(r["updated_at"]) >= cutoff)]
-    info.update(props_rows=len(props), book_rows=len(books), books=len(books) >= MIN_BOOKS)
-    if setup in ("auto", "props") and (len(books) >= MIN_BOOKS or setup == "props"):
+    need = min_book_props(len(s.get("game_ids") or []))
+    info.update(props_rows=len(props), book_rows=len(books), books_needed=need, books=len(books) >= need)
+    if setup in ("auto", "props") and (len(books) >= need or setup == "props"):
         board = {r["site_player_id"]: r for r in rest.get("slate_board", {"select": "site_player_id,player_name,team,position",
                                                                            "slate_id": f"eq.{s['slate_id']}", "limit": "3000"})}
         out = out_dir / "props_rbadj.csv"

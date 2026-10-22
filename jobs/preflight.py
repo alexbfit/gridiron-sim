@@ -32,7 +32,14 @@ UTC = dt.timezone.utc
 DEFAULT_URL = "https://hmckvrmsgmdsuyjsuvcq.supabase.co"
 DEFAULT_ANON = "sb_publishable_45X4VDNlLYDp9yJERH40oA_yeTF4Jcz"      # public read-only key (also in web/config.js)
 
-MIN_BOOK_PROPS = 150        # the Sunday build's BOOKS threshold
+MIN_BOOK_PROPS = 150        # the Sunday build's BOOKS threshold on a 12-game slate
+BOOK_PROPS_PER_GAME = 12.5  # scales with the slate: 11 games -> 138, 10 -> 125 (books post ~13-14 players per game)
+
+
+def min_book_props(n_games: int) -> int:
+    """Sportsbook rows the Sunday build needs for the props-only setup. A fixed 150 failed every short slate:
+    wk5 (11 games) had the full market at 144, wk6 (10 games) at 142, and the build fell back to the weaker setup."""
+    return int(-(-BOOK_PROPS_PER_GAME * n_games // 1)) if n_games else MIN_BOOK_PROPS
 MIN_KALSHI_PROPS = 80       # Saturday night: Kalshi ladders only
 MIN_SLATE_PLAYERS = 300
 MIN_SIM_PLAYERS = 250
@@ -180,8 +187,9 @@ def run(rest, mode, now, slate_key=None, skip=()):
         else:
             since = dt.datetime.combine(target_day, dt.time(6, 0), ET)
             books = [r for r in props if "odds" in (((r.get("components") or {}).get("src")) or []) and parse_ts(r["updated_at"]) >= since]
-            if len(books) < MIN_BOOK_PROPS:
-                c.fail("props", f"{len(books)} sportsbook-sourced rows since 6 AM ({len(props)} total, newest {fmt_et(newest)}) — need {MIN_BOOK_PROPS}",
+            need = min_book_props(len(gids))
+            if len(books) < need:
+                c.fail("props", f"{len(books)} sportsbook-sourced rows since 6 AM ({len(props)} total, newest {fmt_et(newest)}) — need {need} ({len(gids)} games)",
                        "run Actions > gameday-refresh with props=true (costs ~60-85 Odds API credits); without it the build falls back to sim + Kalshi")
             else:
                 c.ok("props", f"{len(books)} sportsbook-sourced rows this morning ({len(props)} total)")

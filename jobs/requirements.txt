@@ -2,4 +2,4 @@ nflreadpy>=0.1.0
 polars>=1.0
 supabase>=2.4
 numpy>=1.26
-pulp>=2.8
+pulp>=2.8,<4      # pulp 4.0 (Oct 2026) renamed LpVariable args and breaks build_lineups.solve
