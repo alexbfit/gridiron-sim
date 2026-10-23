@@ -1,6 +1,6 @@
 {
  "season": 2026,
- "built_at": "2026-10-19T09:01:55.128187+00:00",
+ "built_at": "2026-10-23T09:01:18.049598+00:00",
  "source": "claude/gpp",
  "weeks": [
   {
@@ -413,51 +413,67 @@
    "week": 5,
    "slate_key": "DK-2026-05-main",
    "site": "DK",
-   "scored_at": "2026-10-12T09:01:07.674319+00:00",
+   "scored_at": "2026-10-22T23:22:29.289863+00:00",
    "lineups": {
     "n": 50,
-    "avg_pts": 135.4,
-    "best_pts": 185.0,
+    "avg_pts": 137.8,
+    "best_pts": 195.0,
     "avg_proj": 138.4,
-    "beat_pct": null,
-    "best_beat_pct": null,
-    "sim_pct": 0.515,
-    "best_rank": null,
-    "entries": null,
-    "field_median_pts": null,
-    "top1_lineups": null,
-    "cash_pct": null,
-    "real_roi": null,
-    "avg_vs_field_median": null
+    "beat_pct": 0.587,
+    "best_beat_pct": 0.99,
+    "sim_pct": 0.538,
+    "best_rank": 2062,
+    "entries": 258843,
+    "field_median_pts": 129.58,
+    "top1_lineups": 1,
+    "cash_pct": 0.24,
+    "real_roi": -0.1557,
+    "avg_vs_field_median": 8.22
    },
    "flashback": {
-    "present": false,
-    "consensus_roi": null,
-    "field_mean_roi": null,
-    "field_median_roi": null,
-    "field_p90_roi": null,
-    "beats_pct": null,
-    "consensus_cash": null,
-    "consensus_top1": null,
-    "model_roi": null,
-    "model_beats_pct": null,
-    "model_top1": null,
-    "fee": null,
-    "payout": null,
-    "sims": null
+    "present": true,
+    "consensus_roi": -0.4981,
+    "field_mean_roi": -0.2498,
+    "field_median_roi": -0.4836,
+    "field_p90_roi": 0.5142,
+    "beats_pct": 0.487,
+    "consensus_cash": 0.1887,
+    "consensus_top1": 0.007,
+    "model_roi": -0.2139,
+    "model_beats_pct": 0.641,
+    "model_top1": 0.0135,
+    "fee": 3.0,
+    "payout": "gpp",
+    "sims": 2000
    },
-   "dupes": null,
-   "real_money": null,
+   "dupes": {
+    "lineups_with_copy": 15,
+    "copies_total": 72,
+    "max_copies": 27,
+    "top20_with_copy": 15,
+    "winnings_lost_pct": 0.0,
+    "field_with_copy": 0.105
+   },
+   "real_money": {
+    "entries": 15,
+    "fee": 3.0,
+    "best_rank": 66808,
+    "mean_pts": 131.82,
+    "roi": -1.0,
+    "in": 45.0,
+    "out": 0.0,
+    "basis": "payout curve on real ranks"
+   },
    "accuracy": {
     "n": 124,
-    "r": 0.572,
-    "mae": 6.64,
-    "bias": 0.17,
+    "r": 0.518,
+    "mae": 6.83,
+    "bias": -0.27,
     "coverage": {
-     "p10": 0.169,
-     "p90": 0.911
+     "p10": 0.153,
+     "p90": 0.879
     },
-    "actual_source": "stats"
+    "actual_source": "contest"
    },
    "news": {
     "graded": 56,
@@ -539,51 +555,67 @@
    "week": 6,
    "slate_key": "DK-2026-06-main",
    "site": "DK",
-   "scored_at": "2026-10-19T09:01:22.756210+00:00",
+   "scored_at": "2026-10-22T23:23:13.444198+00:00",
    "lineups": {
     "n": 50,
-    "avg_pts": 128.8,
-    "best_pts": 172.1,
+    "avg_pts": 130.0,
+    "best_pts": 176.1,
     "avg_proj": 133.1,
-    "beat_pct": null,
-    "best_beat_pct": null,
-    "sim_pct": 0.601,
-    "best_rank": null,
-    "entries": null,
-    "field_median_pts": null,
-    "top1_lineups": null,
-    "cash_pct": null,
-    "real_roi": null,
-    "avg_vs_field_median": null
+    "beat_pct": 0.591,
+    "best_beat_pct": 0.991,
+    "sim_pct": 0.614,
+    "best_rank": 1474,
+    "entries": 237539,
+    "field_median_pts": 122.9,
+    "top1_lineups": 1,
+    "cash_pct": 0.32,
+    "real_roi": -0.1595,
+    "avg_vs_field_median": 7.1
    },
    "flashback": {
-    "present": false,
-    "consensus_roi": null,
-    "field_mean_roi": null,
-    "field_median_roi": null,
-    "field_p90_roi": null,
-    "beats_pct": null,
-    "consensus_cash": null,
-    "consensus_top1": null,
-    "model_roi": null,
-    "model_beats_pct": null,
-    "model_top1": null,
-    "fee": null,
-    "payout": null,
-    "sims": null
+    "present": true,
+    "consensus_roi": 2.8473,
+    "field_mean_roi": -0.2159,
+    "field_median_roi": -0.4862,
+    "field_p90_roi": 0.3637,
+    "beats_pct": 0.978,
+    "consensus_cash": 0.3455,
+    "consensus_top1": 0.0407,
+    "model_roi": 0.7647,
+    "model_beats_pct": 0.925,
+    "model_top1": 0.0195,
+    "fee": 3.0,
+    "payout": "gpp",
+    "sims": 2000
    },
-   "dupes": null,
-   "real_money": null,
+   "dupes": {
+    "lineups_with_copy": 9,
+    "copies_total": 29,
+    "max_copies": 10,
+    "top20_with_copy": 6,
+    "winnings_lost_pct": 0.2028,
+    "field_with_copy": 0.101
+   },
+   "real_money": {
+    "entries": 18,
+    "fee": 3.0,
+    "best_rank": 6322,
+    "mean_pts": 128.9422,
+    "roi": -0.3804,
+    "in": 54.0,
+    "out": 33.4584,
+    "basis": "payout curve on real ranks"
+   },
    "accuracy": {
     "n": 112,
-    "r": 0.534,
-    "mae": 5.28,
-    "bias": 1.07,
+    "r": 0.487,
+    "mae": 5.38,
+    "bias": 0.79,
     "coverage": {
-     "p10": 0.134,
-     "p90": 0.946
+     "p10": 0.125,
+     "p90": 0.92
     },
-    "actual_source": "stats"
+    "actual_source": "contest"
    },
    "news": {
     "graded": 50,
@@ -653,8 +685,8 @@
       "pos": "QB",
       "team": "ATL",
       "proj": 15.14,
-      "actual": 25.1,
-      "diff": 9.96
+      "actual": 24.1,
+      "diff": 8.96
      }
     ]
    },
@@ -663,28 +695,28 @@
  ],
  "totals": {
   "weeks": 5,
-  "weeks_with_flashback": 3,
+  "weeks_with_flashback": 5,
   "lineups": 220,
-  "consensus_roi": -0.342,
-  "field_mean_roi": -0.2252,
-  "consensus_roi_vs_field": -0.1169,
-  "weeks_above_field_median": 3,
-  "weeks_with_field_median": 3,
-  "weeks_consensus_above_field_median": 2,
-  "weeks_consensus_scored": 3,
-  "beats_pct": 0.5577,
-  "avg_beat_pct": 0.5627,
-  "top1_lineups": 0,
+  "consensus_roi": 0.2646,
+  "field_mean_roi": -0.2282,
+  "consensus_roi_vs_field": 0.4929,
+  "weeks_above_field_median": 5,
+  "weeks_with_field_median": 5,
+  "weeks_consensus_above_field_median": 3,
+  "weeks_consensus_scored": 5,
+  "beats_pct": 0.6276,
+  "avg_beat_pct": 0.5732,
+  "top1_lineups": 2,
   "best_finish": {
-   "rank": 3115,
-   "entries": 296894,
-   "week": 3
+   "rank": 1474,
+   "entries": 237539,
+   "week": 6
   },
   "real_money": {
-   "in": 140.0,
-   "out": 113.556,
-   "weeks": 3,
-   "roi": -0.1889,
+   "in": 239.0,
+   "out": 147.0144,
+   "weeks": 5,
+   "roi": -0.3849,
    "basis": "payout curve on real ranks"
   }
  }
