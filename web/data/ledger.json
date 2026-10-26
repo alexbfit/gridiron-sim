@@ -1,6 +1,6 @@
 {
  "season": 2026,
- "built_at": "2026-10-23T09:01:18.049598+00:00",
+ "built_at": "2026-10-26T09:01:58.421711+00:00",
  "source": "claude/gpp",
  "weeks": [
   {
@@ -691,12 +691,138 @@
     ]
    },
    "recap": "recap_2026_wk06.md"
+  },
+  {
+   "season": 2026,
+   "week": 7,
+   "slate_key": "DK-2026-07-main",
+   "site": "DK",
+   "scored_at": "2026-10-26T09:01:35.629557+00:00",
+   "lineups": {
+    "n": 50,
+    "avg_pts": 109.6,
+    "best_pts": 154.8,
+    "avg_proj": 138.0,
+    "beat_pct": null,
+    "best_beat_pct": null,
+    "sim_pct": 0.226,
+    "best_rank": null,
+    "entries": null,
+    "field_median_pts": null,
+    "top1_lineups": null,
+    "cash_pct": null,
+    "real_roi": null,
+    "avg_vs_field_median": null
+   },
+   "flashback": {
+    "present": false,
+    "consensus_roi": null,
+    "field_mean_roi": null,
+    "field_median_roi": null,
+    "field_p90_roi": null,
+    "beats_pct": null,
+    "consensus_cash": null,
+    "consensus_top1": null,
+    "model_roi": null,
+    "model_beats_pct": null,
+    "model_top1": null,
+    "fee": null,
+    "payout": null,
+    "sims": null
+   },
+   "dupes": null,
+   "real_money": null,
+   "accuracy": {
+    "n": 109,
+    "r": 0.509,
+    "mae": 6.38,
+    "bias": 0.71,
+    "coverage": {
+     "p10": 0.165,
+     "p90": 0.899
+    },
+    "actual_source": "stats"
+   },
+   "news": {
+    "graded": 48,
+    "helped": 34,
+    "helped_pct": 0.7083,
+    "hi_conf_graded": 24,
+    "hi_conf_helped_pct": 0.7917,
+    "notes_filed": 170
+   },
+   "what_won": {
+    "game_id": "2026_07_LA_LV",
+    "matchup": "LA vs LV",
+    "qb": "Matthew Stafford",
+    "qb_team": "LA",
+    "qb_actual": 18.5,
+    "top_lineups": 10,
+    "lineups_in_game": 5,
+    "lineups_with_qb": 5,
+    "line": "Matthew Stafford (LA) was in 5 of our top 10 lineups and scored 18.5"
+   },
+   "misses": {
+    "over": [
+     {
+      "player": "Aaron Jones Sr.",
+      "pos": "RB",
+      "team": "MIN",
+      "proj": 21.21,
+      "actual": 3.6,
+      "diff": -17.61
+     },
+     {
+      "player": "Isaiah Likely",
+      "pos": "TE",
+      "team": "NYG",
+      "proj": 15.83,
+      "actual": 3.2,
+      "diff": -12.63
+     },
+     {
+      "player": "Tyler Higbee",
+      "pos": "TE",
+      "team": "LA",
+      "proj": 15.96,
+      "actual": 3.4,
+      "diff": -12.56
+     }
+    ],
+    "under": [
+     {
+      "player": "Tony Pollard",
+      "pos": "RB",
+      "team": "TEN",
+      "proj": 12.77,
+      "actual": 39.5,
+      "diff": 26.73
+     },
+     {
+      "player": "Zay Flowers",
+      "pos": "WR",
+      "team": "BAL",
+      "proj": 13.68,
+      "actual": 30.7,
+      "diff": 17.02
+     },
+     {
+      "player": "Tee Higgins",
+      "pos": "WR",
+      "team": "CIN",
+      "proj": 12.8,
+      "actual": 29.8,
+      "diff": 17.0
+     }
+    ]
+   },
+   "recap": "recap_2026_wk07.md"
   }
  ],
  "totals": {
-  "weeks": 5,
+  "weeks": 6,
   "weeks_with_flashback": 5,
-  "lineups": 220,
+  "lineups": 270,
   "consensus_roi": 0.2646,
   "field_mean_roi": -0.2282,
   "consensus_roi_vs_field": 0.4929,
