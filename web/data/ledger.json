@@ -1,6 +1,6 @@
 {
  "season": 2026,
- "built_at": "2026-11-04T10:01:54.222997+00:00",
+ "built_at": "2026-11-09T10:01:41.665140+00:00",
  "source": "claude/gpp",
  "weeks": [
   {
@@ -959,12 +959,138 @@
     ]
    },
    "recap": "recap_2026_wk08.md"
+  },
+  {
+   "season": 2026,
+   "week": 9,
+   "slate_key": "DK-2026-09-main",
+   "site": "DK",
+   "scored_at": "2026-11-09T10:01:27.385645+00:00",
+   "lineups": {
+    "n": 50,
+    "avg_pts": 109.3,
+    "best_pts": 160.7,
+    "avg_proj": 133.2,
+    "beat_pct": null,
+    "best_beat_pct": null,
+    "sim_pct": 0.259,
+    "best_rank": null,
+    "entries": null,
+    "field_median_pts": null,
+    "top1_lineups": null,
+    "cash_pct": null,
+    "real_roi": null,
+    "avg_vs_field_median": null
+   },
+   "flashback": {
+    "present": false,
+    "consensus_roi": null,
+    "field_mean_roi": null,
+    "field_median_roi": null,
+    "field_p90_roi": null,
+    "beats_pct": null,
+    "consensus_cash": null,
+    "consensus_top1": null,
+    "model_roi": null,
+    "model_beats_pct": null,
+    "model_top1": null,
+    "fee": null,
+    "payout": null,
+    "sims": null
+   },
+   "dupes": null,
+   "real_money": null,
+   "accuracy": {
+    "n": 125,
+    "r": 0.533,
+    "mae": 5.61,
+    "bias": 0.77,
+    "coverage": {
+     "p10": 0.088,
+     "p90": 0.936
+    },
+    "actual_source": "stats"
+   },
+   "news": {
+    "graded": 83,
+    "helped": 44,
+    "helped_pct": 0.5301,
+    "hi_conf_graded": 40,
+    "hi_conf_helped_pct": 0.5,
+    "notes_filed": 184
+   },
+   "what_won": {
+    "game_id": "2026_09_DAL_IND",
+    "matchup": "DAL vs IND",
+    "qb": "Dak Prescott",
+    "qb_team": "DAL",
+    "qb_actual": 24.5,
+    "top_lineups": 10,
+    "lineups_in_game": 4,
+    "lineups_with_qb": 4,
+    "line": "Dak Prescott (DAL) was in 4 of our top 10 lineups and scored 24.5"
+   },
+   "misses": {
+    "over": [
+     {
+      "player": "Jahmyr Gibbs",
+      "pos": "RB",
+      "team": "DET",
+      "proj": 30.39,
+      "actual": 13.4,
+      "diff": -16.99
+     },
+     {
+      "player": "George Kittle",
+      "pos": "TE",
+      "team": "SF",
+      "proj": 25.04,
+      "actual": 9.8,
+      "diff": -15.24
+     },
+     {
+      "player": "Malik Willis",
+      "pos": "QB",
+      "team": "MIA",
+      "proj": 20.03,
+      "actual": 4.82,
+      "diff": -15.21
+     }
+    ],
+    "under": [
+     {
+      "player": "Matthew Golden",
+      "pos": "WR",
+      "team": "GB",
+      "proj": 13.34,
+      "actual": 35.4,
+      "diff": 22.06
+     },
+     {
+      "player": "Jordan Love",
+      "pos": "QB",
+      "team": "GB",
+      "proj": 17.12,
+      "actual": 39.18,
+      "diff": 22.06
+     },
+     {
+      "player": "Christian Watson",
+      "pos": "WR",
+      "team": "GB",
+      "proj": 12.3,
+      "actual": 33.1,
+      "diff": 20.8
+     }
+    ]
+   },
+   "recap": "recap_2026_wk09.md"
   }
  ],
  "totals": {
-  "weeks": 7,
+  "weeks": 8,
   "weeks_with_flashback": 6,
-  "lineups": 320,
+  "lineups": 370,
   "consensus_roi": 0.1138,
   "field_mean_roi": -0.216,
   "consensus_roi_vs_field": 0.3297,

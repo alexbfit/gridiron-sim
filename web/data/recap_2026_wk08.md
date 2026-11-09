@@ -37,6 +37,6 @@ Biggest under-projections:
 - On market projections the construction alone was expected to return −64% against a field averaging −15% — behind the typical entry, better than 32% of real entries in expectation. That is a weak construction week, not proof of anything.
 - Realized: our average lineup scored 147.0 against a field median of 118.9 (+28.1); that beats the median entry, and the best lineup finished 198 of 197,991. Variance is huge in a GPP; one week does not separate skill from luck.
 - Model view (+1%) above consensus view (−64%): our projections liked these lineups more than the market did — expect that gap to shrink as projections regress. Projection accuracy this week: r 0.45, MAE 6.5 DK points.
-- Season so far: 7 scored weeks, consensus ROI +11% vs field −22%, 6/6 weeks above the field median on points. Give it a full season before reading anything into it.
+- Season so far: 8 scored weeks, consensus ROI +11% vs field −22%, 6/6 weeks above the field median on points. Give it a full season before reading anything into it.
 
 _Every number above is read from the database by `jobs/recap.py`; nothing is typed in. Methodology on the Track Record page._
