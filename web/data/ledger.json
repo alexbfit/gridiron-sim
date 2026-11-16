@@ -1,6 +1,6 @@
 {
  "season": 2026,
- "built_at": "2026-11-09T10:01:41.665140+00:00",
+ "built_at": "2026-11-16T10:01:46.284749+00:00",
  "source": "claude/gpp",
  "weeks": [
   {
@@ -1085,12 +1085,138 @@
     ]
    },
    "recap": "recap_2026_wk09.md"
+  },
+  {
+   "season": 2026,
+   "week": 10,
+   "slate_key": "DK-2026-10-main",
+   "site": "DK",
+   "scored_at": "2026-11-16T10:01:32.210873+00:00",
+   "lineups": {
+    "n": 50,
+    "avg_pts": 142.7,
+    "best_pts": 196.4,
+    "avg_proj": 127.6,
+    "beat_pct": null,
+    "best_beat_pct": null,
+    "sim_pct": 0.623,
+    "best_rank": null,
+    "entries": null,
+    "field_median_pts": null,
+    "top1_lineups": null,
+    "cash_pct": null,
+    "real_roi": null,
+    "avg_vs_field_median": null
+   },
+   "flashback": {
+    "present": false,
+    "consensus_roi": null,
+    "field_mean_roi": null,
+    "field_median_roi": null,
+    "field_p90_roi": null,
+    "beats_pct": null,
+    "consensus_cash": null,
+    "consensus_top1": null,
+    "model_roi": null,
+    "model_beats_pct": null,
+    "model_top1": null,
+    "fee": null,
+    "payout": null,
+    "sims": null
+   },
+   "dupes": null,
+   "real_money": null,
+   "accuracy": {
+    "n": 109,
+    "r": 0.58,
+    "mae": 6.15,
+    "bias": 0.11,
+    "coverage": {
+     "p10": 0.128,
+     "p90": 0.89
+    },
+    "actual_source": "stats"
+   },
+   "news": {
+    "graded": 53,
+    "helped": 29,
+    "helped_pct": 0.5472,
+    "hi_conf_graded": 43,
+    "hi_conf_helped_pct": 0.6047,
+    "notes_filed": 169
+   },
+   "what_won": {
+    "game_id": "2026_10_JAX_TEN",
+    "matchup": "JAX vs TEN",
+    "qb": "Trevor Lawrence",
+    "qb_team": "JAX",
+    "qb_actual": 30.78,
+    "top_lineups": 10,
+    "lineups_in_game": 5,
+    "lineups_with_qb": 4,
+    "line": "Trevor Lawrence (JAX) was in 4 of our top 10 lineups and scored 30.8"
+   },
+   "misses": {
+    "over": [
+     {
+      "player": "Tyler Warren",
+      "pos": "TE",
+      "team": "IND",
+      "proj": 16.55,
+      "actual": 2.4,
+      "diff": -14.15
+     },
+     {
+      "player": "Kyren Williams",
+      "pos": "RB",
+      "team": "LA",
+      "proj": 18.24,
+      "actual": 5.2,
+      "diff": -13.04
+     },
+     {
+      "player": "Brock Bowers",
+      "pos": "TE",
+      "team": "LV",
+      "proj": 16.47,
+      "actual": 3.8,
+      "diff": -12.67
+     }
+    ],
+    "under": [
+     {
+      "player": "Emmett Johnson",
+      "pos": "RB",
+      "team": "KC",
+      "proj": 10.23,
+      "actual": 38.1,
+      "diff": 27.87
+     },
+     {
+      "player": "Christian McCaffrey",
+      "pos": "RB",
+      "team": "SF",
+      "proj": 22.3,
+      "actual": 49.3,
+      "diff": 27.0
+     },
+     {
+      "player": "Dak Prescott",
+      "pos": "QB",
+      "team": "DAL",
+      "proj": 19.45,
+      "actual": 38.42,
+      "diff": 18.97
+     }
+    ]
+   },
+   "recap": "recap_2026_wk10.md"
   }
  ],
  "totals": {
-  "weeks": 8,
+  "weeks": 9,
   "weeks_with_flashback": 6,
-  "lineups": 370,
+  "lineups": 420,
   "consensus_roi": 0.1138,
   "field_mean_roi": -0.216,
   "consensus_roi_vs_field": 0.3297,
