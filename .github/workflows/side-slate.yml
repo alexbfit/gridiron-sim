@@ -24,10 +24,6 @@ on:
         description: "slate key suffix, e.g. thu, sat, tg (not main)"
         required: true
         default: "side"
-      n:
-        description: "lineups to build"
-        required: false
-        default: "50"
       props:
         description: "also fetch sportsbook player props (costs Odds API credits; Kalshi is always fetched, free)"
         required: false
@@ -45,7 +41,6 @@ jobs:
       ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
       GROUP: ${{ github.event.inputs.group }}
       STYPE: ${{ github.event.inputs.slate_type }}
-      N: ${{ github.event.inputs.n }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -59,7 +54,6 @@ jobs:
           case "$STYPE" in main|"") echo "slate_type must not be main or empty"; exit 1;; esac
           echo "$STYPE" | grep -Eq '^[a-z0-9]{1,12}$' || { echo "slate_type: lowercase letters/digits only"; exit 1; }
           echo "$GROUP" | grep -Eq '^[0-9]{5,8}$' || { echo "group must be a DraftGroupId number"; exit 1; }
-          echo "$N" | grep -Eq '^[0-9]{1,3}$' || { echo "n must be a number"; exit 1; }
       - name: Download DraftKings salaries
         run: |
           mkdir -p "$RUNNER_TEMP/side"
@@ -94,8 +88,11 @@ jobs:
         run: |
           python jobs/odds.py || { echo "odds skipped"; echo odds >> "$RUNNER_TEMP/failed_steps"; }
           python jobs/weather.py || { echo "weather skipped"; echo weather >> "$RUNNER_TEMP/failed_steps"; }
-          if [ "${{ github.event.inputs.props }}" = "true" ]; then SRC=both; else SRC=kalshi; fi
-          python jobs/props.py --slate-key "$KEY" --source $SRC --force || { echo "props skipped"; echo props >> "$RUNNER_TEMP/failed_steps"; }
+          if [ "${{ github.event.inputs.props }}" = "true" ]; then
+            python jobs/props.py --slate-key "$KEY" --source both --force || { echo "props skipped"; echo props >> "$RUNNER_TEMP/failed_steps"; }
+          else
+            python jobs/props.py --slate-key "$KEY" --source kalshi --force || { echo "props skipped"; echo props >> "$RUNNER_TEMP/failed_steps"; }
+          fi
       - name: Project + simulate (10,000 sims)
         run: |
           python jobs/project.py --slate-key "$KEY"
@@ -104,7 +101,7 @@ jobs:
         run: |
           SS=$(python jobs/ext_projections.py --slate-key "$KEY" --out-dir "$RUNNER_TEMP/side" --json "$RUNNER_TEMP/side/setup.json") || SS=""
           echo "projection setup flags: ${SS:-<none: props + sim defaults>}"
-          python jobs/build_lineups.py --slate-key "$KEY" --contest gpp --n "$N" --candidates 8 --stack 2 --bringback \
+          python jobs/build_lineups.py --slate-key "$KEY" --contest gpp --n 50 --candidates 8 --stack 2 --bringback \
             --max-exp 0.35 --min-uniq 4 --fade 0 --seed 7 $SS \
             --out "$RUNNER_TEMP/side/DK_${KEY}_lineups.csv" --json "$RUNNER_TEMP/side/DK_${KEY}_lineups.json" --save
       - name: Upload the lineups (download from this run's Summary page -> Artifacts)
