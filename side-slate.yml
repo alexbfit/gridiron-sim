@@ -1,0 +1,126 @@
+name: side-slate
+
+# Full pipeline (salaries -> props -> projections -> 10,000-sim -> 50 GPP lineups) for ANY DraftKings classic slate:
+# Thursday / Saturday / holiday / Sun-Mon slates. Run it by hand from the Actions tab: "side-slate" -> Run workflow.
+#
+#   group      = DraftKings DraftGroupId (from the lobby URL / draft group list), e.g. 156932 for Thanksgiving 2026
+#   slate_type = short name for the slate key, e.g. "thu" -> DK-2026-12-thu. Never "main".
+#
+# Does NOT touch the Sunday main slate:
+#   - it never calls fetch_dk_salaries.py (that one only knows the main slate and rejects < 6 games)
+#   - every step passes --slate-key explicitly
+#   - right after import, the side slate's imported_at is back-dated to 2000-01-01, so every "--latest" /
+#     "most recently imported" lookup (project, simulate, props, preflight, ext_projections, the Sunday tasks,
+#     the website) keeps pointing at the main slate
+# Showdown (captain) slates are NOT supported yet: the run stops if the CSV has CPT rows.
+
+on:
+  workflow_dispatch:
+    inputs:
+      group:
+        description: "DraftKings DraftGroupId (classic slate)"
+        required: true
+      slate_type:
+        description: "slate key suffix, e.g. thu, sat, tg (not main)"
+        required: true
+        default: "side"
+      n:
+        description: "lineups to build"
+        required: false
+        default: "50"
+      props:
+        description: "also fetch sportsbook player props (costs Odds API credits; Kalshi is always fetched, free)"
+        required: false
+        default: "false"
+
+permissions:
+  contents: read
+
+jobs:
+  side-slate:
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+      GROUP: ${{ github.event.inputs.group }}
+      STYPE: ${{ github.event.inputs.slate_type }}
+      N: ${{ github.event.inputs.n }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r jobs/requirements.txt
+      - name: Run log (start)
+        run: python jobs/runlog.py --task side-slate --status started
+      - name: Check inputs
+        run: |
+          case "$STYPE" in main|"") echo "slate_type must not be main or empty"; exit 1;; esac
+          echo "$STYPE" | grep -Eq '^[a-z0-9]{1,12}$' || { echo "slate_type: lowercase letters/digits only"; exit 1; }
+          echo "$GROUP" | grep -Eq '^[0-9]{5,8}$' || { echo "group must be a DraftGroupId number"; exit 1; }
+          echo "$N" | grep -Eq '^[0-9]{1,3}$' || { echo "n must be a number"; exit 1; }
+      - name: Download DraftKings salaries
+        run: |
+          mkdir -p "$RUNNER_TEMP/side"
+          F="$RUNNER_TEMP/side/DKSalaries_${STYPE}_${GROUP}.csv"
+          curl -sSf -A "Mozilla/5.0" "https://www.draftkings.com/lineup/getavailableplayerscsv?contestTypeId=21&draftGroupId=${GROUP}" -o "$F"
+          head -1 "$F" | grep -q '^Position,' || { echo "unexpected CSV header:"; head -2 "$F"; exit 1; }
+          if grep -q ',CPT,' "$F"; then echo "this is a Showdown (captain) slate - not supported yet"; exit 1; fi
+          echo "players: $(($(wc -l < "$F") - 1))"
+          echo "CSV=$F" >> "$GITHUB_ENV"
+      - name: Import as a side slate and back-date it (keeps the main slate 'latest')
+        run: |
+          python jobs/import_salaries.py "$CSV" --slate-type "$STYPE" | tee "$RUNNER_TEMP/side/import.log"
+          KEY=$(grep -oE 'slate DK-[0-9]{4}-[0-9]{2}-[a-z0-9]+' "$RUNNER_TEMP/side/import.log" | tail -1 | cut -d' ' -f2)
+          [ -n "$KEY" ] || { echo "could not read the slate key from the import"; exit 1; }
+          case "$KEY" in *-main) echo "refusing: resolved to a main slate key"; exit 1;; esac
+          python - "$KEY" <<'PY'
+          import json, os, sys, urllib.request
+          key = sys.argv[1]
+          U, K = os.environ["SUPABASE_URL"], os.environ["SUPABASE_SERVICE_ROLE_KEY"]
+          h = {"apikey": K, "Authorization": f"Bearer {K}", "Content-Type": "application/json", "Prefer": "return=representation"}
+          req = urllib.request.Request(f"{U}/rest/v1/slates?slate_key=eq.{key}", method="PATCH", headers=h,
+                                       data=json.dumps({"imported_at": "2000-01-01T00:00:00+00:00"}).encode())
+          rows = json.load(urllib.request.urlopen(req))
+          assert len(rows) == 1, rows
+          latest = json.load(urllib.request.urlopen(urllib.request.Request(
+              f"{U}/rest/v1/slates?select=slate_key&order=imported_at.desc&limit=1", headers=h)))[0]["slate_key"]
+          print(f"{key} back-dated; latest slate is still {latest}")
+          assert latest != key
+          PY
+          echo "KEY=$KEY" >> "$GITHUB_ENV"
+      - name: Lines, weather, props
+        run: |
+          python jobs/odds.py || { echo "odds skipped"; echo odds >> "$RUNNER_TEMP/failed_steps"; }
+          python jobs/weather.py || { echo "weather skipped"; echo weather >> "$RUNNER_TEMP/failed_steps"; }
+          if [ "${{ github.event.inputs.props }}" = "true" ]; then SRC=both; else SRC=kalshi; fi
+          python jobs/props.py --slate-key "$KEY" --source $SRC --force || { echo "props skipped"; echo props >> "$RUNNER_TEMP/failed_steps"; }
+      - name: Project + simulate (10,000 sims)
+        run: |
+          python jobs/project.py --slate-key "$KEY"
+          python jobs/simulate.py --slate-key "$KEY"
+      - name: Build lineups (same GPP settings as the Sunday build)
+        run: |
+          SS=$(python jobs/ext_projections.py --slate-key "$KEY" --out-dir "$RUNNER_TEMP/side" --json "$RUNNER_TEMP/side/setup.json") || SS=""
+          echo "projection setup flags: ${SS:-<none: props + sim defaults>}"
+          python jobs/build_lineups.py --slate-key "$KEY" --contest gpp --n "$N" --candidates 8 --stack 2 --bringback \
+            --max-exp 0.35 --min-uniq 4 --fade 0 --seed 7 $SS \
+            --out "$RUNNER_TEMP/side/DK_${KEY}_lineups.csv" --json "$RUNNER_TEMP/side/DK_${KEY}_lineups.json" --save
+      - name: Upload the lineups (download from this run's Summary page -> Artifacts)
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: side-slate-lineups
+          path: |
+            ${{ runner.temp }}/side/*.csv
+            ${{ runner.temp }}/side/*.json
+          if-no-files-found: warn
+      - name: Run log (finish)
+        if: ${{ always() }}
+        run: |
+          FAILED=$(sort -u "$RUNNER_TEMP/failed_steps" 2>/dev/null | tr '\n' ' ' | sed 's/ *$//')
+          if [ "${{ job.status }}" != "success" ]; then S=failed; M="job ${{ job.status }}${FAILED:+ - soft-failed: $FAILED}"
+          elif [ -n "$FAILED" ]; then S=warn; M="soft-failed: $FAILED"
+          else S=ok; M="all steps ok"; fi
+          python jobs/runlog.py --task side-slate --status $S --summary "$M (${KEY:-no slate} group $GROUP)"
