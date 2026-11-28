@@ -14,6 +14,7 @@
 <script src="config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="assets/shell.js"></script>
+<script src="assets/simrun.js"></script>
 </head>
 <body class="app">
 <header data-shell-header></header>
@@ -38,17 +39,17 @@
         <div class="set-label">Contest type</div>
         <div class="seg seg-tall" id="contestSeg" role="group" aria-label="Contest type">
           <button type="button" data-v="cash" aria-pressed="false">Cash games<small>50/50s and double-ups</small></button>
-          <button type="button" data-v="gpp" aria-pressed="true">Tournaments<small>big prize pools</small></button>
+          <button type="button" data-v="gpp" aria-pressed="false">Tournaments<small>big prize pools</small></button>
         </div>
         <select id="contest" hidden><option value="cash">cash</option><option value="gpp" selected>gpp</option></select>
       </section>
 
       <section class="set-block" id="entriesBlock">
-        <div class="set-label">How many lineups? <span class="help" tabindex="0" data-tip="Pick the max entries of the contest you're playing. Presets tune diversity for you: single-entry goes for the best lineup, 150-max spreads exposure across the whole player pool.">?</span></div>
+        <div class="set-label">How many lineups? <span class="help" tabindex="0" data-tip="How many lineups to build. Use the entry limit of the contest you are playing.">?</span></div>
         <div class="seg" id="entriesSeg" role="group" aria-label="Entries">
           <button type="button" data-n="1" aria-pressed="false">1</button>
           <button type="button" data-n="3" aria-pressed="false">3</button>
-          <button type="button" data-n="20" aria-pressed="true">20</button>
+          <button type="button" data-n="20" aria-pressed="false">20</button>
           <button type="button" data-n="50" aria-pressed="false">50</button>
           <button type="button" data-n="150" aria-pressed="false">150</button>
         </div>
@@ -61,19 +62,23 @@
       </section>
 
       <section class="set-block gpp-only">
-        <div class="set-label">Stacking <span class="help" tabindex="0" data-tip="Pair your QB with his own pass catchers so the lineup wins when that passing game goes off. Bring-back adds a player from the opposing team, betting on a shootout.">?</span></div>
+        <div class="set-label">Stacking <span class="help" tabindex="0" data-tip="Pairs your quarterback with his own pass catchers, so the lineup scores together when that passing game has a big day.">?</span></div>
         <div class="seg" id="stackSeg" role="group" aria-label="QB stack">
           <button type="button" data-v="0" aria-pressed="false">No stack</button>
           <button type="button" data-v="1" aria-pressed="false">QB + 1</button>
-          <button type="button" data-v="2" aria-pressed="true">QB + 2</button>
+          <button type="button" data-v="2" aria-pressed="false">QB + 2</button>
         </div>
         <select id="stack" hidden><option value="0">0</option><option value="1">1</option><option value="2" selected>2</option></select>
-        <label class="switch"><span class="switch-text">Add a player from the other team</span><input type="checkbox" id="bringbackSw"></label>
+        <div class="set-label" style="margin-top:14px">Add a player from the other team? <span class="help" tabindex="0" data-tip="Puts at least one player from the quarterback's opponent in the lineup, which pays off when the game turns into a shootout.">?</span></div>
+        <div class="seg" id="bringbackSeg" role="group" aria-label="A player from the other team">
+          <button type="button" data-v="0" aria-pressed="false">No</button>
+          <button type="button" data-v="1" aria-pressed="false">Yes</button>
+        </div>
         <select id="bringback" hidden><option value="0" selected>0</option><option value="1">1</option></select>
       </section>
 
       <section class="set-block multi-only">
-        <div class="set-label">Most lineups one player can be in <b class="set-val" id="maxExpVal">35%</b> <span class="help" tabindex="0" data-tip="No player appears in more than this share of your lineups (locked players excepted). Lower = more diversified. Per-player limits can be set in the Portfolio columns.">?</span></div>
+        <div class="set-label">Most lineups one player can be in <b class="set-val" id="maxExpVal"></b> <span class="help" tabindex="0" data-tip="No player appears in more than this share of your lineups (locked players excepted). Lower = more diversified. Per-player limits can be set in the Portfolio columns.">?</span></div>
         <input type="range" id="maxExpRange" min="10" max="100" step="5" value="35" aria-label="Max exposure">
         <input id="maxExp" type="number" hidden value="35">
         <div class="range-ends"><span>Spread out</span><span>Concentrated</span></div>
@@ -91,10 +96,10 @@
           <label class="field"><span>Max players per team</span><input id="maxTeam" class="input" type="number" min="1" max="8" value="4"></label>
           <label class="field multi-only"><span>Min unique players <span class="help" tabindex="0" data-tip="Each new lineup must differ from every earlier one by at least this many players.">?</span></span><input id="minUniq" class="input" type="number" min="1" max="8" value="3"></label>
           <label class="field gpp-only"><span>Randomness % <span class="help" tabindex="0" data-tip="Jitters projections by each player's volatility before every solve, so lineups explore different builds. 0 = pure projections.">?</span></span><input id="rand" class="input" type="number" min="0" max="50" value="15"></label>
-          <label class="field gpp-only"><span>Ownership fade % <span class="help" tabindex="0" data-tip="Penalises highly-owned players. Our 14-week backtest against real Millionaire Maker fields found fading did not help, so the default is 0.">?</span></span><input id="fade" class="input" type="number" min="0" max="100" value="0"></label>
+          <label class="field gpp-only"><span>Ownership fade % <span class="help" tabindex="0" data-tip="Penalises players a lot of the field will have. 0 = off.">?</span></span><input id="fade" class="input" type="number" min="0" max="100" value="0"></label>
           <label class="field gpp-only"><span>Max lineup ownership % <span class="help" tabindex="0" data-tip="Cap on the sum of projected ownership across the 9 players. 0 = no cap; around 120 is a moderate anti-chalk rule.">?</span></span><input id="maxOwn" class="input" type="number" min="0" max="400" step="10" value="0"></label>
           <label class="field"><span>Candidate pool × <span class="help" tabindex="0" data-tip="Builds this many times more lineups than you asked for, then keeps the best by simulated median (cash) or 90th percentile (tournaments). Higher = better selection, slower.">?</span></span><input id="poolMult" class="input" type="number" min="1" max="5" value="3"></label>
-          <label class="field" id="propsWrap" style="display:none"><span>Betting-market weight % <span class="help" tabindex="0" data-tip="How much each player's projection leans on sportsbook / prediction-market player props (where posted) vs. the game sim. 85 is our default; props predicted fantasy points better than the sim on 2024 data.">?</span></span><input id="propsBlend" class="input" type="number" min="0" max="100" value="85"><span class="hint" id="propsSrc"></span></label>
+          <label class="field" id="propsWrap" style="display:none"><span>Betting-market weight % <span class="help" tabindex="0" data-tip="How much each projection leans on betting-market player lines (where posted) compared with our simulation.">?</span></span><input id="propsBlend" class="input" type="number" min="0" max="100" value="85"><span class="hint" id="propsSrc"></span></label>
           <label class="field" id="blendWrap" style="display:none"><span>External projections %</span><input id="blend" class="input" type="number" min="0" max="100" value="50"><span class="hint" id="blendSrc"></span></label>
         </div>
         <button type="button" class="btn btn-ghost btn-sm" id="resetSettings" data-icon="refresh">Reset to our defaults</button>
@@ -105,6 +110,7 @@
 
     <div class="settings-foot">
       <div class="build-summary" id="buildSummary"></div>
+      <p class="build-gate" id="settingsGate" hidden></p>
       <p class="build-gate" id="buildGate" hidden></p>
       <button id="generate" class="btn btn-primary btn-lg btn-block" disabled><span class="gen-label">Build lineups</span></button>
       <div class="progress" id="progress" hidden><i></i></div>

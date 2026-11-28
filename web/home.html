@@ -26,13 +26,7 @@
   <div class="home-grid">
     <section>
       <h2 class="h-sec">Your Sunday, in three steps</h2>
-      <ol class="todo" id="todo">
-        <li><span class="n">1</span><div><h3>Enter your contests on DraftKings</h3><p>Reserve your entries, then download your entries file from the Lineups page there.</p></div>
-          <a class="btn btn-sm" href="https://www.draftkings.com/mycontests" target="_blank" rel="noopener">Open DraftKings</a></li>
-        <li class="now"><span class="n">2</span><div><h3>Build your lineups</h3><p>Upload that file here. We fill every entry.</p></div>
-          <a class="btn btn-primary btn-sm" href="simple.html" id="buildBtn">Build lineups</a></li>
-        <li><span class="n">3</span><div><h3>Upload the finished file to DraftKings</h3><p>Come back before kickoff to check for late scratches.</p></div><span></span></li>
-      </ol>
+      <ol class="todo" id="todo"></ol>
 
       <h2 class="h-sec" style="margin-top:34px">Everything else</h2>
       <ul class="plain-list" id="tools"></ul>
@@ -52,16 +46,28 @@
   const $ = (id) => document.getElementById(id);
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
+  await A.ready;
+  if (!A.user) return;
+
+  // The owner has Quick build (his own settings, fills an entries file). Members build in the builder with settings they choose.
+  const owner = A.owner();
+  const todo = owner ? [
+    ["Enter your contests on DraftKings", "Reserve your entries, then download your entries file from the Lineups page there.", `<a class="btn btn-sm" href="https://www.draftkings.com/mycontests" target="_blank" rel="noopener">Open DraftKings</a>`],
+    ["Build your lineups", "Upload that file here. We fill every entry.", `<a class="btn btn-primary btn-sm" href="simple.html" id="buildBtn">Build lineups</a>`, true],
+    ["Upload the finished file to DraftKings", "Come back before kickoff to check for late scratches.", ""],
+  ] : [
+    ["Build your lineups", "Choose your settings, lock or exclude at least two players, and press Build.", `<a class="btn btn-primary btn-sm" href="lineups.html" id="buildBtn">Build lineups</a>`, true],
+    ["Download the file", "Press Download CSV once your lineups are ready.", ""],
+    ["Upload it to DraftKings", "Go to Lineups, then Upload lineups, and enter them in your contests. Come back before kickoff to check for late scratches.", `<a class="btn btn-sm" href="https://www.draftkings.com/lineup" target="_blank" rel="noopener">Open DraftKings</a>`],
+  ];
+  $("todo").innerHTML = todo.map(([t, d, btn, now], i) => `<li${now ? ' class="now"' : ""}><span class="n">${i + 1}</span><div><h3>${t}</h3><p>${d}</p></div>${btn || "<span></span>"}</li>`).join("");
   $("tools").innerHTML = [
-    ["lineups.html", "Advanced builder", "Set your own stacks, exposure limits and player locks."],
+    ...(owner ? [["lineups.html", "Advanced builder", "Set your own stacks, exposure limits and player locks."]] : []),
     ["stats.html", "Players", "Season and weekly numbers for every player."],
     ["edges.html", "Props", "Where our numbers and the betting markets disagree."],
     ["results.html", "Results", "How past weeks turned out."],
     ["guide.html", "Help", "How each page works, in plain words."],
-  ].map(([h, t, d]) => `<li><a href="${h}"><b>${t}</b><small>${d}</small>${GS.icon("chevron")}</a></li>`).join("");
-
-  await A.ready;
-  if (!A.user) return;
+  ].map(([href, t, d]) => `<li><a href="${href}"><b>${t}</b><small>${d}</small>${GS.icon("chevron")}</a></li>`).join("");
   if (new URLSearchParams(location.search).get("welcome") === "1") { GS.toast("Your membership is active. Welcome.", "ok"); history.replaceState(null, "", "home.html"); }
   const supa = A.getClient();
 
@@ -118,7 +124,7 @@
     };
     if (tick()) { const t = setInterval(() => { if (!tick()) clearInterval(t); }, 30000); }
   }
-  if (over) { $("todo").querySelector(".now")?.classList.remove("now"); $("buildBtn").className = "btn btn-sm"; }
+  if (over) { $("todo").querySelector(".now")?.classList.remove("now"); const bb = $("buildBtn"); if (bb) bb.className = "btn btn-sm"; }
 
   $("gamesTitle").textContent = over ? "Last week's games" : "This week's games";
   $("games").innerHTML = games.length ? `<table class="games"><tbody>${games.map(g => {

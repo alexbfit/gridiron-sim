@@ -331,10 +331,10 @@ function downloadCSV() {
 
 // ============================================================ UI: steps
 function step(name) {
-  const order = ["upload", "pick", "reveal"], at = name === "sport" ? 0 : name === "build" ? 1 : order.indexOf(name);
+  const order = ["upload", "pick", "reveal"], at = name === "sport" ? 0 : order.indexOf(name);
   document.querySelectorAll(".sm-steps li").forEach(li => { const i = order.indexOf(li.dataset.step);
-    li.removeAttribute("aria-current"); if (i === at) li.setAttribute("aria-current", "step"); li.classList.toggle("done", i < at || name === "build" && i === at); });
-  ["Sport", "Upload", "Pick", "Build", "Reveal"].forEach(k => { $("scr" + k).hidden = k.toLowerCase() !== name; });
+    li.removeAttribute("aria-current"); if (i === at) li.setAttribute("aria-current", "step"); li.classList.toggle("done", i < at); });
+  ["Sport", "Upload", "Pick", "Reveal"].forEach(k => { $("scr" + k).hidden = k.toLowerCase() !== name; });
   window.scrollTo({ top: 0, behavior: "auto" });
 }
 
@@ -468,35 +468,35 @@ function renderDock() {
   $("buildLabel").textContent = left > 0 ? `Choose ${left} more player${left > 1 ? "s" : ""}` : `Build ${nWanted} lineup${nWanted > 1 ? "s" : ""}`;
 }
 
-// ============================================================ UI: progress while building
-function Forge() {
-  const t0 = performance.now(); let target = 0;
-  const fill = $("forgeFill"); fill.style.width = "0%";
-  $("forgeStage").textContent = `Building ${nWanted} lineup${nWanted > 1 ? "s" : ""}`; $("forgeSub").textContent = "This usually takes under a minute.";
-  return {
-    set(frac, sub) { target = Math.max(target, Math.min(1, frac)); fill.style.width = (target * 100).toFixed(1) + "%"; if (sub) $("forgeSub").textContent = sub; },
-    async done() { fill.style.width = "100%"; const left = 700 - (performance.now() - t0); await sleep(Math.max(250, left)); },
-    stop() {},
-  };
+// ============================================================ UI: the build screen (assets/simrun.js)
+function buildScreen() {
+  const games = new Map();
+  players.forEach(p => { const m = /^([A-Z]+)@([A-Z]+)/.exec(p.game_info || ""); if (m && p.game_id && !games.has(p.game_id)) games.set(p.game_id, { away: m[1], home: m[2] }); });
+  const take = sport === "NFL" ? { QB: 2, RB: 2, WR: 3, TE: 1 } : null;
+  const top = (take ? Object.entries(take).flatMap(([pos, k]) => players.filter(p => p.position === pos && !fades.has(p.site_player_id)).sort((a, b) => baseProj(b) - baseProj(a)).slice(0, k))
+    : players.filter(p => !fades.has(p.site_player_id)).sort((a, b) => baseProj(b) - baseProj(a)).slice(0, 8)).map(p => {
+    const d = sim?.index.get(p.site_player_id); let best = p.p85;
+    if (d) { const srt = Float32Array.from(d).sort(); best = srt[Math.floor(0.99 * (srt.length - 1))] * simScale(p); }   // his 1-in-100 day
+    return { name: p.player_name, pos: sport === "NFL" ? p.position : String(p.position || "").slice(0, 3), team: p.team, best, draws: d || null, scale: simScale(p) };
+  });
+  return GS.SimRun.open({ label: sport === "NFL" ? `Week ${slate.week}` : SP.SPORT_NAMES[sport], nSims: slate.sim_meta?.n_sims || 10000, nLineups: nWanted, games: [...games.values()], players: top, canSkip: true });
 }
 
 async function build() {
   if (likes.size + fades.size < CONF.minEdits) return;
-  step("build");
-  const forge = Forge();
+  await simPromise;
+  const run = buildScreen();
   try {
-    forge.set(0.03);
-    await simPromise;
     lineups = await generate(nWanted, (k, total, phase) => {
-      if (phase === "rank") forge.set(0.97, "Ranking the lineups");
-      else forge.set(0.05 + 0.9 * k / total, `Working through option ${k + 1} of ${total}`);
+      if (phase === "rank") run.progress(0.97, "Scoring every combination across the simulated games.");
+      else run.progress(0.95 * k / total, `Testing combination ${k + 1} of ${total} against every simulated game.`);
     });
     if (!lineups.length) throw new Error("No lineup fits those choices. Remove a few of your \"none\" players and try again.");
     assignEntries();
-    await forge.done();
+    run.progress(1); await run.finish();
     showBinder();
   } catch (e) {
-    forge.stop(); console.error(e);
+    run.close(); console.error(e);
     GS.toast(e.message || "The build didn't finish. Try again.", "error");
     step("pick");
   }

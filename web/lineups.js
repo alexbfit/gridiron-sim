@@ -50,6 +50,21 @@ const gameLogCache = new Map();  // player_id -> rows of player_game_stats
 let sortKey = "mean", sortAsc = false;
 let building = false;
 let customized = false;          // user changed a preset-controlled setting
+// Owners start from the Sunday settings. Members get no defaults: they choose the contest, the number of lineups,
+// the stacking, whether to add a player from the other team and the exposure limit before anything can be built.
+let ownerMode = false;
+const decided = new Set();       // members: which of those choices have been made ("contest", "n", "stack", "bringback", "maxExp")
+const CHOICE_LABEL = { contest: "the contest type", n: "how many lineups", stack: "the stacking", bringback: "a player from the other team (yes or no)", maxExp: "the most lineups one player can be in" };
+function requiredChoices() {
+  if (ownerMode) return [];
+  const r = ["contest", "n"];
+  if (decided.has("contest") && $("contest").value === "gpp") r.push("stack", "bringback");
+  if (decided.has("n") && (+$("nLineups").value || 1) > 1) r.push("maxExp");
+  return r;
+}
+const missingChoices = () => requiredChoices().filter(k => !decided.has(k));
+const decide = (k) => { if (!ownerMode) decided.add(k); };
+const undecided = (k) => !ownerMode && !decided.has(k);
 let buildProg = { k: 0, total: 1 };
 // contest simulator (contestsim.js): expected ROI / win / cash for every candidate against a simulated field
 const CS_DEFAULT = { preset: PRESETS[0].key, type: PRESETS[0].type, fee: PRESETS[0].fee, entrants: PRESETS[0].entrants, pool: PRESETS[0].pool, first: PRESETS[0].first, rankBy: "ceil" };
@@ -112,16 +127,19 @@ function restorePicks() {
   } catch (e) { /* ignore */ }
 }
 const SETTING_IDS = ["contest", "nLineups", "stack", "bringback", "maxExp", "exclQ", "minSalary", "maxTeam", "minUniq", "rand", "fade", "maxOwn", "poolMult", "propsBlend", "blend"];
-function saveSettings() { GS.store.set("gs_settings", JSON.stringify({ v: Object.fromEntries(SETTING_IDS.map(id => [id, $(id).value])), customized })); }
+function saveSettings() { GS.store.set("gs_settings", JSON.stringify({ v: Object.fromEntries(SETTING_IDS.map(id => [id, $(id).value])), customized, mode: ownerMode ? "owner" : "member", decided: [...decided] })); }
 function restoreSettings() {
   try {
     const s = JSON.parse(GS.store.get("gs_settings") || "null"); if (!s) return false;
+    if ((s.mode || "owner") !== (ownerMode ? "owner" : "member")) return false;     // never hand an owner's saved setup to a member
     SETTING_IDS.forEach(id => {
       const v = s.v?.[id]; if (v == null) return;
       const el = $(id);
       if (el.tagName === "SELECT") { if ([...el.options].some(o => o.value === String(v))) el.value = v; }
       else if (Number.isFinite(+v)) el.value = v;
     });
+    decided.clear(); (Array.isArray(s.decided) ? s.decided : []).forEach(k => { if (CHOICE_LABEL[k]) decided.add(k); });
+    if (undecided("n")) $("nLineups").value = "";
     customized = !!s.customized; return true;
   } catch (e) { return false; }
 }
@@ -434,6 +452,7 @@ function render() {
 }
 
 function renderObjHint() {
+  if (!ownerMode) { $("objHint").textContent = ""; return; }
   $("objHint").textContent = ($("contest").value === "cash"
     ? "Cash lineups maximize projected points with a tilt toward safe floors (0.8 × projection + 0.2 × floor), then keep the lineups with the best simulated median."
     : "Tournament lineups maximize a ceiling-tilted score (0.6 × projection + 0.4 × 85th percentile) with randomness for variety and your stacking rules, then keep the lineups with the best simulated 90th percentile.")
@@ -454,7 +473,7 @@ function renderGate() {
   const need = SITES[slate.site]?.minEdits || 0, left = gateNeed();
   el.hidden = !left;
   if (left) el.innerHTML = `${icon("info")}<span>${esc(SITES[slate.site].name)} requires you to lock, exclude, set Min/Max % on, or edit the projection of <b>at least ${need} players</b> before building (${need - left} of ${need} done). Even a 0.01 projection change counts.</span>`;
-  $("generate").classList.toggle("gated", !!left);
+  $("generate").classList.toggle("gated", !!left || !!missingChoices().length);
 }
 
 function picksChanged() { estimateOwnership(); savePicks(); render(); }
@@ -626,6 +645,12 @@ function setProgress(k, total) {
 
 async function generate() {
   if (building || !slate) return;
+  const miss = missingChoices();
+  if (miss.length) {
+    openSettings(); $("settingsGate")?.scrollIntoView({ block: "nearest" });
+    GS.toast(`Choose your settings first: ${miss.map(k => CHOICE_LABEL[k]).join(", ")}.`, "error");
+    return;
+  }
   const left = gateNeed();
   if (left) {
     renderGate(); $("buildGate")?.scrollIntoView({ block: "nearest" });
@@ -654,6 +679,7 @@ async function generate() {
   lineups = []; $("generate").disabled = true; $("mBuild").disabled = true;
   closeSettings();
   setView("lineups");
+  const run = GS.SimRun ? GS.SimRun.open({ label: `Week ${slate.week}`, nSims: slate.sim_meta?.n_sims || 10000, nLineups: n, games: slateGames(), players: showcase(pool), canSkip: ownerMode }) : null;
   const usage = new Map(); const blocked = new Set();
   const capFor = (id) => Math.ceil((maxExpP.has(id) ? maxExpP.get(id) : opts.maxExp) * nCand);
   // stands: players with a Min% get forced into that share of the candidates first, then the pool fills normally
@@ -673,6 +699,7 @@ async function generate() {
   try {
     for (let k = 0; k < nCand; k++) {
       setProgress(k, nCand);
+      run?.progress(k / nCand, `Testing combination ${k + 1} of ${nCand} against every simulated game.`);
       const forced = plan[k];
       const jitter = new Map(pool.map(p => [p.site_player_id, opts.rand ? 1 + opts.rand * gauss() * (p.stdev / Math.max(p.mean, 1)) : 1]));
       opts.score = (p) => {
@@ -733,14 +760,30 @@ async function generate() {
     selectFromPool();
     cs = null;
     if (sim && candPool.length && csCfg.auto !== false) await runContestSim();
+    if (run) { run.progress(1); await run.finish(); }
     if (!lineups.length) GS.toast("No valid lineup fits these rules — try unlocking a player or loosening stacking / exposure.", "error");
     else if (lineups.length < n) GS.toast(`Built ${lineups.length} of ${n} lineups — the rules ran out of room${stopped != null ? " (uniqueness / exposure / stacking)" : ""}. Loosen max exposure or min unique players to get more.`, "error");
     else GS.toast(`${lineups.length} lineup${lineups.length > 1 ? "s" : ""} ready${sim && candPool.length > lineups.length ? `, picked from ${candPool.length} candidates by ${rankLabel()}` : ""}.`, "ok");
-  } catch (e) { GS.toast("Optimizer error: " + (e.message || e), "error"); console.error(e); }
+  } catch (e) { run?.close(); GS.toast("The build didn't finish. Try again.", "error"); console.error(e); }
   building = false; document.body.classList.remove("building");
   setProgress(null);
   $("generate").disabled = false; $("mBuild").disabled = false; $("mBuild").textContent = buildLabel();
   $("exportBtn").disabled = !lineups.length;
+}
+
+// what the build screen shows: the slate's games, and the top players with their simulated scores
+function slateGames() {
+  const seen = new Map();
+  players.forEach(p => { const m = /^([A-Z]+)@([A-Z]+)/.exec(p.game_info || ""); if (m && p.game_id && !seen.has(p.game_id)) seen.set(p.game_id, { away: m[1], home: m[2] }); });
+  return [...seen.values()];
+}
+function showcase(pool) {
+  const take = { QB: 2, RB: 2, WR: 3, TE: 1 };
+  return Object.entries(take).flatMap(([pos, k]) => pool.filter(p => p.position === pos).sort((a, b) => proj(b) - proj(a)).slice(0, k)).map(p => {
+    const d = sim?.index.get(p.site_player_id); let best = p.p85;
+    if (d) { const srt = Float32Array.from(d).sort(); best = srt[Math.floor(0.99 * (srt.length - 1))] * simScale(p); }   // his 1-in-100 day
+    return { name: p.player_name, pos: p.position, team: p.team, best, draws: d || null, scale: simScale(p) };
+  });
 }
 
 // pick the final set from the candidate pool: Min% stands first, then best-ranked, honouring Max% caps.
@@ -1150,7 +1193,15 @@ function presetFor(contest, n) {
   if (n <= 50) return { stack: 2, bringback: 1, maxExp: 35, minUniq: 3, rand: 15, fade: 0, maxOwn: 0, poolMult: 3 };
   return { stack: 2, bringback: 1, maxExp: 30, minUniq: 4, rand: 20, fade: 0, maxOwn: 0, poolMult: 2 };
 }
+// members: every required choice unset, the remaining settings neutral (nothing tuned for them)
+function memberBlank() {
+  decided.clear(); customized = false;
+  $("nLineups").value = ""; $("stack").value = "0"; $("bringback").value = "0"; $("maxExp").value = 100; $("exclQ").value = "0";
+  Object.entries({ minSalary: 0, maxTeam: 4, minUniq: 1, rand: 0, fade: 0, maxOwn: 0, poolMult: 1, propsBlend: 50 }).forEach(([k, v]) => { $(k).value = v; });
+  syncControls();
+}
 function applyPreset(force) {
+  if (!ownerMode) { syncControls(); return; }
   if (customized && !force) { syncControls(); return; }
   const p = presetFor($("contest").value, +$("nLineups").value || 1);
   Object.entries(p).forEach(([k, v]) => { $(k).value = v; });
@@ -1160,26 +1211,33 @@ function applyPreset(force) {
 function markCustom() { customized = true; syncControls(); }
 
 function pressed(groupId, attr, val) { document.querySelectorAll(`#${groupId} button`).forEach(b => b.setAttribute("aria-pressed", String(b.dataset[attr] === String(val)))); }
-function buildLabel() { const n = +$("nLineups").value || 1; return `Build ${n} lineup${n > 1 ? "s" : ""}`; }
+function buildLabel() { if (missingChoices().length) return "Choose your settings"; const n = +$("nLineups").value || 1; return `Build ${n} lineup${n > 1 ? "s" : ""}`; }
 function syncControls() {
   const contest = $("contest").value, n = +$("nLineups").value || 1;
-  document.body.classList.toggle("is-gpp", contest === "gpp");
-  document.body.classList.toggle("single", n <= 1);
-  pressed("contestSeg", "v", contest);
-  pressed("entriesSeg", "n", n);
-  pressed("stackSeg", "v", $("stack").value);
-  $("bringbackSw").checked = $("bringback").value === "1";
+  document.body.classList.toggle("is-gpp", contest === "gpp" && !undecided("contest"));
+  document.body.classList.toggle("single", n <= 1 || undecided("n"));
+  pressed("contestSeg", "v", undecided("contest") ? "" : contest);
+  pressed("entriesSeg", "n", undecided("n") ? "" : n);
+  pressed("stackSeg", "v", undecided("stack") ? "" : $("stack").value);
+  pressed("bringbackSeg", "v", undecided("bringback") ? "" : $("bringback").value);
   $("exclQSw").checked = $("exclQ").value === "1";
-  $("maxExpRange").value = $("maxExp").value; $("maxExpVal").textContent = $("maxExp").value + "%";
-  $("entriesHint").textContent = contest === "cash" ? "lineups (1 is typical for cash)" : n === 1 ? "single entry" : `${n}-max contest`;
+  $("maxExpRange").value = $("maxExp").value; $("maxExpVal").textContent = undecided("maxExp") ? "move the slider to choose" : $("maxExp").value + "%";
+  $("entriesHint").textContent = undecided("n") ? "pick one, or type a number" : contest === "cash" ? "lineups (1 is typical for cash)" : n === 1 ? "single entry" : `${n}-max contest`;
   if (!building) { $("generate").querySelector(".gen-label").textContent = buildLabel(); $("mBuild").textContent = buildLabel(); }
-  const bits = [contest === "cash" ? "Cash" : "Tournament", `${n} lineup${n > 1 ? "s" : ""}`];
-  if (contest === "gpp") bits.push(["No stack", "QB + 1", "QB + 2"][+$("stack").value] + ($("bringback").value === "1" ? " + bring-back" : ""));
-  if (n > 1) bits.push(`max ${$("maxExp").value}%`);
+  const bits = [];
+  if (!undecided("contest")) bits.push(contest === "cash" ? "Cash games" : "Tournaments");
+  if (!undecided("n")) bits.push(`${n} lineup${n > 1 ? "s" : ""}`);
+  if (contest === "gpp" && !undecided("contest") && !undecided("stack")) bits.push(["No stack", "QB + 1", "QB + 2"][+$("stack").value] + (!undecided("bringback") && $("bringback").value === "1" ? " + other team" : ""));
+  if (n > 1 && !undecided("n") && !undecided("maxExp")) bits.push(`max ${$("maxExp").value}%`);
   if (locks.size) bits.push(`${locks.size} locked`);
-  $("buildSummary").innerHTML = bits.map(b => `<span class="badge">${esc(b)}</span>`).join("") + (customized ? `<span class="badge warn" title="You changed settings the preset controls">Custom</span>` : "");
-  const adv = ["minSalary", "maxTeam", "minUniq", "rand", "fade", "maxOwn", "poolMult"].filter(id => customized && $(id).value !== String(presetFor(contest, n)[id] ?? $(id).defaultValue)).length;
+  $("buildSummary").innerHTML = bits.map(b => `<span class="badge">${esc(b)}</span>`).join("") + (ownerMode && customized ? `<span class="badge warn" title="You changed settings the preset controls">Custom</span>` : "");
+  const adv = ownerMode ? ["minSalary", "maxTeam", "minUniq", "rand", "fade", "maxOwn", "poolMult"].filter(id => customized && $(id).value !== String(presetFor(contest, n)[id] ?? $(id).defaultValue)).length : 0;
   $("advCount").textContent = adv ? `· ${adv} changed` : "";
+  const miss = missingChoices(), gate = $("settingsGate");
+  gate.hidden = !miss.length;
+  if (miss.length) gate.innerHTML = `${icon("info")}<span>These settings are yours to choose. Still needed: <b>${miss.map(k => esc(CHOICE_LABEL[k])).join(", ")}</b>.</span>`;
+  $("generate").classList.toggle("gated", !!miss.length || !!gateNeed());
+  $("resetSettings").lastChild.textContent = ownerMode ? "Reset to our defaults" : "Clear my settings";
   renderObjHint();
   saveSettings();
 }
@@ -1196,19 +1254,20 @@ function closeSettings() { document.body.classList.remove("settings-open"); $("s
 
 function wire() {
   $("contestSeg").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return;
-    $("contest").value = b.dataset.v;
+    $("contest").value = b.dataset.v; decide("contest");
     if (b.dataset.v === "cash" && +$("nLineups").value > 10) $("nLineups").value = 1;
     applyPreset(true); });
-  $("entriesSeg").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; $("nLineups").value = b.dataset.n; applyPreset(true); });
+  $("entriesSeg").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; $("nLineups").value = b.dataset.n; decide("n"); applyPreset(true); });
   document.querySelectorAll(".stepper [data-step]").forEach(b => b.addEventListener("click", () => {
-    $("nLineups").value = Math.max(1, Math.min(150, (+$("nLineups").value || 1) + +b.dataset.step)); applyPreset(); }));
-  $("nLineups").addEventListener("change", () => { $("nLineups").value = Math.max(1, Math.min(150, Math.round(+$("nLineups").value || 1))); applyPreset(); });
-  $("stackSeg").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; $("stack").value = b.dataset.v; markCustom(); });
-  $("bringbackSw").addEventListener("change", () => { $("bringback").value = $("bringbackSw").checked ? "1" : "0"; markCustom(); });
+    $("nLineups").value = Math.max(1, Math.min(150, (+$("nLineups").value || 1) + +b.dataset.step)); decide("n"); applyPreset(); }));
+  $("nLineups").addEventListener("change", () => { $("nLineups").value = Math.max(1, Math.min(150, Math.round(+$("nLineups").value || 1))); decide("n"); applyPreset(); });
+  $("stackSeg").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; $("stack").value = b.dataset.v; decide("stack"); markCustom(); });
+  $("bringbackSeg").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; $("bringback").value = b.dataset.v; decide("bringback"); markCustom(); });
   $("exclQSw").addEventListener("change", () => { $("exclQ").value = $("exclQSw").checked ? "1" : "0"; syncControls(); });
-  $("maxExpRange").addEventListener("input", () => { $("maxExp").value = $("maxExpRange").value; markCustom(); });
+  $("maxExpRange").addEventListener("input", () => { $("maxExp").value = $("maxExpRange").value; decide("maxExp"); markCustom(); });
+  $("maxExpRange").addEventListener("pointerup", () => { if (undecided("maxExp")) { $("maxExp").value = $("maxExpRange").value; decide("maxExp"); markCustom(); } });   // choosing the value it already shows
   ["minSalary", "maxTeam", "minUniq", "rand", "fade", "maxOwn", "poolMult"].forEach(id => $(id).addEventListener("change", markCustom));
-  $("resetSettings").addEventListener("click", () => { applyPreset(true); GS.toast("Settings reset to the preset for this contest."); });
+  $("resetSettings").addEventListener("click", () => { if (ownerMode) { applyPreset(true); GS.toast("Settings reset to our defaults."); } else { memberBlank(); GS.toast("Settings cleared."); } });
   $("propsBlend").addEventListener("change", () => { propsBlend = propsMap.size ? Math.max(0, Math.min(100, +$("propsBlend").value || 0)) / 100 : 0; estimateOwnership(); render(); saveSettings(); });
   $("blend").addEventListener("input", () => { blend = (+$("blend").value || 0) / 100; estimateOwnership(); render(); saveSettings(); });
 
@@ -1233,7 +1292,9 @@ function wire() {
 // ---------------------------------------------------------------- init
 async function init() {
   wire();
-  if (!restoreSettings()) applyPreset(true); else syncControls();
+  try { await GS.Account.ready; } catch (e) { /* member view */ }
+  ownerMode = !!GS.Account.owner();
+  if (restoreSettings()) syncControls(); else if (ownerMode) applyPreset(true); else memberBlank();
   if (!cfg.SUPABASE_URL || cfg.SUPABASE_URL.includes("YOUR-PROJECT")) { setStatus("Set SUPABASE_URL and SUPABASE_ANON_KEY in web/config.js", true); return; }
   supa = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY);
   try {

@@ -65,15 +65,18 @@
   // ------------------------------------------------------------ pages
   const here = (location.pathname.split("/").pop() || "index.html").toLowerCase();
   // main navigation, in the order a Sunday goes
-  const NAV = [
+  // Quick build (simple.html) runs on the owner's own settings, so only the owner gets it. Members build in lineups.html,
+  // where they choose every setting themselves.
+  const NAV = () => [
     ["home.html", "Home"],
-    ["simple.html", "Lineups", ["simple.html", "lineups.html"]],
+    [isOwner() ? "simple.html" : "lineups.html", "Lineups", ["simple.html", "lineups.html"]],
     ["stats.html", "Players"],
     ["edges.html", "Props"],
     ["results.html", "Results", ["results.html", "backtest.html"]],
     ["guide.html", "Help"],
   ];
   // second-level tabs, shown under the header on the pages that have siblings
+  const OWNER_SUBNAV = new Set(["simple.html", "lineups.html"]);
   const SUBNAV = {
     "simple.html": [["simple.html", "Quick build"], ["lineups.html", "Advanced builder"]],
     "lineups.html": [["simple.html", "Quick build"], ["lineups.html", "Advanced builder"]],
@@ -84,7 +87,8 @@
   // sent to the payment step. account.html needs a sign-in but not a membership (it is where billing is managed).
   const MEMBER_PAGES = new Set(["home.html", "simple.html", "lineups.html", "stats.html", "edges.html", "results.html", "backtest.html", "guide.html"]);
   const SIGNED_IN_PAGES = new Set([...MEMBER_PAGES, "account.html", "status.html"]);
-  const OWNER_PAGES = new Set(["status.html"]);
+  const OWNER_PAGES = new Set(["status.html", "simple.html"]);
+  const OWNER_FALLBACK = { "simple.html": "lineups.html" };      // where a member lands instead
   const authOn = () => !!cfg.AUTH_ENABLED;
   const gated = () => authOn() && SIGNED_IN_PAGES.has(here);
   if (gated()) {                       // hide the page until the session check finishes (no flash of the tool)
@@ -97,7 +101,7 @@
 
   function header() {
     const isApp = SIGNED_IN_PAGES.has(here);
-    const nav = isApp ? NAV.map(([h, l, group]) => `<a href="${h}"${(group || [h]).includes(here) ? ' aria-current="page"' : ""}>${l}</a>`).join("") : "";
+    const nav = isApp ? navLinks() : "";
     return `<div class="inner">
       <a class="brand" href="${isApp ? "home.html" : "index.html"}" aria-label="GameTime Win home">${BRAND}</a>
       ${isApp ? `<nav class="main-nav" id="mainNav" aria-label="Main">${nav}</nav>` : ""}
@@ -106,8 +110,9 @@
         ${isApp ? `<button class="btn btn-ghost btn-icon btn-sm menu-btn" id="menuBtn" aria-label="Menu" aria-expanded="false">${icon("menu")}</button>` : ""}
       </div></div>`;
   }
+  const navLinks = () => NAV().map(([h, l, group]) => `<a href="${h}"${(group || [h]).includes(here) ? ' aria-current="page"' : ""}>${l}</a>`).join("");
   function subnav() {
-    const tabs = SUBNAV[here]; if (!tabs) return null;
+    const tabs = SUBNAV[here]; if (!tabs || (OWNER_SUBNAV.has(here) && !isOwner())) return null;
     const el = document.createElement("nav"); el.className = "subnav"; el.setAttribute("aria-label", "Section");
     el.innerHTML = `<div class="inner">${tabs.map(([h, l]) => `<a href="${h}"${h === here ? ' aria-current="page"' : ""}>${l}</a>`).join("")}</div>`;
     return el;
@@ -118,7 +123,7 @@
 
   function mount() {
     const h = document.querySelector("[data-shell-header]");
-    if (h) { h.classList.add("site-header"); h.innerHTML = header(); const sn = subnav(); if (sn) h.after(sn); }
+    if (h) { h.classList.add("site-header"); h.innerHTML = header(); paintSubnav(); }
     const f = document.querySelector("[data-shell-footer]");
     if (f) { const kind = f.dataset.shellFooter || "site"; f.classList.add(kind === "app" ? "app-shell-footer" : "site-footer"); f.innerHTML = footer(kind); }
     document.querySelectorAll("[data-icon]").forEach(el => { el.insertAdjacentHTML("afterbegin", icon(el.dataset.icon)); });
@@ -135,6 +140,12 @@
     document.addEventListener("keydown", (e) => { if (e.key === "Escape") { const menu = document.getElementById("acctMenu"); if (menu) menu.hidden = true; } });
     Account.init();
   }
+  function paintSubnav() {
+    document.querySelector("nav.subnav")?.remove();
+    const h = document.querySelector("[data-shell-header]"), sn = subnav(); if (h && sn) h.after(sn);
+  }
+  // owner status can change between visits: redraw the links that depend on it once the profile is known
+  function paintNav() { const nav = document.getElementById("mainNav"); if (nav) nav.innerHTML = navLinks(); paintSubnav(); }
   function paintThemeLabel() { document.querySelectorAll("[data-theme-toggle] span").forEach(s => s.textContent = root.dataset.theme === "dark" ? "Light mode" : "Dark mode"); }
 
   // ------------------------------------------------------------ toasts
@@ -218,9 +229,11 @@
         this.user = data?.session?.user || null;
         if (gated() && !this.user) { location.replace(this.loginUrl()); return; }
         if (this.user) await this.loadProfile();
+        const wasOwner = isOwner();
         store.set("gs_owner", this.owner() ? "1" : null); root.classList.toggle("owner", this.owner());
+        if (wasOwner !== this.owner()) paintNav();
         if (gated()) {
-          if (OWNER_PAGES.has(here) && !this.owner()) { location.replace("home.html"); return; }
+          if (OWNER_PAGES.has(here) && !this.owner()) { location.replace(OWNER_FALLBACK[here] || "home.html"); return; }
           if (MEMBER_PAGES.has(here) && !this.active()) {
             // just back from Stripe: the webhook can take a few seconds to mark the membership active
             if (new URLSearchParams(location.search).get("welcome") === "1") {

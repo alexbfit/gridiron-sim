@@ -14,6 +14,7 @@
 <script src="config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="assets/shell.js"></script>
+<script src="assets/simrun.js"></script>
 </head>
 <body>
 <header data-shell-header></header>
@@ -110,13 +111,6 @@
       <div class="dock-picks" id="dockPicks"><span class="muted">No players chosen yet</span></div>
       <button class="btn btn-primary btn-lg build-btn" id="buildBtn" disabled><span id="buildLabel">Choose 2 players</span></button>
     </div>
-  </section>
-
-  <!-- ============================================ building -->
-  <section class="sm-screen sm-building" id="scrBuild" hidden aria-live="polite">
-    <h1 id="forgeStage">Building your lineups</h1>
-    <div class="sm-bar"><i id="forgeFill"></i></div>
-    <p class="muted" id="forgeSub">&nbsp;</p>
   </section>
 
   <!-- ============================================ 3. download -->

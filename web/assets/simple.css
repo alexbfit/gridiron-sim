@@ -12,7 +12,7 @@
 .sm-steps li.done b { background: var(--surface-3); border-color: var(--surface-3); color: var(--accent); }
 
 .sm-hero { margin-bottom: 24px; }
-.sm-hero h1, .binder-head h1, .sm-building h1 { font-size: 34px; }
+.sm-hero h1, .binder-head h1 { font-size: 34px; }
 .sm-sub { color: var(--muted); font-size: 17px; margin-top: 8px; max-width: 62ch; }
 .sm-kicker { color: var(--muted); font-size: 15px; font-weight: 600; margin-bottom: 4px; }
 .like-t { color: var(--accent); } .fade-t { color: var(--danger); }
@@ -73,12 +73,6 @@
 .dp.fade { background: var(--danger-soft); color: var(--danger); }
 .build-btn { min-width: 220px; }
 
-/* building */
-.sm-building { padding: 72px 0 96px; max-width: 520px; margin: 0 auto; text-align: center; }
-.sm-bar { height: 8px; margin: 26px 0 14px; border-radius: 999px; background: var(--surface-3); overflow: hidden; }
-.sm-bar i { display: block; height: 100%; width: 0; background: var(--accent); border-radius: 999px; transition: width .35s ease; }
-@media (prefers-reduced-motion: reduce) { .sm-bar i { transition: none; } }
-
 /* results */
 .binder-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 18px; flex-wrap: wrap; margin-bottom: 20px; }
 .binder-actions { display: flex; gap: 10px; flex-wrap: wrap; }
@@ -101,7 +95,7 @@
 
 @media (max-width: 640px) {
   .sm-steps span { display: none; } .sm-steps li[aria-current] span { display: inline; }
-  .sm-hero h1, .binder-head h1, .sm-building h1 { font-size: 28px; }
+  .sm-hero h1, .binder-head h1 { font-size: 28px; }
   .pick-grid { grid-template-columns: 1fr 1fr; } .pk { grid-template-columns: 1fr auto; grid-template-areas: "nm pj" "mt st"; } .pk .av { display: none; }
   .build-btn, .binder-actions .btn { flex: 1 1 100%; }
 }
