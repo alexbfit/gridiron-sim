@@ -1,183 +1,51 @@
 <!doctype html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>GameTime Win · We make better lineups. You win bigger prizes.</title>
-<meta name="description" content="We make better DraftKings tournament lineups from 10,000 simulated games. You win bigger prizes. Every week's result is published. Free during the beta.">
-<meta property="og:title" content="GameTime Win — we make better lineups. You win bigger prizes.">
-<meta property="og:description" content="10,000 simulated games. Three taps. Graded in public every Monday. Free during the beta.">
-<meta property="og:url" content="https://gametimewin.com/">
-<meta name="theme-color" content="#0a2214">
-<script>try{document.documentElement.dataset.theme=localStorage.getItem("gs_theme")||"dark";if(localStorage.getItem("gs_owner")==="1")document.documentElement.classList.add("owner")}catch(e){}</script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>try{document.documentElement.dataset.theme=localStorage.getItem("gs_theme")||"light";if(localStorage.getItem("gs_owner")==="1")document.documentElement.classList.add("owner")}catch(e){}</script>
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Barlow+Condensed:ital,wght@0,700;0,800;1,800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/ui.css">
-<link rel="stylesheet" href="assets/site.css">
-<link rel="stylesheet" href="assets/beta.css">
+<title>GameTime Win</title>
+<meta name="description" content="DraftKings NFL lineups, ready every Sunday morning. $99 a month.">
 <script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="assets/shell.js"></script>
 </head>
-<body class="beta-page simple-landing">
-<header data-shell-header="marketing"></header>
-
-<main>
-  <section class="hero beta-hero one">
-    <div class="hero-inner">
-      <div>
-        <span class="eyebrow"><span class="dot live"></span><span id="heroSlate">Free beta · DraftKings NFL</span></span>
-        <h1>We make <em>better lineups.</em><br>You win <em>bigger prizes.</em></h1>
-        <p class="sub">10,000 simulated games. Three taps. Every week's result published — wins and misses.</p>
-
-        <form class="beta-form" id="join" data-beta-form="hero" novalidate>
-          <label class="sr-only" for="emailHero">Email address</label>
-          <input class="input beta-input" id="emailHero" name="email" type="email" inputmode="email" autocomplete="email" placeholder="you@email.com" required>
-          <input class="hp" name="company" tabindex="-1" autocomplete="off" aria-hidden="true">
-          <button class="btn btn-primary btn-lg" type="submit">Get my lineups free <span data-icon="arrow"></span></button>
-          <p class="beta-msg" role="status" aria-live="polite"></p>
-        </form>
-        <ul class="risk-row">
-          <li><span data-icon="check"></span>$0 in the beta</li>
-          <li><span data-icon="check"></span>No credit card</li>
-          <li><span data-icon="check"></span>You always do the upload</li>
-        </ul>
-      </div>
-
-      <!-- the graphic: where our lineups land in a real DraftKings field -->
-      <figure class="fieldchart" aria-label="Where our lineups scored inside a real DraftKings tournament field">
-        <figcaption><b id="fcTitle">Our best backtested week</b><span id="fcSub">Loading…</span></figcaption>
-        <svg id="fieldSvg" viewBox="0 0 640 300" role="img" preserveAspectRatio="xMidYMid meet"></svg>
-        <div class="fc-legend">
-          <span><i class="sw field"></i>Real entries (<span id="fcN">—</span>)</span>
-          <span><i class="sw ours"></i>Our lineups</span>
-          <span><i class="sw top"></i>Top 1%</span>
-        </div>
-        <div class="fc-stats" id="fcStats"></div>
-        <p class="fc-disc" id="fcDisc">Backtested, not live results.</p>
-      </figure>
+<body class="landing">
+<header class="landing-top">
+  <a class="brand" href="index.html" id="brand" aria-label="GameTime Win"></a>
+  <a class="btn btn-sm" href="signup.html?mode=signin" id="topLogin">Log in</a>
+</header>
+<main class="landing-main">
+  <div>
+    <h1>We make better lineups.<br>You win bigger prizes.</h1>
+    <p class="sub">DraftKings NFL lineups, ready every Sunday morning.</p>
+    <div class="landing-cta" id="cta">
+      <a class="btn btn-primary btn-lg" href="signup.html">Sign up</a>
+      <a class="btn btn-lg" href="signup.html?mode=signin">Log in</a>
     </div>
-  </section>
-
-  <!-- validation: every number here comes from real DraftKings fields (data/backtest_field.json, data/ledger.json) -->
-  <section class="proofband" id="proof">
-    <div class="proof-inner">
-      <span class="kicker">Proof, not promises</span>
-      <h2>Tested against real DraftKings fields. Graded in public.</h2>
-      <div class="proof-grid">
-        <div><b id="pvEntries">5.9M</b><span>real entries our lineups were scored against: <span id="pvWeeks">36</span> actual Millionaire Maker contests, 2024–25</span></div>
-        <div><b id="pvAbove">56 of 72</b><span>backtested builds scored above the field's median lineup</span></div>
-        <div><b id="pvLive">65%</b><span id="pvLiveL">of 296,894 real entries beaten in our last live week</span></div>
-        <div><b id="pvLineups">3,600</b><span>lineups graded one by one against those real fields, every result kept</span></div>
-      </div>
-      <p class="proof-foot">We publish every week's result, wins and misses, on the <a class="link" href="results.html">track record</a>. No tool can guarantee a win, and we won't pretend otherwise.</p>
-    </div>
-  </section>
-
-  <section class="strip" id="how">
-    <div class="strip-inner">
-      <div><b>1</b>Upload your DraftKings entries file</div>
-      <div><b>2</b>Tap two players you like or fade</div>
-      <div><b>3</b>Upload the lineups we hand back</div>
-    </div>
-    <p class="muted small center">Free in the beta · <a class="link" href="pricing.html">pricing</a> · <a class="link" href="results.html">track record</a></p>
-  </section>
+    <p class="price" id="price"></p>
+  </div>
 </main>
-
-<footer data-shell-footer="site"></footer>
-
+<svg class="field-strip" viewBox="0 0 1200 190" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><style>.yd{font:600 40px "Barlow Semi Condensed",sans-serif;fill:var(--surface)}</style><rect width="1200" height="190" fill="var(--surface-3)"/><path d="M0 0V190" stroke="var(--surface)" stroke-width="3"/><path d="M60 0V190" stroke="var(--surface)" stroke-width="1.5"/><path d="M120 0V190" stroke="var(--surface)" stroke-width="3"/><path d="M180 0V190" stroke="var(--surface)" stroke-width="1.5"/><path d="M240 0V190" stroke="var(--surface)" stroke-width="3"/><path d="M300 0V190" stroke="var(--surface)" stroke-width="1.5"/><path d="M360 0V190" stroke="var(--surface)" stroke-width="3"/><path d="M420 0V190" stroke="var(--surface)" stroke-width="1.5"/><path d="M480 0V190" stroke="var(--surface)" stroke-width="3"/><path d="M540 0V190" stroke="var(--surface)" stroke-width="1.5"/><path d="M600 0V190" stroke="var(--surface)" stroke-width="3"/><path d="M660 0V190" stroke="var(--surface)" stroke-width="1.5"/><path d="M720 0V190" stroke="var(--surface)" stroke-width="3"/><path d="M780 0V190" stroke="var(--surface)" stroke-width="1.5"/><path d="M840 0V190" stroke="var(--surface)" stroke-width="3"/><path d="M900 0V190" stroke="var(--surface)" stroke-width="1.5"/><path d="M960 0V190" stroke="var(--surface)" stroke-width="3"/><path d="M1020 0V190" stroke="var(--surface)" stroke-width="1.5"/><path d="M1080 0V190" stroke="var(--surface)" stroke-width="3"/><path d="M1140 0V190" stroke="var(--surface)" stroke-width="1.5"/><path d="M1200 0V190" stroke="var(--surface)" stroke-width="3"/><path d="M12 58v12M12 120v12M12 4v8M12 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M24 58v12M24 120v12M24 4v8M24 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M36 58v12M36 120v12M36 4v8M36 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M48 58v12M48 120v12M48 4v8M48 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M72 58v12M72 120v12M72 4v8M72 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M84 58v12M84 120v12M84 4v8M84 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M96 58v12M96 120v12M96 4v8M96 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M108 58v12M108 120v12M108 4v8M108 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M132 58v12M132 120v12M132 4v8M132 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M144 58v12M144 120v12M144 4v8M144 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M156 58v12M156 120v12M156 4v8M156 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M168 58v12M168 120v12M168 4v8M168 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M192 58v12M192 120v12M192 4v8M192 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M204 58v12M204 120v12M204 4v8M204 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M216 58v12M216 120v12M216 4v8M216 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M228 58v12M228 120v12M228 4v8M228 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M252 58v12M252 120v12M252 4v8M252 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M264 58v12M264 120v12M264 4v8M264 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M276 58v12M276 120v12M276 4v8M276 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M288 58v12M288 120v12M288 4v8M288 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M312 58v12M312 120v12M312 4v8M312 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M324 58v12M324 120v12M324 4v8M324 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M336 58v12M336 120v12M336 4v8M336 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M348 58v12M348 120v12M348 4v8M348 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M372 58v12M372 120v12M372 4v8M372 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M384 58v12M384 120v12M384 4v8M384 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M396 58v12M396 120v12M396 4v8M396 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M408 58v12M408 120v12M408 4v8M408 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M432 58v12M432 120v12M432 4v8M432 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M444 58v12M444 120v12M444 4v8M444 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M456 58v12M456 120v12M456 4v8M456 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M468 58v12M468 120v12M468 4v8M468 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M492 58v12M492 120v12M492 4v8M492 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M504 58v12M504 120v12M504 4v8M504 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M516 58v12M516 120v12M516 4v8M516 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M528 58v12M528 120v12M528 4v8M528 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M552 58v12M552 120v12M552 4v8M552 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M564 58v12M564 120v12M564 4v8M564 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M576 58v12M576 120v12M576 4v8M576 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M588 58v12M588 120v12M588 4v8M588 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M612 58v12M612 120v12M612 4v8M612 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M624 58v12M624 120v12M624 4v8M624 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M636 58v12M636 120v12M636 4v8M636 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M648 58v12M648 120v12M648 4v8M648 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M672 58v12M672 120v12M672 4v8M672 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M684 58v12M684 120v12M684 4v8M684 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M696 58v12M696 120v12M696 4v8M696 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M708 58v12M708 120v12M708 4v8M708 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M732 58v12M732 120v12M732 4v8M732 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M744 58v12M744 120v12M744 4v8M744 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M756 58v12M756 120v12M756 4v8M756 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M768 58v12M768 120v12M768 4v8M768 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M792 58v12M792 120v12M792 4v8M792 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M804 58v12M804 120v12M804 4v8M804 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M816 58v12M816 120v12M816 4v8M816 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M828 58v12M828 120v12M828 4v8M828 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M852 58v12M852 120v12M852 4v8M852 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M864 58v12M864 120v12M864 4v8M864 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M876 58v12M876 120v12M876 4v8M876 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M888 58v12M888 120v12M888 4v8M888 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M912 58v12M912 120v12M912 4v8M912 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M924 58v12M924 120v12M924 4v8M924 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M936 58v12M936 120v12M936 4v8M936 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M948 58v12M948 120v12M948 4v8M948 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M972 58v12M972 120v12M972 4v8M972 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M984 58v12M984 120v12M984 4v8M984 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M996 58v12M996 120v12M996 4v8M996 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M1008 58v12M1008 120v12M1008 4v8M1008 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M1032 58v12M1032 120v12M1032 4v8M1032 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M1044 58v12M1044 120v12M1044 4v8M1044 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M1056 58v12M1056 120v12M1056 4v8M1056 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M1068 58v12M1068 120v12M1068 4v8M1068 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M1092 58v12M1092 120v12M1092 4v8M1092 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M1104 58v12M1104 120v12M1104 4v8M1104 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M1116 58v12M1116 120v12M1116 4v8M1116 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M1128 58v12M1128 120v12M1128 4v8M1128 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M1152 58v12M1152 120v12M1152 4v8M1152 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M1164 58v12M1164 120v12M1164 4v8M1164 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M1176 58v12M1176 120v12M1176 4v8M1176 178v8" stroke="var(--surface)" stroke-width="1.5"/><path d="M1188 58v12M1188 120v12M1188 4v8M1188 178v8" stroke="var(--surface)" stroke-width="1.5"/><text x="112" y="108" text-anchor="end" class="yd">1</text><text x="128" y="108" class="yd">0</text><text x="232" y="108" text-anchor="end" class="yd">2</text><text x="248" y="108" class="yd">0</text><text x="352" y="108" text-anchor="end" class="yd">3</text><text x="368" y="108" class="yd">0</text><text x="472" y="108" text-anchor="end" class="yd">4</text><text x="488" y="108" class="yd">0</text><text x="592" y="108" text-anchor="end" class="yd">5</text><text x="608" y="108" class="yd">0</text><text x="712" y="108" text-anchor="end" class="yd">4</text><text x="728" y="108" class="yd">0</text><text x="832" y="108" text-anchor="end" class="yd">3</text><text x="848" y="108" class="yd">0</text><text x="952" y="108" text-anchor="end" class="yd">2</text><text x="968" y="108" class="yd">0</text><text x="1072" y="108" text-anchor="end" class="yd">1</text><text x="1088" y="108" class="yd">0</text></svg>
+<footer class="landing-foot" id="foot"></footer>
 <script>
-(function () {
-  const cfg = window.GRIDIRON_CONFIG || {};
-  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-
-  async function join(form) {
-    const btn = form.querySelector("button[type=submit]"), msg = form.querySelector(".beta-msg");
-    const email = form.email.value.trim().toLowerCase();
-    msg.className = "beta-msg";
-    if (form.company.value) return;
-    if (!EMAIL_RE.test(email)) { msg.textContent = "Please enter a valid email address."; msg.classList.add("err"); form.email.focus(); return; }
-    btn.disabled = true; msg.textContent = "Saving your spot…";
-    const p = new URLSearchParams(location.search);
-    const row = { email, source: form.dataset.betaForm, referrer: (document.referrer || "").slice(0, 300) || null,
-                  utm: ["utm_source", "utm_medium", "utm_campaign"].map(k => p.get(k)).filter(Boolean).join("|") || null };
-    try {
-      const r = await fetch(`${cfg.SUPABASE_URL}/rest/v1/beta_signups`, { method: "POST",
-        headers: { apikey: cfg.SUPABASE_ANON_KEY, "Content-Type": "application/json", Prefer: "return=minimal" }, body: JSON.stringify(row) });
-      if (r.ok || r.status === 409) {
-        form.classList.add("done");
-        msg.textContent = r.status === 409 ? "You're already on the list. We'll email you when your spot opens." : "You're in! Watch your inbox for your access link.";
-        msg.classList.add("ok");
-        try { localStorage.setItem("gtw_beta", email); } catch (e) {}
-        if (cfg.AUTH_ENABLED) { msg.textContent = "You're on the list. Taking you to create your account…"; setTimeout(() => { location.href = "signup.html?email=" + encodeURIComponent(email); }, 700); }
-      } else { throw new Error(r.status); }
-    } catch (e) { msg.textContent = "Something went wrong saving your email. Please try again in a minute."; msg.classList.add("err"); btn.disabled = false; }
-  }
-  // proof band numbers, straight from the published data files
-  const big = n => n >= 1e6 ? (Math.floor(n / 1e5) / 10).toFixed(1) + "M" : Number(n).toLocaleString();
-  fetch("data/backtest_field.json", { cache: "no-cache" }).then(r => r.json()).then(B => {
-    document.getElementById("pvEntries").textContent = big(B.weeks.reduce((a, w) => a + w.entries, 0));
-    document.getElementById("pvWeeks").textContent = B.weeks.length;
-    document.getElementById("pvAbove").textContent = `${B.summary.builds_above_median} of ${B.summary.builds}`;
-    document.getElementById("pvLineups").textContent = (B.summary.builds * 50).toLocaleString();
-  }).catch(() => {});
-  fetch("data/ledger.json", { cache: "no-cache" }).then(r => r.json()).then(L => {
-    const w = (L.weeks || []).filter(w => w.lineups && w.lineups.n >= 20 && w.lineups.beat_pct != null).pop(); if (!w) return;
-    document.getElementById("pvLive").textContent = Math.round(100 * w.lineups.beat_pct) + "%";
-    document.getElementById("pvLiveL").textContent = `of ${Number(w.lineups.entries).toLocaleString()} real entries beaten by our average lineup in our last live week (week ${w.week})`;
-  }).catch(() => {});
-
-  document.querySelectorAll("[data-beta-form]").forEach(f => f.addEventListener("submit", e => { e.preventDefault(); join(f); }));
-
-  // ---- the chart: a real tournament field's score distribution with our lineups' average and the top-1% zone marked.
-  // Numbers come from web/data/ledger.json (last graded week); the field shape is a skewed bell around the field median.
-  const num = x => Number(x).toLocaleString();
-  function draw(L) {
-    const W = 640, H = 300, px = 34, py = 18, bottom = 236;
-    const med = L.field_median_pts, ours = L.avg_pts, best = L.best_pts, n = L.entries;
-    const lo = Math.min(med - 48, 70), hi = Math.max(best + 30, med + 95);
-    const x = v => px + (v - lo) / (hi - lo) * (W - 2 * px);
-    const sd = 17, sdL = 14, sdR = 24;                     // two-piece normal: tighter below the median, longer right tail
-    const f = v => { const z = (v - med) / (v < med ? sdL : sdR); return Math.exp(-0.5 * z * z); };
-    let pts = [], peak = 0;
-    for (let v = lo; v <= hi; v += 1) { const yy = f(v); peak = Math.max(peak, yy); pts.push([v, yy]); }
-    const y = yy => bottom - yy / peak * (bottom - py - 30);
-    const path = "M" + pts.map(([v, yy]) => `${x(v).toFixed(1)},${y(yy).toFixed(1)}`).join(" L");
-    const area = path + ` L${x(hi).toFixed(1)},${bottom} L${x(lo).toFixed(1)},${bottom} Z`;
-    const top1 = med + 2.33 * sd * 0.9;
-    const tpath = "M" + pts.filter(([v]) => v >= top1).map(([v, yy]) => `${x(v).toFixed(1)},${y(yy).toFixed(1)}`).join(" L") + ` L${x(hi).toFixed(1)},${bottom} L${x(top1).toFixed(1)},${bottom} Z`;
-    const s = [];
-    s.push(`<defs><linearGradient id="gf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="currentColor" stop-opacity=".22"/><stop offset="1" stop-color="currentColor" stop-opacity=".04"/></linearGradient>
-            <linearGradient id="gt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f2c94c" stop-opacity=".85"/><stop offset="1" stop-color="#f2c94c" stop-opacity=".25"/></linearGradient></defs>`);
-    s.push(`<path d="${area}" fill="url(#gf)"/><path d="${path}" fill="none" stroke="currentColor" stroke-opacity=".55" stroke-width="2"/>`);
-    s.push(`<path d="${tpath}" fill="url(#gt)"/>`);
-    s.push(`<line x1="${px}" y1="${bottom}" x2="${W - px}" y2="${bottom}" stroke="currentColor" stroke-opacity=".3"/>`);
-    s.push(`<line x1="${x(med)}" y1="${y(f(med)) - 6}" x2="${x(med)}" y2="${bottom}" stroke="currentColor" stroke-opacity=".5" stroke-dasharray="4 4"/>
-            <text x="${x(med)}" y="${bottom + 18}" text-anchor="middle" fill="currentColor" fill-opacity=".7" font-size="12" font-weight="600">field median ${med.toFixed(1)}</text>`);
-    s.push(`<line x1="${x(ours)}" y1="${py + 10}" x2="${x(ours)}" y2="${bottom}" stroke="var(--accent)" stroke-width="3"/>
-            <circle cx="${x(ours)}" cy="${y(f(ours))}" r="7" fill="var(--accent)" stroke="var(--bg)" stroke-width="3"/>
-            <text x="${x(ours)}" y="${py + 2}" text-anchor="middle" fill="var(--accent)" font-size="13" font-weight="800">our average ${ours.toFixed(1)}</text>`);
-    s.push(`<line x1="${x(best)}" y1="${y(f(best)) - 6}" x2="${x(best)}" y2="${bottom - 54}" stroke="#f2c94c" stroke-opacity=".6"/>
-            <circle cx="${x(best)}" cy="${y(f(best))}" r="6" fill="#f2c94c" stroke="var(--bg)" stroke-width="3"/>
-            <text x="${Math.min(x(best), W - px - 4)}" y="${bottom - 60}" text-anchor="end" fill="#f2c94c" font-size="12" font-weight="700">our best ${best.toFixed(1)} · #${num(L.best_rank)} of ${num(n)}</text>`);
-    s.push(`<text x="${x(top1) + 6}" y="${bottom - 10}" fill="#f2c94c" font-size="11" font-weight="700">top 1% →</text>`);
-    s.push(`<text x="${px}" y="${bottom + 18}" fill="currentColor" fill-opacity=".6" font-size="11">${Math.round(lo)} pts</text><text x="${W - px}" y="${bottom + 18}" text-anchor="end" fill="currentColor" fill-opacity=".6" font-size="11">${Math.round(hi)} pts</text>`);
-    document.getElementById("fieldSvg").innerHTML = s.join("");
-    document.getElementById("fcN").textContent = num(n);
-  }
-  // "Our best stats": the best week of the two-season backtest (highest share of the real field beaten), drawn on that
-  // week's real field, plus the best numbers of the whole replay. Source: web/data/backtest_field.json.
-  fetch("data/backtest_field.json", { cache: "no-cache" }).then(r => r.json()).then(B => {
-    const S = B.summary, w = B.weeks.reduce((a, x) => x.avg_pct > a.avg_pct ? x : a);
-    draw({ field_median_pts: w.field_median, avg_pts: w.avg, best_pts: w.best, best_rank: w.best_rank, entries: w.entries, beat_pct: w.avg_pct });
-    const p = x => Math.round(100 * x) + "%";
-    document.getElementById("fcTitle").textContent = `Our best backtested week: ${w.season}, week ${w.week}`;
-    document.getElementById("fcSub").textContent = `Our average lineup beat ${p(w.avg_pct)} of ${num(w.entries)} real entries; best finish #${num(w.best_rank)}.`;
-    document.getElementById("fcStats").innerHTML = [[p(w.avg_pct), "of the real field beaten, best week"], [`#${num(S.best_rank)}`, `best finish, of ${num(S.best_rank_entries)} entries`], [`${S.builds_best_top1} of ${S.builds}`, "builds put a lineup in the top 1%"]]
-      .map(([v, l]) => `<div><b>${v}</b><span>${l}</span></div>`).join("");
-    document.getElementById("fcDisc").innerHTML = `Backtested, not live results, and this is our best week of 36: across both seasons (2024–25, real Millionaire Maker fields) the average was ${p(S.mean_beat_pct)} of the field beaten. Live results are graded weekly on the <a class="link" href="results.html">track record</a>.`;
-    document.getElementById("heroSlate").textContent = `Free beta · best backtested week: beat ${p(w.avg_pct)} of a real ${num(w.entries)}-entry field`;
-  }).catch(() => { document.getElementById("fcSub").textContent = "Chart unavailable right now — see the track record."; });
+(async function () {
+  const GS = window.GS, cfg = GS.cfg, plan = cfg.PLAN || {};
+  document.getElementById("brand").innerHTML = GS.BRAND;
+  document.getElementById("price").textContent = `${plan.price || "$99"} a ${plan.interval || "month"}. Cancel any time.`;
+  document.getElementById("foot").innerHTML = GS.FOOT_LINKS + `<div class="legal">${GS.LEGAL}</div>`;
+  // someone who is already logged in goes straight to the tools (or to the payment step if they never finished signing up)
+  await GS.Account.ready;
+  const A = GS.Account;
+  if (!A.user) return;
+  if (A.active()) { location.replace("home.html"); return; }
+  document.getElementById("cta").innerHTML = `<a class="btn btn-primary btn-lg" href="signup.html?step=pay">Finish signing up</a>`;
+  document.getElementById("topLogin").outerHTML = `<button class="btn btn-sm" type="button" data-logout>Log out</button>`;
+  document.addEventListener("click", (e) => { if (e.target.closest("[data-logout]")) A.logout(); });
 })();
 </script>
 </body>

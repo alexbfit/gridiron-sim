@@ -270,7 +270,7 @@ function renderSlateMeta() {
   if (sim) chips.push(`<span class="badge ok" title="Every lineup is scored across the same simulated games, so stacks and correlation are priced in"><span class="dot"></span>${(sm?.n_sims || sim.n).toLocaleString()} simulations${sm?.run_at ? " · updated " + relTime(sm.run_at) : ""}</span>`);
   else if (sm?.url) chips.push(`<span class="badge"><span class="spinner" style="width:10px;height:10px;border-width:1.5px"></span> Loading simulations…</span>`);
   else chips.push(`<span class="badge warn">Summary projections only</span>`);
-  if (propsMap.size) chips.push(`<span class="badge info" title="Sportsbook and prediction-market player props blended into projections">Market lines · ${propsMap.size} players</span>`);
+  if (propsMap.size) chips.push(`<span class="badge info" title="Sportsbook and prediction-market player props blended into projections">Betting lines for ${propsMap.size} players</span>`);
   chips.push(`<span class="badge owner-flag" title="Ownership model">${ownModel.fitted ? "Ownership fitted" : "Ownership heuristic"}</span>`);
   $("slateMeta").innerHTML = chips.join("");
 }
@@ -1144,11 +1144,11 @@ function exportCSV() {
 // ---------------------------------------------------------------- settings / presets
 function presetFor(contest, n) {
   if (contest === "cash") return { stack: 0, bringback: 0, maxExp: n > 1 ? 70 : 100, minUniq: 2, rand: 0, fade: 0, maxOwn: 0, poolMult: 3 };
-  if (n <= 1) return { stack: 1, bringback: 0, maxExp: 100, minUniq: 1, rand: 15, fade: 0, maxOwn: 0, poolMult: 4 };
-  if (n <= 3) return { stack: 1, bringback: 0, maxExp: 70, minUniq: 3, rand: 15, fade: 0, maxOwn: 0, poolMult: 3 };
-  if (n <= 20) return { stack: 1, bringback: 1, maxExp: 40, minUniq: 3, rand: 15, fade: 0, maxOwn: 0, poolMult: 3 };
-  if (n <= 50) return { stack: 1, bringback: 1, maxExp: 35, minUniq: 4, rand: 15, fade: 0, maxOwn: 0, poolMult: 3 };
-  return { stack: 1, bringback: 1, maxExp: 30, minUniq: 4, rand: 20, fade: 0, maxOwn: 0, poolMult: 2 };
+  // tournaments follow the Sunday build: QB + 2 pass catchers, one bring-back, 35% max exposure
+  if (n <= 1) return { stack: 2, bringback: 1, maxExp: 100, minUniq: 1, rand: 15, fade: 0, maxOwn: 0, poolMult: 4 };
+  if (n <= 3) return { stack: 2, bringback: 1, maxExp: 70, minUniq: 3, rand: 15, fade: 0, maxOwn: 0, poolMult: 3 };
+  if (n <= 50) return { stack: 2, bringback: 1, maxExp: 35, minUniq: 3, rand: 15, fade: 0, maxOwn: 0, poolMult: 3 };
+  return { stack: 2, bringback: 1, maxExp: 30, minUniq: 4, rand: 20, fade: 0, maxOwn: 0, poolMult: 2 };
 }
 function applyPreset(force) {
   if (customized && !force) { syncControls(); return; }

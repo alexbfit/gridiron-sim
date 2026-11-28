@@ -1,145 +1,68 @@
 <!doctype html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<script>try{document.documentElement.dataset.theme=localStorage.getItem("gs_theme")||"dark";if(localStorage.getItem("gs_owner")==="1")document.documentElement.classList.add("owner")}catch(e){}</script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>try{document.documentElement.dataset.theme=localStorage.getItem("gs_theme")||"light";if(localStorage.getItem("gs_owner")==="1")document.documentElement.classList.add("owner")}catch(e){}</script>
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/ui.css">
-<link rel="stylesheet" href="assets/site.css">
-<style>
-  .auth-card.acct-hub { max-width: 720px; }
-  .hub-h { font-size: 15px; margin: 24px 0 10px; }
-  .hub-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-  .hub-tool { display: grid; grid-template-columns: 40px 1fr; gap: 12px; align-items: start; padding: 14px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--border); color: inherit; text-decoration: none; }
-  .hub-tool:hover { border-color: var(--accent-line); }
-  .hub-tool .ic { width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent-line); }
-  .hub-tool .ic svg { width: 18px; height: 18px; }
-  .hub-tool b { display: block; font: 700 14.5px var(--font-display); }
-  .hub-tool small { display: block; color: var(--muted); font-size: 12.5px; line-height: 1.45; margin-top: 2px; }
-  @media (max-width: 620px) { .hub-grid { grid-template-columns: 1fr; } }
-</style>
 <title>Account · GameTime Win</title>
 <meta name="robots" content="noindex">
 <script src="config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="assets/shell.js"></script>
-<script src="assets/plans.js"></script>
 </head>
 <body>
-<header data-shell-header="app"></header>
+<header data-shell-header></header>
 <main class="page">
-  <div class="card auth-card" id="acct">
-    <div class="skeleton" style="height:28px;width:60%"></div>
-    <div class="skeleton" style="height:14px;width:90%;margin-top:14px"></div>
-  </div>
+  <div class="page-head"><div><h1>Account</h1><p id="who">&nbsp;</p></div></div>
+  <div class="acct" id="acct"><div class="skeleton" style="height:22px;width:50%"></div></div>
 </main>
-<footer data-shell-footer="site"></footer>
+<footer data-shell-footer="app"></footer>
 <script>
 (async function () {
-  const cfg = window.GRIDIRON_CONFIG || {}, GS = window.GS, box = document.getElementById("acct");
-  const PLANS = cfg.PLANS || {}, GP = window.GTW_PLANS;
+  const GS = window.GS, cfg = GS.cfg, A = GS.Account, plan = cfg.PLAN || {}, box = document.getElementById("acct");
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  await A.ready;
+  if (!A.user) return;                                   // the shell is already sending them to log in
 
-  if (!cfg.AUTH_ENABLED) {
-    box.innerHTML = `<div class="empty" style="padding:6px 0 0"><div class="icon-wrap">${GS.icon("user")}</div>
-      <h1>Accounts are coming soon</h1>
-      <p style="margin-top:6px">GameTime Win is free while it's in beta — no sign-up needed. Your locks, edits and settings are saved in this browser automatically.</p></div>
-      <a class="btn btn-primary btn-block" style="margin-top:22px" href="index.html">Join the beta list</a>
-      <a class="btn btn-ghost btn-block" style="margin-top:8px" href="pricing.html">See pricing plans</a>`;
-    return;
+  // Arriving straight from a log-in (Google or an emailed link): carry on to where they were headed.
+  let after = null;
+  try { after = JSON.parse(GS.store.get("gs_after_auth") || "null"); } catch (e) {}
+  if (after && Date.now() - (after.at || 0) < 30 * 60 * 1000) {
+    GS.store.set("gs_after_auth", null);
+    if (!A.active()) { location.replace("signup.html?step=pay"); return; }
+    location.replace(GS.MEMBER_PAGES.has(after.next) ? after.next : "home.html"); return;
   }
+  GS.store.set("gs_after_auth", null);
 
-  const supa = GS.Account.getClient();
-  await GS.Account.ready;
-  const user = GS.Account.user, profile = GS.Account.profile;
-  const qs = new URLSearchParams(location.search);
-  if (qs.get("checkout") === "success") GS.toast("Thanks for subscribing! It can take a few seconds for your plan to show.", "ok");
-  if (qs.get("checkout") === "cancel") GS.toast("Checkout canceled — you weren't charged.");
+  const p = A.profile || {}, status = p.subscription_status || "none";
+  const date = p.current_period_end ? new Date(p.current_period_end).toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" }) : null;
+  const price = `${plan.price || "$99"} a ${plan.interval || "month"}`;
+  let title, line, action = "";
+  if (A.owner()) { title = "Owner access"; line = "Everything is open. No membership needed."; }
+  else if (A.subscribed() && p.cancel_at_period_end) { title = "Membership ending"; line = `You keep access until ${date || "the end of this billing month"}. It will not renew.`; action = `<button class="btn" id="portal">Manage billing</button>`; }
+  else if (A.subscribed()) { title = "Membership active"; line = `${price}.${date ? ` Renews ${date}.` : ""}`; action = `<button class="btn" id="portal">Manage billing</button>`; }
+  else if (status === "past_due" || status === "unpaid") { title = "Payment failed"; line = "Your last payment didn't go through. Update your card to keep access."; action = `<button class="btn btn-primary" id="portal">Update payment details</button>`; }
+  else if (!A.gating()) { title = "Access open"; line = "Memberships aren't required right now."; }
+  else { title = "No membership"; line = `The tools need a membership: ${price}.`; action = `<a class="btn btn-primary" href="signup.html?step=pay">Start membership</a>`; }
 
-  const owner = GS.isOwner();
-  // straight to the page they were trying to open (only pages inside the account area)
-  const nextRaw = (qs.get("next") || "").toLowerCase();
-  if (user && GS.MEMBER_PAGES.has(nextRaw)) { location.replace(nextRaw); return; }
-  if (!user && !owner) { location.replace("signup.html" + (qs.get("plan") ? "?mode=signin" : "")); return; }
-
-  const status = profile?.subscription_status || "none";
-  const subscribed = status === "active" || status === "trialing";
-  const slateUntil = profile?.slate_pass_until ? new Date(profile.slate_pass_until) : null;
-  const slateActive = !!slateUntil && slateUntil.getTime() > Date.now();
-  const active = subscribed || slateActive || !!profile?.is_owner;
-  const planKey = profile?.is_owner ? "pro" : subscribed ? (PLANS[profile?.plan] ? profile.plan : "starter") : slateActive ? "slate" : "free";
-  const planName = profile?.is_owner ? "Owner" : (PLANS[planKey]?.name || "Free");
-  const fmtDate = (d) => d.toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" });
-  const fmtTime = (d) => d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
-  const until = profile?.current_period_end ? fmtDate(new Date(profile.current_period_end)) : null;
-  let line = "";
-  if (profile?.is_owner) line = "Full access.";
-  else if (subscribed) line = until ? `${profile.cancel_at_period_end ? "Ends" : "Renews"} ${until}` : "";
-  else if (slateActive) line = `Slate Pass · Starter features until ${fmtDate(slateUntil)} at ${fmtTime(slateUntil)}`;
-  else line = cfg.BILLING_LIVE ? `Simple Mode with ${cfg.FREE_LINEUPS || 3} lineups per slate. Upgrade for more.` : "Paid plans aren't open yet — everything is free in the beta.";
-
-  const upgradeCards = cfg.BILLING_LIVE && !subscribed && !profile?.is_owner && GP
-    ? `<div class="acct-plans">
-        ${["starter", "pro"].filter(k => PLANS[k]).map(k => { const P = PLANS[k]; return `<div class="tile${P.featured ? " accent" : ""}">
-          <div class="k">${esc(P.name)}${P.featured ? ' · <span style="color:var(--accent)">most popular</span>' : ""}</div>
-          <div class="v" style="font-size:20px">${esc(P.price?.monthly || "")}<small class="muted" style="font-size:12px;font-weight:500"> /mo</small> <span class="muted" style="font-size:13px;font-weight:500">or ${esc(P.price?.season || "")} season</span></div>
-          <div class="s">${esc(P.tagline || "")}</div>
-          <div style="display:grid;gap:6px;margin-top:10px">
-            <button type="button" class="btn btn-sm${P.featured ? " btn-primary" : ""}" data-checkout-plan="${k}" data-checkout-interval="monthly">Start ${P.trialDays || 7}-day trial · monthly</button>
-            <button type="button" class="btn btn-sm btn-ghost" data-checkout-plan="${k}" data-checkout-interval="season">Season pass ${esc(P.price?.season || "")}</button>
-          </div></div>`; }).join("")}
-        ${PLANS.slate && !slateActive ? `<div class="tile"><div class="k">${esc(PLANS.slate.name)}</div><div class="v" style="font-size:20px">${esc(PLANS.slate.price?.once || "")}<small class="muted" style="font-size:12px;font-weight:500"> once</small></div><div class="s">${esc(PLANS.slate.tagline || "")}</div>
-          <div style="margin-top:10px"><button type="button" class="btn btn-sm btn-block" data-checkout-plan="slate" data-checkout-interval="once">Buy a Slate Pass</button></div></div>` : ""}
-       </div>
-       <p class="hint" style="margin-top:10px">${esc(cfg.PRICING_NOTES?.trial || "")} ${esc(cfg.PRICING_NOTES?.refunds || "")} <a class="link" href="pricing.html">Compare plans</a>.</p>`
-    : "";
-
-  const TOOLS = [
-    ["simple.html", "zap", "Simple Mode", "Upload your DraftKings entries, pick two players, get every entry filled."],
-    ["lineups.html", "layers", "Lineup Builder", "The full builder: locks, exposures, stacks, contest simulator."],
-    ["stats.html", "chart", "Player Stats", "Projections, simulated ranges and usage for every player on the slate."],
-    ["edges.html", "dice", "Prop Edges", "Prediction-market and sportsbook props against our distributions."],
-    ["backtest.html", "trophy", "Backtests", "Projection accuracy and calibration, replayed on past seasons."],
-    ["guide.html", "info", "Quick-start guide", "Two minutes from slate to upload."],
-  ];
-  box.classList.add("acct-hub");
-  box.innerHTML = `<h1>Your account</h1>
-    <p class="muted">${user ? esc(user.email) : "Owner mode — not signed in on this device"}</p>
-    <div class="tile" style="margin-top:20px">
-      <div class="k">Plan</div>
-      <div class="v" style="font-size:20px">${esc(user ? planName : "Owner")} ${subscribed ? `<span class="badge ok" style="vertical-align:4px">${status === "trialing" ? "Trial" : "Active"}</span>` : slateActive ? `<span class="badge ok" style="vertical-align:4px">Slate Pass</span>` : ""}</div>
-      <div class="s">${user ? line : "Full access."}</div>
-    </div>
-    ${upgradeCards}
-    <h2 class="hub-h">Your tools</h2>
-    <div class="hub-grid">
-      ${TOOLS.map(([href, ic, name, desc]) => `<a class="hub-tool" href="${href}"><span class="ic">${GS.icon(ic)}</span><span><b>${name}</b><small>${desc}</small></span></a>`).join("")}
-    </div>
-    <div style="display:grid;gap:8px;margin-top:18px">
-      <a class="btn btn-ghost btn-block" href="results.html">Public track record</a>
-      ${profile?.stripe_customer_id ? `<button class="btn btn-block" id="portal">Manage billing</button>` : ""}
-      ${user ? `<button class="btn btn-ghost btn-block" id="signout">${GS.icon("logout")} Sign out</button>` : `<a class="btn btn-ghost btn-block" href="signup.html?mode=signin">Sign in on this device</a>`}
-    </div>`;
-  const call = async (fn) => {
-    const { data } = await supa.auth.getSession();
-    if (!data?.session) throw new Error("Sign in first.");
-    const res = await fetch(`/.netlify/functions/${fn}`, { method: "POST", headers: { Authorization: "Bearer " + data.session.access_token } });
-    const j = await res.json().catch(() => ({}));
-    if (!res.ok || !j.url) throw new Error(j.error || "Billing is not set up yet.");
-    location.href = j.url;
-  };
-  if (GP) GP.wireCheckout(box);
-  document.getElementById("portal")?.addEventListener("click", (e) => { e.target.disabled = true; call("billing-portal").catch(err => { GS.toast(err.message, "error"); e.target.disabled = false; }); });
-  // arrived from pricing.html with a plan picked (before or after the magic link): continue straight to checkout
-  const intent = GP?.intent();
-  if (intent && cfg.BILLING_LIVE && !subscribed && !profile?.is_owner && PLANS[intent.plan] && intent.plan !== "free") {
-    GS.toast(`Taking you to checkout for ${PLANS[intent.plan].name}…`);
-    GP.checkout(intent.plan, intent.interval).catch(err => GS.toast(err.message, "error"));
-  }
-  document.getElementById("signout")?.addEventListener("click", async () => { await supa.auth.signOut(); location.href = "index.html"; });
+  document.getElementById("who").textContent = A.user.email;
+  const manage = action.includes('id="portal"');
+  box.innerHTML = `
+    <div class="acct-row"><div><h3>${esc(title)}</h3><p>${esc(line)}${manage && A.subscribed() ? " Change your card, download invoices or cancel under Manage billing. If you cancel, you keep access until the end of the month you paid for." : ""}</p></div>${action}</div>
+    <div class="acct-row"><div><h3>Appearance</h3><p>Light is easier in daylight. Dark is easier at night.</p></div>
+      <div class="seg" id="themeSeg" style="width:180px"><button type="button" data-t="light">Light</button><button type="button" data-t="dark">Dark</button></div></div>
+    <div class="acct-row"><div><h3>Log out</h3><p>On this device only.</p></div><button class="btn" type="button" data-logout>Log out</button></div>`;
+  const paint = () => box.querySelectorAll("#themeSeg button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.t === document.documentElement.dataset.theme)));
+  paint();
+  document.getElementById("themeSeg").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; document.documentElement.dataset.theme = b.dataset.t; GS.store.set("gs_theme", b.dataset.t); paint(); });
+  box.querySelectorAll("#portal").forEach(btn => btn.addEventListener("click", async () => {
+    const label = btn.textContent; btn.disabled = true; btn.innerHTML = `<span class="spinner"></span> Opening`;
+    try { await A.portal(); } catch (err) { GS.toast(err.message, "error"); btn.disabled = false; btn.textContent = label; }
+  }));
 })();
 </script>
 </body>

@@ -1,24 +1,24 @@
 <!doctype html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<script>try{document.documentElement.dataset.theme=localStorage.getItem("gs_theme")||"dark";if(localStorage.getItem("gs_owner")==="1")document.documentElement.classList.add("owner")}catch(e){}</script>
+<script>try{document.documentElement.dataset.theme=localStorage.getItem("gs_theme")||"light";if(localStorage.getItem("gs_owner")==="1")document.documentElement.classList.add("owner")}catch(e){}</script>
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/ui.css">
-<title>Player Stats · GameTime Win</title>
-<meta name="description" content="Sortable NFL player stats with DraftKings and FanDuel fantasy points, by week or season.">
+<title>Players · GameTime Win</title>
+<meta name="robots" content="noindex">
 <script src="config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="assets/shell.js"></script>
 </head>
 <body>
-<header data-shell-header="app"></header>
+<header data-shell-header></header>
 <main class="page" style="max-width:1600px">
   <div class="page-head">
-    <div><h1>Player stats</h1><p>Box scores with DraftKings and FanDuel fantasy points, updated every morning. Click any column to sort.</p></div>
+    <div><h1>Players</h1><p>Every player's numbers by week or for the season, with DraftKings and FanDuel fantasy points. Updated every morning. Click a column to sort.</p></div>
   </div>
   <div class="filters" style="margin-bottom:14px">
     <label class="field"><span>Season</span><select id="season" class="input"></select></label>
@@ -30,9 +30,9 @@
   <div class="table-wrap table-tall">
     <table id="stats" class="data"><thead></thead><tbody></tbody></table>
   </div>
-  <p id="status" class="status-line" style="margin-top:10px">Loading…</p>
+  <p id="status" class="status-line" style="margin-top:10px">Loading</p>
 </main>
-<footer data-shell-footer="site"></footer>
+<footer data-shell-footer="app"></footer>
 <script src="app.js"></script>
 </body>
 </html>

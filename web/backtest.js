@@ -2,29 +2,29 @@
 (async function () {
   const $ = (id) => document.getElementById(id);
   const tt = $("tt");
-  const MODELS = [["sim", "Sim", "--s-sim"], ["baseline", "Baseline", "--s-base"], ["naive", "Naive", "--s-naive"]];
+  const MODELS = [["sim", "Ours", "--s-sim"], ["baseline", "Recent form", "--s-base"], ["naive", "Season average", "--s-naive"]];
   const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 
   let d;
   try { d = await (await fetch("data/backtest.json", { cache: "no-cache" })).json(); }
-  catch (e) { $("meta").textContent = "No backtest results yet — run jobs/backtest.py."; return; }
+  catch (e) { $("meta").textContent = "The accuracy numbers aren't available right now. Reload the page to try again."; return; }
 
   const m = d.meta, all = d.positions.ALL;
-  $("meta").textContent = `${m.season} weeks ${m.weeks[0]}–${m.weeks[1]} · ${all.sim.n.toLocaleString()} player-weeks scored · ${m.n_sims.toLocaleString()} sims per week · run ${m.run_at.slice(0, 10)}`;
+  $("meta").textContent = `${m.season} season, weeks ${m.weeks[0]} to ${m.weeks[1]}. ${all.sim.n.toLocaleString()} player games graded. Last run ${m.run_at.slice(0, 10)}.`;
 
   // ---- headline tiles
   const tiles = [
-    ["Sim MAE", all.sim.mae.toFixed(2), `baseline ${all.baseline.mae.toFixed(2)} · naive ${all.naive.mae.toFixed(2)}`],
-    ["Sim correlation", all.sim.r.toFixed(3), `baseline ${all.baseline.r.toFixed(3)} · naive ${all.naive.r.toFixed(3)}`],
-    ["Sim bias", (all.sim.bias > 0 ? "+" : "") + all.sim.bias.toFixed(2), `baseline ${all.baseline.bias.toFixed(2)}`],
-    ["Actual ≤ p10 / p90", `${Math.round(all.calibration.coverage.p10 * 100)}% / ${Math.round(all.calibration.coverage.p90 * 100)}%`, "target 10% / 90%"],
-    ["Player-weeks", all.sim.n.toLocaleString(), `${Object.keys(d.weeks).length} weeks · QB/RB/WR/TE`],
+    ["Our average miss", all.sim.mae.toFixed(2), `points per player. Recent form ${all.baseline.mae.toFixed(2)}, season average ${all.naive.mae.toFixed(2)}`],
+    ["How closely we tracked scores", all.sim.r.toFixed(2), `from 0 to 1. Recent form ${all.baseline.r.toFixed(2)}, season average ${all.naive.r.toFixed(2)}`],
+    ["Lean", (all.sim.bias > 0 ? "+" : "") + all.sim.bias.toFixed(2), `points. Plus means we ran high, minus means low`],
+    ["Scores inside our range", `${Math.round((all.calibration.coverage.p90 - all.calibration.coverage.p10) * 100)}%`, "the target is 80%"],
+    ["Player games graded", all.sim.n.toLocaleString(), `${Object.keys(d.weeks).length} weeks of QB, RB, WR and TE`],
   ];
   $("tiles").innerHTML = tiles.map(([k, v, s]) => `<div class="tile"><div class="k">${k}</div><div class="v">${v}</div><div class="s">${s}</div></div>`).join("");
 
   // ---- position table
   const order = ["QB", "RB", "WR", "TE", "ALL"].filter(p => d.positions[p]);
-  let h = `<tr><th class="l">Pos</th><th>n</th>` + MODELS.map(([, n]) => `<th>${n} MAE</th><th>${n} r</th><th>${n} bias</th>`).join("") + `</tr>`;
+  let h = `<tr><th class="l">Position</th><th>Games</th>` + MODELS.map(([, n]) => `<th>${n}: miss</th><th>tracking</th><th>lean</th>`).join("") + `</tr>`;
   order.forEach(p => {
     const x = d.positions[p];
     const bestMae = Math.min(...MODELS.map(([k]) => x[k].mae)), bestR = Math.max(...MODELS.map(([k]) => x[k].r));
@@ -35,9 +35,9 @@
 
   // ---- coverage table
   const cov = all.calibration.coverage;
-  $("cov").innerHTML = `<tr><th class="l">Quantile</th>${Object.keys(cov).map(k => `<th>${k}</th>`).join("")}</tr>
-    <tr><td class="l">Actual ≤ quantile</td>${Object.values(cov).map(v => `<td>${Math.round(v * 100)}%</td>`).join("")}</tr>
-    <tr><td class="l">Target</td>${Object.keys(cov).map(k => `<td>${k.slice(1)}%</td>`).join("")}</tr>`;
+  $("cov").innerHTML = `<tr><th class="l">Point in our range</th>${Object.keys(cov).map(k => `<th>${k.slice(1)}%</th>`).join("")}</tr>
+    <tr><td class="l">Scores that came in below it</td>${Object.values(cov).map(v => `<td>${Math.round(v * 100)}%</td>`).join("")}</tr>
+    <tr><td class="l">Should be</td>${Object.keys(cov).map(k => `<td>${k.slice(1)}%</td>`).join("")}</tr>`;
 
   // ---- weekly MAE line chart
   const weeks = Object.keys(d.weeks).map(Number).sort((a, b) => a - b);
@@ -46,7 +46,7 @@
   const y0 = Math.floor(Math.min(...ys) - 0.5), y1 = Math.ceil(Math.max(...ys) + 0.5);
   const x = (w) => L + (w - weeks[0]) / (weeks[weeks.length - 1] - weeks[0]) * (W - L - R);
   const y = (v) => T + (1 - (v - y0) / (y1 - y0)) * (H - T - B);
-  let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Weekly MAE by model">`;
+  let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Average miss each week, by method">`;
   for (let v = y0; v <= y1; v++) svg += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--border)" stroke-width="1"/><text x="${L - 6}" y="${y(v) + 4}" font-size="10" fill="var(--muted)" text-anchor="end">${v}</text>`;
   weeks.forEach(w => svg += `<text x="${x(w)}" y="${H - 8}" font-size="10" fill="var(--muted)" text-anchor="middle">${w}</text>`);
   MODELS.forEach(([k, name, tok]) => {
@@ -58,14 +58,14 @@
     svg += `<text x="${x(last) + 8}" y="${y(d.weeks[last][k].mae) + 4}" font-size="11" fill="var(--text)">${name}</text>`;
   });
   svg += `<rect id="wk-hit" x="${L}" y="${T}" width="${W - L - R}" height="${H - T - B}" fill="transparent"/><line id="wk-x" y1="${T}" y2="${H - B}" stroke="var(--muted)" stroke-dasharray="3 3" style="display:none"/></svg>`;
-  $("weekly").innerHTML = `<div class="legend">${MODELS.map(([, n, tok]) => `<span style="--c:${css(tok)}">${n}</span>`).join("")}<span style="margin-left:auto">MAE, DK pts</span></div>` + svg;
+  $("weekly").innerHTML = `<div class="legend">${MODELS.map(([, n, tok]) => `<span style="--c:${css(tok)}">${n}</span>`).join("")}<span style="margin-left:auto">average miss, points</span></div>` + svg;
   const hit = document.getElementById("wk-hit"), xl = document.getElementById("wk-x");
   hit.addEventListener("mousemove", (e) => {
     const r = hit.getBoundingClientRect(); const fx = L + (e.clientX - r.left) / r.width * (W - L - R);
     const w = weeks.reduce((a, b) => Math.abs(x(b) - fx) < Math.abs(x(a) - fx) ? b : a);
     xl.setAttribute("x1", x(w)); xl.setAttribute("x2", x(w)); xl.style.display = "";
     tt.style.display = "block"; tt.style.left = e.clientX + 12 + "px"; tt.style.top = e.clientY + 12 + "px";
-    tt.innerHTML = `<b>Week ${w}</b> · ${d.weeks[w].sim.n} players<br>` + MODELS.map(([k, n]) => `${n}: MAE ${d.weeks[w][k].mae.toFixed(2)} · r ${d.weeks[w][k].r.toFixed(2)}`).join("<br>");
+    tt.innerHTML = `<b>Week ${w}</b> · ${d.weeks[w].sim.n} players<br>` + MODELS.map(([k, n]) => `${n}: miss ${d.weeks[w][k].mae.toFixed(2)}`).join("<br>");
   });
   hit.addEventListener("mouseleave", () => { tt.style.display = "none"; xl.style.display = "none"; });
 
@@ -80,7 +80,7 @@
     ps += `<rect class="pbar" data-i="${i}" x="${bx}" y="${py(v)}" width="${bw - 2}" height="${bh}" rx="3" fill="${css("--s-sim")}"/>`;
     ps += `<text x="${bx + (bw - 2) / 2}" y="${PH - 8}" font-size="10" fill="var(--muted)" text-anchor="middle">${i * 10}–${i * 10 + 10}</text>`;
   });
-  ps += `<line x1="${PL}" x2="${PW - PR}" y1="${py(exp)}" y2="${py(exp)}" stroke="var(--text)" stroke-dasharray="4 4"/><text x="${PL + 4}" y="${py(exp) - 5}" font-size="10" fill="var(--text)">perfect calibration = ${Math.round(exp)} per bin</text>`;
+  ps += `<line x1="${PL}" x2="${PW - PR}" y1="${py(exp)}" y2="${py(exp)}" stroke="var(--text)" stroke-dasharray="4 4"/><text x="${PL + 4}" y="${py(exp) - 5}" font-size="10" fill="var(--text)">an even spread = ${Math.round(exp)} per bin</text>`;
   ps += `</svg>`;
   $("pit").innerHTML = ps;
   document.querySelectorAll(".pbar").forEach(b => {

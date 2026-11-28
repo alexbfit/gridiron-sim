@@ -1,55 +1,55 @@
 <!doctype html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<script>try{document.documentElement.dataset.theme=localStorage.getItem("gs_theme")||"dark";if(localStorage.getItem("gs_owner")==="1")document.documentElement.classList.add("owner")}catch(e){}</script>
+<script>try{document.documentElement.dataset.theme=localStorage.getItem("gs_theme")||"light";if(localStorage.getItem("gs_owner")==="1")document.documentElement.classList.add("owner")}catch(e){}</script>
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/ui.css">
-<title>Accuracy · GameTime Win</title>
-<meta name="description" content="How accurate are GameTime Win's projections? A full-season backtest replayed with only pre-kickoff information.">
+<title>Projection accuracy · GameTime Win</title>
 <style>
-  :root { --s-sim: #3987e5; --s-base: #d95926; --s-naive: #199e70; }
-  :root[data-theme="light"] { --s-sim: #2a78d6; --s-base: #eb6834; --s-naive: #1baf7a; }
+  :root { --s-sim: #2f6f55; --s-base: #a87a16; --s-naive: #3f6e94; }
+  :root[data-theme="dark"] { --s-sim: #82c4a5; --s-base: #d9b25c; --s-naive: #8db4d6; }
   #meta { color: var(--muted); font-size: 13px; }
 </style>
+<meta name="robots" content="noindex">
 <script src="config.js"></script>
 <script src="assets/shell.js"></script>
 </head>
 <body>
-<header data-shell-header="app"></header>
+<header data-shell-header></header>
 <main class="page">
   <div class="page-head">
-    <div><h1>How accurate are the projections?</h1>
-      <p>Each past week is replayed using only what was known before kickoff — closing Vegas lines, prior game logs, the players who dressed — then scored against what actually happened. Three models are compared: the <b>Monte Carlo sim</b>, a simpler <b>baseline</b> model, and a <b>naive</b> season-to-date average.</p></div>
+    <div><h1>Projection accuracy</h1>
+      <p>Each past week is replayed using only what was known before kickoff, then compared with what happened. Our projections sit next to two simpler methods, a recent-form estimate and a plain season average, so you can see whether ours add anything.</p></div>
   </div>
-  <p id="meta">Loading…</p>
+  <p id="meta">Loading</p>
   <div class="tiles" id="tiles"></div>
 
   <section class="section">
-    <h2>Accuracy by position</h2>
-    <p class="lead"><b>MAE</b> = average miss in DraftKings points (lower is better). <b>r</b> = correlation with actual scores (higher is better). <b>Bias</b> = projection minus actual (0 = no lean). Fantasy scores are right-skewed, so a well-calibrated mean will sit a little above the typical outcome.</p>
+    <h2>By position</h2>
+    <p class="lead"><b>Miss</b> is the average gap between projected and scored, in DraftKings points. Lower is better. <b>Tracking</b> runs from 0 to 1 and says how well the projections ranked players. Higher is better. <b>Lean</b> shows whether projections ran high (plus) or low (minus).</p>
     <div class="table-wrap"><table class="m" id="pos"></table></div>
   </section>
 
   <div class="grid-2 section">
     <section>
-      <h2 style="font-size:18px;margin-bottom:6px">Weekly error</h2>
-      <p class="lead">Average miss each week for the three models.</p>
+      <h2>Week by week</h2>
+      <p class="lead">Average miss each week for the three methods.</p>
       <div class="chart" id="weekly"></div>
     </section>
     <section>
-      <h2 style="font-size:18px;margin-bottom:6px">Are the ranges honest?</h2>
-      <p class="lead">Where each actual score landed inside that player's simulated range. A perfectly calibrated sim is flat along the dashed line; a tall right bar would mean ceilings are underrated, tall edges that ranges are too narrow.</p>
+      <h2>Are the ranges honest?</h2>
+      <p class="lead">Every projection comes with a range. This shows where real scores landed inside it. Bars close to the dashed line mean the ranges are about right. Tall bars at the edges would mean the ranges are too narrow.</p>
       <div class="chart" id="pit"></div>
       <div class="table-wrap" style="margin-top:12px"><table class="m" id="cov"></table></div>
     </section>
   </div>
 </main>
 <div class="tt" id="tt"></div>
-<footer data-shell-footer="site"></footer>
+<footer data-shell-footer="app"></footer>
 <script src="backtest.js"></script>
 </body>
 </html>

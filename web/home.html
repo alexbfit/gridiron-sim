@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>try{document.documentElement.dataset.theme=localStorage.getItem("gs_theme")||"light";if(localStorage.getItem("gs_owner")==="1")document.documentElement.classList.add("owner")}catch(e){}</script>
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/ui.css">
+<title>Home · GameTime Win</title>
+<meta name="robots" content="noindex">
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="assets/shell.js"></script>
+</head>
+<body>
+<header data-shell-header></header>
+<main class="page">
+  <div class="home-head">
+    <div><h1 id="title">This week</h1><p id="sub">&nbsp;</p></div>
+    <div class="lock-clock" id="clock" hidden><b id="clockNum"></b><span id="clockLabel"></span></div>
+  </div>
+  <div class="hash" aria-hidden="true"></div>
+
+  <div class="home-grid">
+    <section>
+      <h2 class="h-sec">Your Sunday, in three steps</h2>
+      <ol class="todo" id="todo">
+        <li><span class="n">1</span><div><h3>Enter your contests on DraftKings</h3><p>Reserve your entries, then download your entries file from the Lineups page there.</p></div>
+          <a class="btn btn-sm" href="https://www.draftkings.com/mycontests" target="_blank" rel="noopener">Open DraftKings</a></li>
+        <li class="now"><span class="n">2</span><div><h3>Build your lineups</h3><p>Upload that file here. We fill every entry.</p></div>
+          <a class="btn btn-primary btn-sm" href="simple.html" id="buildBtn">Build lineups</a></li>
+        <li><span class="n">3</span><div><h3>Upload the finished file to DraftKings</h3><p>Come back before kickoff to check for late scratches.</p></div><span></span></li>
+      </ol>
+
+      <h2 class="h-sec" style="margin-top:34px">Everything else</h2>
+      <ul class="plain-list" id="tools"></ul>
+    </section>
+
+    <section>
+      <h2 class="h-sec" id="gamesTitle">Games</h2>
+      <div id="games"><div class="skeleton" style="height:18px;margin:12px 0"></div><div class="skeleton" style="height:18px;margin:12px 0"></div><div class="skeleton" style="height:18px;margin:12px 0"></div></div>
+      <p class="data-note" id="note"></p>
+    </section>
+  </div>
+</main>
+<footer data-shell-footer="app"></footer>
+<script>
+(async function () {
+  const GS = window.GS, A = GS.Account;
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+  $("tools").innerHTML = [
+    ["lineups.html", "Advanced builder", "Set your own stacks, exposure limits and player locks."],
+    ["stats.html", "Players", "Season and weekly numbers for every player."],
+    ["edges.html", "Props", "Where our numbers and the betting markets disagree."],
+    ["results.html", "Results", "How past weeks turned out."],
+    ["guide.html", "Help", "How each page works, in plain words."],
+  ].map(([h, t, d]) => `<li><a href="${h}"><b>${t}</b><small>${d}</small>${GS.icon("chevron")}</a></li>`).join("");
+
+  await A.ready;
+  if (!A.user) return;
+  if (new URLSearchParams(location.search).get("welcome") === "1") { GS.toast("Your membership is active. Welcome.", "ok"); history.replaceState(null, "", "home.html"); }
+  const supa = A.getClient();
+
+  // a kickoff stored as Eastern wall-clock time -> a real moment
+  const et = (day, time) => {
+    const guess = new Date(`${day}T${time || "13:00"}:00Z`);
+    const ny = new Date(guess.toLocaleString("en-US", { timeZone: "America/New_York" }));
+    const utc = new Date(guess.toLocaleString("en-US", { timeZone: "UTC" }));
+    return new Date(guess.getTime() + (utc - ny));
+  };
+  const fmtTime = (d) => d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+  const fmtDay = (d) => d.toLocaleDateString([], { weekday: "long" });
+  const ago = (d) => {
+    const m = Math.round((Date.now() - d) / 60000);
+    if (m < 2) return "just now"; if (m < 60) return `${m} minutes ago`;
+    const h = Math.round(m / 60); if (h < 24) return `${h} hour${h === 1 ? "" : "s"} ago`;
+    return d.toLocaleDateString([], { weekday: "long" }) + " at " + fmtTime(d);
+  };
+
+  let slate = null, games = [];
+  try {
+    const { data: s } = await supa.from("slates").select("slate_id,season,week,slate_type,game_ids,n_players,sim_meta").order("imported_at", { ascending: false }).limit(1);
+    slate = s?.[0] || null;
+    if (slate?.game_ids?.length) {
+      const { data: g } = await supa.from("games").select("game_id,gameday,gametime,home_team,away_team,spread_line,total_line,roof,forecast_wind,forecast_pop").in("game_id", slate.game_ids);
+      games = (g || []).map(x => ({ ...x, at: et(x.gameday, x.gametime) })).sort((a, b) => a.at - b.at || a.game_id.localeCompare(b.game_id));
+    }
+  } catch (e) { /* handled below */ }
+
+  if (!slate) {
+    $("sub").textContent = "This week's games aren't posted yet. They usually arrive early in the week.";
+    $("games").innerHTML = `<p class="muted">Nothing to show yet.</p>`;
+    return;
+  }
+
+  $("title").textContent = `Week ${slate.week}`;
+  const n = games.length || slate.game_ids?.length || 0;
+  const first = games[0]?.at, last = games[games.length - 1]?.at, now = new Date();
+  const started = first && now >= first, over = last && now - last > 4.5 * 3600 * 1000;
+  $("sub").textContent = over ? `Week ${slate.week} is finished. Next week's games arrive early in the week.`
+    : `${n} games on the main slate${first ? `, starting ${fmtDay(first)} at ${fmtTime(first)}` : ""}.`;
+
+  // countdown to the first kickoff, which is when DraftKings locks the first players
+  if (first && !over) {
+    const tick = () => {
+      const ms = first - Date.now(), box = $("clock");
+      box.hidden = false;
+      if (ms <= 0) { $("clockNum").textContent = "Locked"; $("clockLabel").textContent = "The first games have started. Later games can still be swapped."; box.classList.remove("soon"); return false; }
+      const d = Math.floor(ms / 864e5), h = Math.floor(ms % 864e5 / 36e5), m = Math.floor(ms % 36e5 / 6e4);
+      $("clockNum").textContent = d ? `${d}d ${h}h` : h ? `${h}h ${String(m).padStart(2, "0")}m` : `${m} min`;
+      $("clockLabel").textContent = `until lineups lock, ${fmtDay(first)} ${fmtTime(first)}`;
+      box.classList.toggle("soon", ms < 3 * 36e5);
+      return true;
+    };
+    if (tick()) { const t = setInterval(() => { if (!tick()) clearInterval(t); }, 30000); }
+  }
+  if (over) { $("todo").querySelector(".now")?.classList.remove("now"); $("buildBtn").className = "btn btn-sm"; }
+
+  $("gamesTitle").textContent = over ? "Last week's games" : "This week's games";
+  $("games").innerHTML = games.length ? `<table class="games"><tbody>${games.map(g => {
+    const sp = Number(g.spread_line), fav = !isFinite(sp) || g.spread_line == null ? "" : sp === 0 ? "Even" : `${sp > 0 ? g.home_team : g.away_team} by ${Math.abs(sp)}`;
+    const wind = g.roof === "outdoors" && Number(g.forecast_wind) >= 15 ? ` <span class="badge gold" title="Forecast wind ${Math.round(g.forecast_wind)} mph">Windy</span>` : "";
+    return `<tr><td class="muted" style="white-space:nowrap">${fmtTime(g.at)}</td><td><b>${esc(g.away_team)}</b> at <b>${esc(g.home_team)}</b>${wind}</td><td class="r">${esc(fav)}</td><td class="r">${g.total_line != null ? "Total " + esc(g.total_line) : ""}</td></tr>`;
+  }).join("")}</tbody></table>` : `<p class="muted">The schedule didn't load. Reload the page to try again.</p>`;
+
+  const run = slate.sim_meta?.run_at ? new Date(slate.sim_meta.run_at) : null;
+  $("note").innerHTML = (run ? `<span><span class="dot"></span>Projections updated ${esc(ago(run))}</span>` : `<span>Projections for this week aren't ready yet.</span>`)
+    + `<span>Times are shown in your local time.</span>`;
+})();
+</script>
+</body>
+</html>

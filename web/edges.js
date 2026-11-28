@@ -22,7 +22,7 @@
   const st = d.stats || {};
   const when = d.generated_at ? new Date(d.generated_at) : null;
   const whenTxt = when ? when.toLocaleString(undefined, { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "–";
-  $("meta").textContent = `${d.season ?? ""} Week ${d.week ?? ""} · games on ${d.gameday} · ${d.sources?.sportsbook ? "Kalshi + sportsbook props" : "Kalshi only (sportsbook props land Sunday morning)"} · snapshot ${whenTxt}`;
+  $("meta").textContent = `Week ${d.week ?? ""}. ${d.sources?.sportsbook ? "Prices from Kalshi and sportsbooks" : "Prices from Kalshi. Sportsbook lines are added Sunday morning"}. Last checked ${whenTxt}.`;
 
   const nBig = rows.filter(r => Math.abs(r.edge) >= BIG).length;
   const nHi = rows.filter(r => r.confidence === "props+sim").length;
@@ -50,9 +50,12 @@
   $("market").append(...markets.map(m => new Option(labels[m] || m, m)));
   const teams = [...new Set(rows.map(r => r.team))].sort();
   $("team").append(...teams.map(t => new Option(t, t)));
-  let sortKey = "ev", sortAsc = false;
-  const COLS = [["player", "Player", "l"], ["team", "Team", "l"], ["market_label", "Market", "l"], ["rung", "Rung", "l"], ["side", "Side", "l"],
-                ["our_p", "Ours"], ["market_p", "Market"], ["price", "Ask"], ["edge", "Edge"], ["ev", "EV / $1"], ["kelly", "Kelly"], ["source", "Source", "l"]];
+  let sortKey = "edge", sortAsc = false;
+  // price, expected value and stake sizing are owner-only columns
+  const OWNER_COLS = new Set(["price", "ev", "kelly"]);
+  const ALL_COLS = [["player", "Player", "l"], ["team", "Team", "l"], ["market_label", "Stat", "l"], ["rung", "Line", "l"], ["side", "Side", "l"],
+                ["our_p", "Our chance"], ["market_p", "Market's chance"], ["price", "Ask"], ["edge", "Gap"], ["ev", "EV / $1"], ["kelly", "Kelly"], ["source", "Where", "l"]];
+  const isOwner = () => document.documentElement.classList.contains("owner");
 
   function visible() {
     const mk = $("market").value, tm = $("team").value, pos = $("pos").value, min = Number($("minEdge").value) || 0;
@@ -68,21 +71,22 @@
       const c = typeof x === "number" && typeof y === "number" ? x - y : String(x ?? "").localeCompare(String(y ?? ""));
       return sortAsc ? c : -c;
     });
-    $("count").textContent = `${list.length.toLocaleString()} of ${rows.length.toLocaleString()} sides`;
+    const own = isOwner(), COLS = ALL_COLS.filter(c => own || !OWNER_COLS.has(c[0]));
+    $("count").textContent = `Showing ${list.length.toLocaleString()} of ${rows.length.toLocaleString()}`;
     const thead = `<tr>${COLS.map(([k, l, cls]) => `<th class="sortable ${cls || ""}" data-k="${k}">${l}${sortKey === k ? (sortAsc ? " ▲" : " ▼") : ""}</th>`).join("")}</tr>`;
     const body = list.length ? list.map(r => {
-      const flags = (r.confidence !== "props+sim" ? `<span class="flag low" title="No sportsbook line informed the model">sim-only</span>` : `<span class="flag hi" title="A sportsbook line informed the model">book</span>`)
-        + (Math.abs(r.edge) >= BIG ? `<span class="flag big" title="25+ point disagreement — the model is probably missing news">large gap</span>` : "");
+      const flags = (r.confidence !== "props+sim" ? `<span class="flag low" title="No sportsbook line was available to check our number against">less certain</span>` : "")
+        + (Math.abs(r.edge) >= BIG ? `<span class="flag big" title="A gap this large usually means news we haven't caught">check the news</span>` : "");
       const url = safeUrl(r.url);
       const src = r.source === "kalshi" ? (url ? `<a class="link" href="${url}" target="_blank" rel="noopener">Kalshi ↗</a>` : "Kalshi") : esc(r.source.replace("book:", ""));
       const price = r.source === "kalshi" ? (r.price * 100).toFixed(0) + "¢" : (r.price > 0 ? "+" : "") + r.price;
       const status = r.inputs?.status ? ` <span class="badge warn" title="Injury designation">${esc(r.inputs.status)}</span>` : "";
       const tip = `our mean ${r.inputs?.our_mean ?? "–"} (${esc(r.inputs?.mean_src ?? "")})${r.inputs?.cv ? ", CV " + r.inputs.cv : ""}${r.spread != null ? ", spread " + Math.round(r.spread * 100) + "¢" : ""}`;
-      return `<tr title="${esc(tip)}"><td class="l"><span class="pos ${esc(r.pos)}" style="color:var(--pc);font-weight:700;font-size:11px;margin-right:6px">${esc(r.pos)}</span>${esc(r.player)}${status}${flags}</td>
+      return `<tr${own ? ` title="${esc(tip)}"` : ""}><td class="l"><span class="pos ${esc(r.pos)}" style="color:var(--pc);font-weight:700;font-size:11px;margin-right:6px">${esc(r.pos)}</span>${esc(r.player)}${status}${flags}</td>
         <td class="l">${esc(r.team)}</td><td class="l">${esc(r.market_label)}</td><td class="l">${esc(r.rung)}</td><td class="l">${esc(r.side)}</td>
-        <td>${pct(r.our_p)}</td><td>${pct(r.market_p)}</td><td>${price}</td><td class="${r.edge > 0 ? "edge-pos" : ""}">${r.edge > 0 ? "+" : ""}${r.edge.toFixed(1)}</td>
-        <td class="${r.ev > 0 ? "ev-pos" : ""}">${r.ev > 0 ? "+" : ""}${(r.ev * 100).toFixed(1)}%</td><td>${(r.kelly * 100).toFixed(1)}%</td><td class="l">${src}</td></tr>`;
-    }).join("") : `<tr><td colspan="${COLS.length}" class="l" style="text-align:center;color:var(--muted);padding:28px">Nothing matches these filters.</td></tr>`;
+        <td>${pct(r.our_p)}</td><td>${pct(r.market_p)}</td>${own ? `<td>${price}</td>` : ""}<td class="${r.edge > 0 ? "edge-pos" : ""}">${r.edge > 0 ? "+" : ""}${r.edge.toFixed(1)}</td>
+        ${own ? `<td class="${r.ev > 0 ? "ev-pos" : ""}">${r.ev > 0 ? "+" : ""}${(r.ev * 100).toFixed(1)}%</td><td>${(r.kelly * 100).toFixed(1)}%</td>` : ""}<td class="l">${src}</td></tr>`;
+    }).join("") : `<tr><td colspan="${COLS.length}" class="l" style="text-align:center;color:var(--muted);padding:28px">Nothing matches these filters. Try a smaller gap or clear the search.</td></tr>`;
     $("rows").querySelector("thead").innerHTML = thead;
     $("rows").querySelector("tbody").innerHTML = body;
     $("rows").querySelectorAll("th.sortable").forEach(th => th.onclick = () => { const k = th.dataset.k; if (sortKey === k) sortAsc = !sortAsc; else { sortKey = k; sortAsc = ["player", "team", "market_label", "rung", "side", "source"].includes(k); } render(); });
@@ -90,4 +94,5 @@
 
   ["market", "team", "pos", "minEdge", "search", "hideBig", "hiOnly"].forEach(id => $(id).addEventListener("input", render));
   render();
+  window.GS?.Account?.ready?.then(render);   // owner columns appear once the account check finishes
 })();

@@ -1,6 +1,16 @@
 [build]
   publish = "web"
 
+# Stripe checkout, billing portal and webhook (no npm packages; see billing/README.md)
+[functions]
+  directory = "billing/functions"
+
+# the old pricing page is gone: the price is on the sign-up page
+[[redirects]]
+  from = "/pricing.html"
+  to = "/signup.html"
+  status = 301
+
 [[headers]]
   for = "/*"
   [headers.values]

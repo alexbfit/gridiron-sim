@@ -46,12 +46,14 @@ jobs/pipeline.py                     import + project in one go
 .github/workflows/nightly-ingest.yml scheduled ingest + re-project latest slate
 .github/workflows/slate-pipeline.yml runs on push of data/slates/*.csv
 data/slates/                         drop DK / FD salary exports here
-web/index.html                       landing page (product site: how it works, features, track record, pricing, FAQ)
-web/stats.html                       sortable stats site (was index.html)
-web/guide.html, web/account.html     quick-start guide; account / sign-in page (inert until AUTH_ENABLED in config.js)
+web/index.html                       landing page: log in or sign up, nothing else
+web/signup.html, web/home.html       sign-up / log-in / $99-a-month checkout step; the signed-in start page
+web/simple.html                      Quick build: upload entries file -> choose players -> download
+web/stats.html                       Players: sortable stats
+web/guide.html, web/account.html     Help; account and billing
 web/assets/                          design system (ui.css), builder / site styles, shell.js (header, footer, theme, owner mode, accounts)
-billing/                             Stripe + Supabase-auth scaffolding for selling subscriptions — OFF; see billing/README.md
-supabase/pending/012_accounts.sql    subscriber profiles table (not applied)
+billing/                             Stripe checkout / portal / webhook functions (Netlify) for the $99-a-month membership; see billing/README.md
+supabase/pending/012_accounts.sql    subscriber profiles table (applied)
 web/lineups.html                     lineup builder + optimizer (GLPK in the browser), DK/FD CSV export
 web/backtest.html                    backtest report (accuracy by position, weekly error, calibration)
 ```
@@ -244,8 +246,12 @@ toggle), shared header/footer from `web/assets/shell.js`. The builder's optimize
 presets (cash / 1 / 3 / 20 / 50 / 150), a settings panel with a Fine-tune section, per-slate locks/edits remembered in
 the browser, one-click stack locks, a Lineups tab with exposure, and a mobile layout.
 
-* **Owner mode** — open any page once with `?owner=1` (off: `?owner=0`). Shows the private Track Record sections (Sunday
-  task lineups, Flashback, news agents, upset picks) and records builder exports via `save_lineups` for Monday grading.
-  Visitors' exports stay in their browser and never touch the scoreboard.
-* **Selling it** — `web/config.js` has `AUTH_ENABLED`, `REQUIRE_SUBSCRIPTION`, `BILLING_LIVE` and `PLAN` switches, all off.
-  Launch checklist: `billing/README.md`.
+* **Site rebuild (2026-11-28)** — the public site is one landing page (log in / sign up). Everything else needs a
+  log-in and an active membership ($99 a month, Stripe Checkout). Light theme by default, dark optional. Navigation:
+  Home, Lineups (Quick build / Advanced builder), Players, Props, Results (This season / Projection accuracy), Help.
+* **Owner mode** — set `is_owner = true` on your row in the `profiles` table (Supabase table editor). The old
+  `?owner=1` link no longer does anything. Owners skip the membership check, see the private Results sections (Sunday
+  task lineups, Flashback, news agents, upset picks), the extra Props columns and System status, and their builder
+  exports are recorded via `save_lineups` for Monday grading.
+* **Selling it** — `web/config.js` has `AUTH_ENABLED`, `REQUIRE_SUBSCRIPTION` (both on) and the `PLAN` display copy.
+  Stripe and Netlify setup: `billing/README.md`.

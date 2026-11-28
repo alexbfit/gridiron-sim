@@ -8,6 +8,7 @@
   const money = (v) => "$" + Number(v).toLocaleString();
   let supa, slates = [], slate = null, rows = [], sim = null, dbLineups = [], sortKey = "actual", sortAsc = false;
   let newsNotes = [], newsAll = [], upsets = [];
+  const isOwner = () => document.documentElement.classList.contains("owner");   // set by shell.js from the member's profile
 
   async function fetchAll(query) {
     const page = 1000; let from = 0, out = [];
@@ -18,8 +19,8 @@
     const { data, error } = await supa.from("slates").select("*").not("results_meta", "is", null).order("season", { ascending: false }).order("week", { ascending: false });
     if (error) throw error;
     slates = data;
-    if (!slates.length) { $("status").textContent = "No completed slates scored yet — results appear the morning after a slate's games finish."; return false; }
-    $("slate").replaceChildren(...slates.map(s => new Option(`${s.site === "DK" ? "DraftKings" : s.site === "FD" ? "FanDuel" : s.site} · ${s.season} Week ${s.week} · ${s.slate_type === "main" ? "Main slate" : s.slate_type}`, s.slate_id)));
+    if (!slates.length) { $("status").textContent = "No weeks have been graded yet. Results appear the morning after the games finish."; return false; }
+    $("slate").replaceChildren(...slates.map(s => new Option(`Week ${s.week}, ${s.season}${s.slate_type === "main" ? "" : " (" + s.slate_type + ")"}`, s.slate_id)));
     return true;
   }
 
@@ -49,17 +50,20 @@
 
   function renderTiles() {
     const m = slate.results_meta || {};
-    $("status").textContent = `${slate.season} Week ${slate.week} · ${m.n} DFS-relevant players graded · actual points from ${m.actual_source === "contest" ? "DraftKings contest results (exact)" : "box scores (DST approximate)"} · scored ${(m.scored_at || "").slice(0, 10)}`;
+    const own = isOwner();
+    $("status").textContent = `Week ${slate.week}: ${m.n} players graded` + (own ? `, actual points from ${m.actual_source === "contest" ? "DraftKings contest results (exact)" : "box scores (DST approximate)"}, scored ${(m.scored_at || "").slice(0, 10)}.` : ".");
     const tiles = [
-      ["MAE", f1(m.mae), "DK pts, relevant players"],
+      ["Average miss", f1(m.mae), "points per player, projected against scored"],
+      ["Players graded", m.n ?? "–", "everyone who mattered for lineups"],
+    ];
+    if (own) tiles.push(
       ["Correlation", m.r?.toFixed(3) ?? "–", "projection vs actual"],
       ["Bias", (m.bias > 0 ? "+" : "") + f1(m.bias), "projection − actual"],
       ["Actual ≤ p10 / p90", m.coverage ? `${Math.round(m.coverage.p10 * 100)}% / ${Math.round(m.coverage.p90 * 100)}%` : "–", "target 10% / 90%"],
-      ["Ownership", m.has_ownership ? "actual" : "estimated", m.has_ownership ? "from contest results" : "projected"],
-    ];
-    const pos = Object.entries(m.by_pos || {}).map(([p, v]) => `${p} ${f1(v.mae)} (${v.bias > 0 ? "+" : ""}${f1(v.bias)})`).join(" · ");
+      ["Ownership", m.has_ownership ? "actual" : "estimated", m.has_ownership ? "from contest results" : "projected"]);
+    const pos = Object.entries(m.by_pos || {}).map(([p, v]) => `${p} ${f1(v.mae)}${own ? ` (${v.bias > 0 ? "+" : ""}${f1(v.bias)})` : ""}`).join(", ");
     $("tiles").innerHTML = tiles.map(([k, v, s]) => `<div class="tile"><div class="k">${k}</div><div class="v">${v}</div><div class="s">${s}</div></div>`).join("")
-      + (pos ? `<div class="tile" style="grid-column:1/-1"><div class="k">MAE (bias) by position</div><div class="s" style="font-size:13px;color:var(--text)">${pos}</div></div>` : "");
+      + (pos ? `<div class="tile" style="grid-column:1/-1"><div class="k">Average miss by position</div><div class="s" style="font-size:14px;color:var(--text)">${pos}</div></div>` : "");
   }
 
   function renderSources() {
@@ -220,15 +224,16 @@
     el.innerHTML = html;
   }
 
-  const COLS = [
+  const ALL_COLS = [
     { key: "player_name", label: "Player", left: true }, { key: "position", label: "Pos", left: true }, { key: "team", label: "Team", left: true },
-    { key: "salary", label: "Salary", fmt: money }, { key: "proj_mean", label: "Proj", fmt: f1 }, { key: "actual", label: "Actual", fmt: f1 },
-    { key: "diff", label: "Diff", fmt: (v) => v == null ? "–" : (v > 0 ? "+" : "") + v.toFixed(1) },
-    { key: "proj_p10", label: "p10", fmt: f1 }, { key: "proj_p90", label: "p90", fmt: f1 }, { key: "pit", label: "PIT", fmt: (v) => v == null ? "–" : v.toFixed(2) },
-    { key: "own", label: "Own%", fmt: (v) => v == null ? "–" : Math.round(v) + "%" },
+    { key: "salary", label: "Salary", fmt: money }, { key: "proj_mean", label: "Projected", fmt: f1 }, { key: "actual", label: "Scored", fmt: f1 },
+    { key: "diff", label: "Difference", fmt: (v) => v == null ? "–" : (v > 0 ? "+" : "") + v.toFixed(1) },
+    { key: "proj_p10", label: "Low end", fmt: f1 }, { key: "proj_p90", label: "High end", fmt: f1 }, { key: "pit", label: "PIT", owner: true, fmt: (v) => v == null ? "–" : v.toFixed(2) },
+    { key: "own", label: "Drafted", fmt: (v) => v == null ? "–" : Math.round(v) + "%" },
   ];
   function renderTable() {
     const thead = document.querySelector("#players thead"), tbody = document.querySelector("#players tbody");
+    const own = isOwner(), COLS = ALL_COLS.filter(c => own || !c.owner);
     const tr = document.createElement("tr");
     COLS.forEach(c => { const th = document.createElement("th"); th.textContent = c.label; if (c.left) th.classList.add("left"); if (c.key === sortKey) th.classList.add("sorted", sortAsc ? "asc" : "x");
       th.addEventListener("click", () => { if (sortKey === c.key) sortAsc = !sortAsc; else { sortKey = c.key; sortAsc = !!c.left; } renderTable(); }); tr.appendChild(th); });
@@ -250,7 +255,7 @@
   }
 
   function renderTrend() {
-    const items = slates.slice().sort((a, b) => a.season - b.season || a.week - b.week).map(s => { const m = s.results_meta || {}; return `<div class="tile"><div class="k">${s.site} ${s.season} wk ${s.week}</div><div class="v">${f1(m.mae)}</div><div class="s">MAE · r ${m.r?.toFixed(2) ?? "–"} · bias ${m.bias > 0 ? "+" : ""}${f1(m.bias)}</div></div>`; });
+    const items = slates.slice().sort((a, b) => a.season - b.season || a.week - b.week).map(s => { const m = s.results_meta || {}; return `<div class="tile"><div class="k">Week ${s.week}</div><div class="v">${f1(m.mae)}</div><div class="s">${isOwner() ? `r ${m.r?.toFixed(2) ?? "–"}, bias ${m.bias > 0 ? "+" : ""}${f1(m.bias)}` : "points"}</div></div>`; });
     $("trend").innerHTML = items.join("");
   }
 
@@ -287,39 +292,47 @@
     const weeks = (d.weeks || []).slice().sort((a, b) => a.week - b.week), t = d.totals;
     if (!weeks.length || !t) { box.hidden = true; return; }
     box.hidden = false;
-    $("ledgerMeta").textContent = `${d.season} · ${t.weeks} week${t.weeks === 1 ? "" : "s"} · ${num(t.lineups)} lineups · built ${String(d.built_at || "").slice(0, 10)}`;
+    const own = isOwner();
+    $("ledgerMeta").textContent = `${t.weeks} week${t.weeks === 1 ? "" : "s"}, ${num(t.lineups)} lineups`;
     const tiles = [
-      ["Consensus ROI vs field", `${roi(t.consensus_roi)} <span style="font-size:14px;color:var(--muted)">vs ${roi(t.field_mean_roi)}</span>`, `${t.consensus_roi_vs_field == null ? "expected return on market projections" : signed(t.consensus_roi_vs_field * 100, 0) + " pts vs the field's mean expected return"} · ${t.weeks_with_flashback}/${t.weeks} weeks replayed`, upDown(t.consensus_roi_vs_field)],
-      ["Weeks above field median", t.weeks_with_field_median ? `${t.weeks_above_field_median} / ${t.weeks_with_field_median}` : "–", "average lineup points vs the median real entry", ""],
-      ["Lineups in top 1%", t.top1_lineups == null ? "–" : String(t.top1_lineups), `of ${num(t.lineups)} lineups entered · realized finishes`, ""],
-      ["Best real finish", t.best_finish ? num(t.best_finish.rank) : "–", t.best_finish ? `of ${num(t.best_finish.entries)} · week ${t.best_finish.week}` : "no standings file imported yet", ""],
+      ["Weeks we beat the typical entry", t.weeks_with_field_median ? `${t.weeks_above_field_median} of ${t.weeks_with_field_median}` : "–", "our average lineup against the middle entry in the contest", ""],
+      ["Lineups in the top 1%", t.top1_lineups == null ? "–" : String(t.top1_lineups), `of ${num(t.lineups)} lineups built`, ""],
+      ["Best finish", t.best_finish ? num(t.best_finish.rank) : "–", t.best_finish ? `out of ${num(t.best_finish.entries)} entries, week ${t.best_finish.week}` : "no contest results loaded yet", ""],
     ];
-    if (t.real_money) tiles.push(["Real money in → out", `${dollars(t.real_money.in)} → ${dollars(t.real_money.out)}`, `${roi(t.real_money.roi)} · ${t.real_money.weeks} week${t.real_money.weeks === 1 ? "" : "s"} · payout curve on real ranks`, upDown(t.real_money.roi)]);
+    if (own) {
+      tiles.unshift(["Consensus ROI vs field", `${roi(t.consensus_roi)} <span style="font-size:14px;color:var(--muted)">vs ${roi(t.field_mean_roi)}</span>`, `${t.consensus_roi_vs_field == null ? "expected return on market projections" : signed(t.consensus_roi_vs_field * 100, 0) + " pts vs the field's mean expected return"}, ${t.weeks_with_flashback}/${t.weeks} weeks replayed`, upDown(t.consensus_roi_vs_field)]);
+      if (t.real_money) tiles.push(["Real money in → out", `${dollars(t.real_money.in)} → ${dollars(t.real_money.out)}`, `${roi(t.real_money.roi)}, ${t.real_money.weeks} week${t.real_money.weeks === 1 ? "" : "s"}, payout curve on real ranks`, upDown(t.real_money.roi)]);
+    }
     $("ledgerTiles").innerHTML = tiles.map(([k, v, s, c]) => `<div class="tile"><div class="k">${k}</div><div class="v ${c}">${v}</div><div class="s">${s}</div></div>`).join("");
     const rowHtml = (w) => { const L = w.lineups || {}, F = w.flashback || {}, D = w.dupes, R = w.real_money;
       return `<tr>
-        <td class="l"><a href="#" data-recap="${esc(w.recap)}" data-week="${w.week}">Week ${w.week}</a> <span class="muted">· ${L.n ?? "–"}</span></td>
-        <td title="average lineup points minus the field's median entry">${f1(L.avg_pts)} <span class="muted">(${signed(L.avg_vs_field_median)})</span></td>
-        <td title="share of real entries beaten, averaged over our lineups">${pct(L.beat_pct)}${L.best_beat_pct != null ? ` <span class="muted">· best ${pct(L.best_beat_pct)}</span>` : ""}</td>
-        <td class="${F.consensus_roi != null && F.field_mean_roi != null && F.consensus_roi > F.field_mean_roi ? "best" : ""}" title="Flashback consensus ROI vs the field's mean expected ROI">${F.present ? `${roi(F.consensus_roi)} <span class="muted">vs ${roi(F.field_mean_roi)}</span>` : "–"}</td>
-        <td title="share of real entries our portfolio beats in expectation">${pct(F.beats_pct)}</td>
-        <td title="lineups that finished in the top 1% · best real rank">${L.top1_lineups ?? "–"}${L.best_rank ? ` <span class="muted">· #${num(L.best_rank)}</span>` : ""}</td>
-        <td title="lineups with an exact copy in the field · winnings lost to splits">${D ? `${D.lineups_with_copy}/${L.n} <span class="muted">· ${pct(D.winnings_lost_pct)}</span>` : "–"}</td>
-        <td title="owner's entries in this contest: stake → payout-curve return">${R ? `${dollars(R.in)} → ${dollars(R.out)}` : "–"}</td>
-        <td class="l"><a href="data/${esc(w.recap)}" data-recap="${esc(w.recap)}" data-week="${w.week}">recap</a></td></tr>`; };
-    $("ledgerTable").innerHTML = `<tr><th class="l">Week · lineups</th><th>avg pts (vs median)</th><th>beat % of field</th><th>consensus ROI vs field</th><th>beats field</th><th>top 1% · best</th><th>dupes</th><th>real $</th><th class="l"></th></tr>` + weeks.map(rowHtml).join("");
+        <td class="l"><a href="#" data-recap="${esc(w.recap)}" data-week="${w.week}">Week ${w.week}</a></td>
+        <td>${L.n ?? "–"}</td>
+        <td title="Our average lineup, and how far above or below the middle entry in the contest">${f1(L.avg_pts)} <span class="muted">(${signed(L.avg_vs_field_median)})</span></td>
+        <td title="Share of the contest's entries our average lineup beat">${pct(L.beat_pct)}</td>
+        <td title="Share of the contest's entries our best lineup beat">${pct(L.best_beat_pct)}</td>
+        <td>${L.top1_lineups ?? "–"}</td>
+        <td>${L.best_rank ? num(L.best_rank) : "–"}</td>`
+        + (own ? `<td class="${F.consensus_roi != null && F.field_mean_roi != null && F.consensus_roi > F.field_mean_roi ? "best" : ""}">${F.present ? `${roi(F.consensus_roi)} <span class="muted">vs ${roi(F.field_mean_roi)}</span>` : "–"}</td>
+        <td>${pct(F.beats_pct)}</td>
+        <td title="lineups with an exact copy in the field, and winnings lost to splits">${D ? `${D.lineups_with_copy}/${L.n} <span class="muted">(${pct(D.winnings_lost_pct)})</span>` : "–"}</td>
+        <td title="owner's entries in this contest: stake to payout-curve return">${R ? `${dollars(R.in)} → ${dollars(R.out)}` : "–"}</td>` : "") + `</tr>`; };
+    $("ledgerTable").innerHTML = `<tr><th class="l">Week</th><th>Lineups</th><th>Average score (vs typical entry)</th><th>Entries beaten, average</th><th>Entries beaten, best</th><th>Top 1% finishes</th><th>Best finish</th>`
+      + (own ? `<th>consensus ROI vs field</th><th>beats field</th><th>dupes</th><th>real $</th>` : "") + `</tr>` + weeks.map(rowHtml).join("");
     const caveats = [];
-    if (weeks.some(w => !w.flashback?.present)) caveats.push("weeks without a Contest Flashback (no standings export) show realized points only");
-    if (!weeks.some(w => w.dupes)) caveats.push("duplicate counts start with the first Flashback run that records them");
-    if (t.real_money) caveats.push("real $ counts only the contests with an imported standings file, at the payout curve — not a DraftKings statement");
-    $("ledgerFine").textContent = caveats.length ? "Notes: " + caveats.join("; ") + "." : "";
+    if (weeks.some(w => !w.flashback?.present)) caveats.push("A dash means we don't have that contest's full results yet");
+    if (own && t.real_money) caveats.push("real $ counts only the contests with an imported standings file, at the payout curve, not a DraftKings statement");
+    $("ledgerFine").textContent = caveats.length ? caveats.join(". ") + "." : "";
+    // members see what won and what missed; the owner sees the whole recap
+    const memberCut = (md) => { const out = []; let keep = false;
+      md.split("\n").forEach(l => { if (/^## /.test(l)) keep = /^## What (won|missed)/.test(l); if (keep) out.push(l); }); return out.join("\n"); };
     // latest recap inline, switchable
     const recapBox = $("ledgerRecap"); const cache = new Map();
     async function showRecap(w) {
       let md = cache.get(w.recap);
       if (md == null) { try { const r = await fetch("data/" + w.recap, { cache: "no-cache" }); md = r.ok ? await r.text() : ""; } catch (e) { md = ""; } cache.set(w.recap, md); }
       recapBox.innerHTML = `<div class="recap-nav">${weeks.map(x => `<span class="badge ${x.week === w.week ? "active" : ""}" data-week="${x.week}">Week ${x.week}</span>`).join("")}</div>`
-        + (md ? `<div class="recap">${mdToHtml(md)}</div>` : `<p class="lead" style="margin-top:8px">Recap for week ${w.week} not published yet.</p>`);
+        + (md && (own || memberCut(md)) ? `<div class="recap"><h3>Week ${w.week}</h3>${mdToHtml(own ? md : memberCut(md))}</div>` : `<p class="lead" style="margin-top:8px">The week ${w.week} write-up isn't ready yet.</p>`);
       recapBox.querySelectorAll(".recap-nav .badge").forEach(b => b.addEventListener("click", () => showRecap(weeks.find(x => x.week === Number(b.dataset.week)))));
     }
     $("ledgerTable").querySelectorAll("a[data-recap]").forEach(a => a.addEventListener("click", (ev) => { ev.preventDefault(); showRecap(weeks.find(x => x.week === Number(a.dataset.week))); recapBox.scrollIntoView({ behavior: "smooth", block: "nearest" }); }));
@@ -327,11 +340,12 @@
   }
 
   async function init() {
+    try { await window.GS?.Account?.ready; } catch (e) { /* render the member view */ }
     renderLedger().catch(e => { console.warn("ledger", e); const b = $("ledger"); if (b) b.hidden = true; });
     if (!cfg.SUPABASE_URL || cfg.SUPABASE_URL.includes("YOUR-PROJECT")) { $("status").textContent = "Set SUPABASE_URL and SUPABASE_ANON_KEY in web/config.js"; return; }
     supa = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY);
     try { if (!(await loadSlates())) return; await loadSlate(); }
-    catch (e) { $("status").textContent = "Error: " + (e.message || e); console.error(e); return; }
+    catch (e) { $("status").textContent = "The results didn't load. Reload the page to try again."; console.error(e); return; }
     $("slate").addEventListener("change", loadSlate);
     ["posFilter", "search"].forEach(id => $(id).addEventListener("input", renderTable));
   }

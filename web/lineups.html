@@ -1,22 +1,22 @@
 <!doctype html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Lineup Builder · GameTime Win</title>
-<meta name="description" content="Build DraftKings and FanDuel NFL lineups from 10,000 simulated games. Pick a contest, set your rules, download an upload-ready CSV.">
-<script>try{document.documentElement.dataset.theme=localStorage.getItem("gs_theme")||"dark";if(localStorage.getItem("gs_owner")==="1")document.documentElement.classList.add("owner")}catch(e){}</script>
+<title>Advanced builder · GameTime Win</title>
+<script>try{document.documentElement.dataset.theme=localStorage.getItem("gs_theme")||"light";if(localStorage.getItem("gs_owner")==="1")document.documentElement.classList.add("owner")}catch(e){}</script>
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/ui.css">
 <link rel="stylesheet" href="assets/builder.css">
+<meta name="robots" content="noindex">
 <script src="config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="assets/shell.js"></script>
 </head>
 <body class="app">
-<header data-shell-header="app"></header>
+<header data-shell-header></header>
 
 <!-- slate bar -->
 <div class="slatebar">
@@ -30,15 +30,15 @@
   </div>
 </div>
 
-<main class="builder" data-requires-sub>
+<main class="builder">
   <!-- ================================================= settings -->
   <aside class="settings" id="settings" aria-label="Build settings">
     <div class="settings-scroll">
       <section class="set-block">
         <div class="set-label">Contest type</div>
         <div class="seg seg-tall" id="contestSeg" role="group" aria-label="Contest type">
-          <button type="button" data-v="cash" aria-pressed="false">Cash<small>50/50s · double-ups</small></button>
-          <button type="button" data-v="gpp" aria-pressed="true">Tournament<small>GPPs · big fields</small></button>
+          <button type="button" data-v="cash" aria-pressed="false">Cash games<small>50/50s and double-ups</small></button>
+          <button type="button" data-v="gpp" aria-pressed="true">Tournaments<small>big prize pools</small></button>
         </div>
         <select id="contest" hidden><option value="cash">cash</option><option value="gpp" selected>gpp</option></select>
       </section>
@@ -64,28 +64,28 @@
         <div class="set-label">Stacking <span class="help" tabindex="0" data-tip="Pair your QB with his own pass catchers so the lineup wins when that passing game goes off. Bring-back adds a player from the opposing team, betting on a shootout.">?</span></div>
         <div class="seg" id="stackSeg" role="group" aria-label="QB stack">
           <button type="button" data-v="0" aria-pressed="false">No stack</button>
-          <button type="button" data-v="1" aria-pressed="true">QB + 1</button>
-          <button type="button" data-v="2" aria-pressed="false">QB + 2</button>
+          <button type="button" data-v="1" aria-pressed="false">QB + 1</button>
+          <button type="button" data-v="2" aria-pressed="true">QB + 2</button>
         </div>
-        <select id="stack" hidden><option value="0">0</option><option value="1" selected>1</option><option value="2">2</option></select>
-        <label class="switch"><span class="switch-text">Bring-back from the opponent</span><input type="checkbox" id="bringbackSw"></label>
+        <select id="stack" hidden><option value="0">0</option><option value="1">1</option><option value="2" selected>2</option></select>
+        <label class="switch"><span class="switch-text">Add a player from the other team</span><input type="checkbox" id="bringbackSw"></label>
         <select id="bringback" hidden><option value="0" selected>0</option><option value="1">1</option></select>
       </section>
 
       <section class="set-block multi-only">
-        <div class="set-label">Max exposure per player <b class="set-val" id="maxExpVal">40%</b> <span class="help" tabindex="0" data-tip="No player appears in more than this share of your lineups (locked players excepted). Lower = more diversified. Per-player limits can be set in the Portfolio columns.">?</span></div>
-        <input type="range" id="maxExpRange" min="10" max="100" step="5" value="40" aria-label="Max exposure">
-        <input id="maxExp" type="number" hidden value="40">
-        <div class="range-ends"><span>Diversified</span><span>Concentrated</span></div>
+        <div class="set-label">Most lineups one player can be in <b class="set-val" id="maxExpVal">35%</b> <span class="help" tabindex="0" data-tip="No player appears in more than this share of your lineups (locked players excepted). Lower = more diversified. Per-player limits can be set in the Portfolio columns.">?</span></div>
+        <input type="range" id="maxExpRange" min="10" max="100" step="5" value="35" aria-label="Max exposure">
+        <input id="maxExp" type="number" hidden value="35">
+        <div class="range-ends"><span>Spread out</span><span>Concentrated</span></div>
       </section>
 
       <section class="set-block">
-        <label class="switch"><span class="switch-text">Skip questionable &amp; doubtful players</span><input type="checkbox" id="exclQSw"></label>
+        <label class="switch"><span class="switch-text">Leave out questionable and doubtful players</span><input type="checkbox" id="exclQSw"></label>
         <select id="exclQ" hidden><option value="0" selected>0</option><option value="1">1</option></select>
       </section>
 
       <details class="set-advanced" id="advanced">
-        <summary><span data-icon="sliders"></span> Fine-tune <span class="muted small" id="advCount"></span></summary>
+        <summary><span data-icon="sliders"></span> More settings <span class="muted small" id="advCount"></span></summary>
         <div class="adv-grid">
           <label class="field"><span>Min salary used <span class="help" tabindex="0" data-tip="Force lineups to use at least this much of the cap. 0 = no minimum. $49,000+ is common.">?</span></span><input id="minSalary" class="input" type="number" step="100" value="0"></label>
           <label class="field"><span>Max players per team</span><input id="maxTeam" class="input" type="number" min="1" max="8" value="4"></label>
@@ -97,7 +97,7 @@
           <label class="field" id="propsWrap" style="display:none"><span>Betting-market weight % <span class="help" tabindex="0" data-tip="How much each player's projection leans on sportsbook / prediction-market player props (where posted) vs. the game sim. 85 is our default; props predicted fantasy points better than the sim on 2024 data.">?</span></span><input id="propsBlend" class="input" type="number" min="0" max="100" value="85"><span class="hint" id="propsSrc"></span></label>
           <label class="field" id="blendWrap" style="display:none"><span>External projections %</span><input id="blend" class="input" type="number" min="0" max="100" value="50"><span class="hint" id="blendSrc"></span></label>
         </div>
-        <button type="button" class="btn btn-ghost btn-sm" id="resetSettings" data-icon="refresh">Reset to preset</button>
+        <button type="button" class="btn btn-ghost btn-sm" id="resetSettings" data-icon="refresh">Reset to our defaults</button>
       </details>
 
       <p class="obj-hint" id="objHint"></p>
@@ -139,10 +139,10 @@
         <button class="chip" id="onlyMine" aria-pressed="false" title="Show only the players you've locked, excluded or edited">My picks <span class="count" id="mineCount">0</span></button>
         <div id="stackModeBar" hidden></div>
         <div class="seg seg-compact" id="colSeg" role="group" aria-label="Columns">
-          <button type="button" data-cols="core" aria-pressed="true">Core</button>
+          <button type="button" data-cols="core" aria-pressed="true">Main</button>
           <button type="button" data-cols="range" aria-pressed="false" title="Simulated percentiles">Ranges</button>
-          <button type="button" data-cols="stats" aria-pressed="false" title="Simulated stat lines">Stats</button>
-          <button type="button" data-cols="port" aria-pressed="false" title="Exposure controls and results">Portfolio</button>
+          <button type="button" data-cols="stats" aria-pressed="false" title="Simulated stat lines">Stat lines</button>
+          <button type="button" data-cols="port" aria-pressed="false" title="Per-player limits and how often each player was used">Exposure</button>
         </div>
       </div>
       <div class="picks-bar" id="picksBar" hidden></div>

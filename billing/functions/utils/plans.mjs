@@ -1,53 +1,36 @@
 // Plan ↔ Stripe price mapping for the billing functions. Pure functions, no I/O, unit-tested in plans.test.mjs.
 //
-// Environment variables (one Stripe Price each):
-//   STRIPE_PRICE_STARTER_MONTHLY   recurring, monthly
-//   STRIPE_PRICE_STARTER_SEASON    recurring, YEARLY — the "NFL season pass". The webhook sets cancel_at_period_end on it,
-//                                  so it covers the season through the Super Bowl and never renews.
-//   STRIPE_PRICE_PRO_MONTHLY       recurring, monthly
-//   STRIPE_PRICE_PRO_SEASON        recurring, yearly (same treatment)
-//   STRIPE_PRICE_SLATE             one-time ($5 Slate Pass — 24 hours of Starter; sets profiles.slate_pass_until)
-// Optional: PLAN_BY_PRICE = JSON {"price_abc":"starter", ...} to override / extend the mapping (e.g. legacy prices).
+// There is one plan: the monthly membership ($99 a month, no trial).
+//   STRIPE_PRICE_MEMBER_MONTHLY   the Stripe Price id (recurring, monthly)
+// Legacy: STRIPE_PRICE_ID is honoured as a fallback for the same price.
+// Optional: PLAN_BY_PRICE = JSON {"price_abc":"member"} to map extra prices (e.g. an old price kept for existing members).
 
-export const PLANS = ["starter", "pro"];
-export const INTERVALS = ["monthly", "season"];
-export const SLATE_PASS_HOURS = 24;
+export const PLANS = ["member"];
+export const INTERVALS = ["monthly"];
+export const TRIAL_DAYS = 0;
 
 // The env var name that holds the Stripe price id for a plan + interval. Throws on anything unexpected.
-export function priceEnvName(plan, interval) {
-  if (plan === "slate") return "STRIPE_PRICE_SLATE";
-  if (!PLANS.includes(plan)) throw new Error(`Unknown plan "${plan}". Choose starter, pro or slate.`);
-  if (!INTERVALS.includes(interval)) throw new Error(`Unknown interval "${interval}". Choose monthly or season.`);
+export function priceEnvName(plan = "member", interval = "monthly") {
+  if (!PLANS.includes(plan)) throw new Error(`Unknown plan "${plan}". The only plan is member.`);
+  if (!INTERVALS.includes(interval)) throw new Error(`Unknown interval "${interval}". The membership is monthly.`);
   return `STRIPE_PRICE_${plan.toUpperCase()}_${interval.toUpperCase()}`;
 }
 
-// Checkout mode: Starter / Pro (monthly or season) are Stripe subscriptions with a 7-day trial; the slate pass is a one-time payment.
-export function checkoutMode(plan) {
-  return plan === "slate" ? "payment" : "subscription";
+// The configured price id for the membership, or null when billing has not been set up.
+export function memberPrice(env = process.env) {
+  return env.STRIPE_PRICE_MEMBER_MONTHLY || env.STRIPE_PRICE_ID || null;
 }
-export const TRIAL_DAYS = 7;
 
-// price_id → { plan, interval } using the env vars above (and PLAN_BY_PRICE if set). Returns null when unknown.
+// price_id → { plan, interval }. Returns null when the price is not one of ours.
 export function planForPrice(priceId, env = process.env) {
   if (!priceId) return null;
-  for (const plan of [...PLANS, "slate"]) {
-    const intervals = plan === "slate" ? ["once"] : INTERVALS;
-    for (const interval of intervals) {
-      const name = plan === "slate" ? "STRIPE_PRICE_SLATE" : priceEnvName(plan, interval);
-      if (env[name] && env[name] === priceId) return { plan, interval };
-    }
-  }
+  if (priceId === memberPrice(env)) return { plan: "member", interval: "monthly" };
   if (env.PLAN_BY_PRICE) {
     try {
-      const m = JSON.parse(env.PLAN_BY_PRICE);
-      const v = m[priceId];
-      if (typeof v === "string") return { plan: v, interval: v === "slate" ? "once" : "monthly" };
+      const v = JSON.parse(env.PLAN_BY_PRICE)[priceId];
+      if (typeof v === "string") return { plan: v, interval: "monthly" };
       if (v && typeof v === "object" && v.plan) return { plan: v.plan, interval: v.interval || "monthly" };
     } catch (e) { /* malformed override: ignore */ }
   }
   return null;
-}
-
-export function slatePassEnd(now = new Date()) {
-  return new Date(now.getTime() + SLATE_PASS_HOURS * 3600 * 1000);
 }
