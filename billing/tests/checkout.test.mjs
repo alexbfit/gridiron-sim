@@ -32,7 +32,7 @@ const post = (body, headers = { authorization: "Bearer tok" }) => new Request("h
 
 test("checkout: a new member gets a Stripe subscription session for the $99 price, with no trial", async () => {
   const w = fakeWorld();
-  const { default: checkout } = await import("./create-checkout.mjs");
+  const { default: checkout } = await import("../functions/create-checkout.mjs");
   const res = await checkout(post({ plan: "member", interval: "monthly" }));
   assert.equal(res.status, 200);
   assert.equal((await res.json()).url, "https://checkout.stripe.com/c/pay/cs_test_1");
@@ -48,7 +48,7 @@ test("checkout: a new member gets a Stripe subscription session for the $99 pric
 });
 
 test("checkout: refuses without a log-in, for an unknown plan, and for someone already paying", async () => {
-  const { default: checkout } = await import("./create-checkout.mjs");
+  const { default: checkout } = await import("../functions/create-checkout.mjs");
   fakeWorld({ tokenOk: false });
   assert.equal((await checkout(post({}))).status, 401);
   fakeWorld();
@@ -61,7 +61,7 @@ test("checkout: refuses without a log-in, for an unknown plan, and for someone a
 });
 
 test("webhook: a signed subscription event marks the profile active; a bad signature changes nothing", async () => {
-  const { default: hook } = await import("./stripe-webhook.mjs");
+  const { default: hook } = await import("../functions/stripe-webhook.mjs");
   const payload = JSON.stringify({ type: "customer.subscription.created", data: { object: { id: "sub_1" } } });
   const sign = (secret) => { const t = Math.floor(Date.now() / 1000); return `t=${t},v1=${crypto.createHmac("sha256", secret).update(`${t}.${payload}`).digest("hex")}`; };
   const req = (sig) => new Request("https://x/y", { method: "POST", headers: { "stripe-signature": sig }, body: payload });

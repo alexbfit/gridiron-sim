@@ -13,7 +13,7 @@ the sim, the lineup jobs or the Sunday tasks.
 | Account page (status, renewal date, Manage billing) | `web/account.html` |
 | `profiles` table (`subscription_status`, `current_period_end`, `is_owner`, ...) | `supabase/pending/012_accounts.sql` (applied) |
 | Checkout / billing portal / webhook | `billing/functions/*.mjs`, deployed by `[functions]` in `netlify.toml` |
-| Tests | `node --test "billing/**/*.test.mjs"` (also run by the Python suite) |
+| Tests | `node --test "billing/**/*.test.mjs"` (also run by the Python suite). Keep test files out of `billing/functions/`: Netlify treats every file at the top of that folder as a function |
 
 ## How access is decided
 
