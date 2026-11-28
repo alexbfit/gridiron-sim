@@ -414,6 +414,21 @@ def solve(pool, score, site, opts, prior, blocked, locks, own_map=None):
                 prob += pulp.lpSum(by(lambda p, qb=qb: p["team"] == qb["team"] and p["position"] in stack_pos)) >= opts.stack * x[qb["site_player_id"]]
             if opts.bringback:
                 prob += pulp.lpSum(by(lambda p, qb=qb: p["team"] == qb["opponent"] and p["position"] in ("RB", "WR", "TE"))) >= getattr(opts, "bringback_n", 1) * x[qb["site_player_id"]]
+        # Pattern-ledger cuts (2026 fields, 1.83M entries: both patterns are under-represented in the top 1% in 6+ of 8 weeks).
+        # On by default for the build_lineups.py GPP command line (see parse_args); callers that build their own opts
+        # (late_swap, backtests) leave them off unless they set the attribute.
+        if getattr(opts, "no_qb_rb", False):                 # never a QB with a running back from his own team
+            for qb in [p for p in pool if p["position"] == "QB"]:
+                rbs = by(lambda p, qb=qb: p["position"] == "RB" and p["team"] == qb["team"])
+                forced = qb["site_player_id"] in locks and any(p["site_player_id"] in locks for p in pool if p["position"] == "RB" and p["team"] == qb["team"])
+                if rbs and not forced:                       # an explicit --lock of both wins over the rule
+                    prob += pulp.lpSum(rbs) + 3 * x[qb["site_player_id"]] <= 3
+        if getattr(opts, "no_dst_vs", False):                # never a defense facing one of the lineup's own players
+            for d in [p for p in pool if p["position"] == "DST"]:
+                opp = by(lambda p, d=d: p["position"] != "DST" and p["team"] == d["opponent"])
+                forced = d["site_player_id"] in locks and any(p["site_player_id"] in locks for p in pool if p["position"] != "DST" and p["team"] == d["opponent"])
+                if opp and not forced:
+                    prob += pulp.lpSum(opp) + 8 * x[d["site_player_id"]] <= 8
         if getattr(opts, "rb_one_per_game", False):          # at most one RB from any game (teammates or opponents)
             for g in {p["game_id"] for p in pool if p.get("game_id") and p["position"] == "RB"}:
                 prob += pulp.lpSum(by(lambda p, g=g: p["position"] == "RB" and p.get("game_id") == g)) <= 1
@@ -482,6 +497,8 @@ def parse_args(argv=None):
     ap.add_argument("--max-own", type=float, default=0, help="cap on a lineup's summed ownership %% (gpp)")
     ap.add_argument("--stack-rb", action="store_true", help="QB's RB counts toward --stack")
     ap.add_argument("--rb-one-per-game", action="store_true", help="gpp: at most one RB from any one game")
+    ap.add_argument("--allow-qb-rb", action="store_true", help="gpp: allow a QB with a running back from his own team (blocked by default since 11/28, pattern ledger)")
+    ap.add_argument("--allow-dst-vs", action="store_true", help="gpp: allow a defense that faces one of the lineup's own players (blocked by default since 11/28, pattern ledger)")
     ap.add_argument("--bringback-n", type=int, default=1, help="gpp with --bringback: how many opponents of the QB (2 = full game stack)")
     ap.add_argument("--ev-key", default="ev", choices=["ev", "p_top1", "p_top01"], help="--objective ev: rank candidates by expected profit or by P(top 1%%) / P(top 0.1%%) vs the simulated field")
     ap.add_argument("--max-qb-exp", type=float, default=0, help="gpp: separate (lower) exposure cap for QBs, e.g. 0.12 spreads 50 lineups over 9+ QBs")
@@ -539,7 +556,11 @@ def parse_args(argv=None):
     ap.add_argument("--source", default="claude", choices=["claude", "web"])
     ap.add_argument("--note", default=None, help="short note stored with saved lineups (what was overridden and why)")
     ap.add_argument("--append", action="store_true", help="with --save: add to existing lineups instead of replacing")
-    return ap.parse_args(argv)
+    args = ap.parse_args(argv)
+    # pattern-ledger cuts: on for every GPP build from this command line unless explicitly allowed
+    args.no_qb_rb = args.contest == "gpp" and not args.allow_qb_rb
+    args.no_dst_vs = args.contest == "gpp" and not args.allow_dst_vs
+    return args
 
 
 def build(args, slate, rows, ext, own_model, matrix, quiet=False):
@@ -549,6 +570,9 @@ def build(args, slate, rows, ext, own_model, matrix, quiet=False):
     if args.seed is not None:
         random.seed(args.seed); np.random.seed(args.seed)
     log = (lambda *a: None) if quiet else (lambda *a: print(*a, file=sys.stderr))
+    cuts = [t for t, on in (("no QB with his own RB", getattr(args, "no_qb_rb", False)), ("no DST facing its own lineup's players", getattr(args, "no_dst_vs", False))) if on]
+    if cuts:
+        log("ledger cuts: " + "; ".join(cuts))
     site = SITES[slate["site"]]
     byid = {r["site_player_id"]: r for r in rows}
     byname = {}

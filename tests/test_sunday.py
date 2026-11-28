@@ -104,6 +104,40 @@ def test_build_gpp_props_only_is_valid(db, monkeypatch, tmp_path):
     assert saves and saves[-1]["p_contest"] == "gpp" and len(saves[-1]["p_lineups"]) == 50
 
 
+def _ledger_counts(lineups, b):
+    """(lineups with the QB's own RB, lineups whose DST faces one of their own players)"""
+    qb_rb = dst_vs = 0
+    for L in lineups:
+        ps = [b[i] for i in L["ids"]]
+        qb = next(p for p in ps if p["position"] == "QB"); d = next(p for p in ps if p["position"] == "DST")
+        qb_rb += any(p["position"] == "RB" and p["team"] == qb["team"] for p in ps)
+        dst_vs += any(p["position"] != "DST" and p["team"] == d["opponent"] for p in ps)
+    return qb_rb, dst_vs
+
+
+def test_build_gpp_ledger_cuts_on_by_default(db, monkeypatch, tmp_path):
+    """Since 11/28 the Sunday GPP command builds no QB + own RB and no DST facing its own lineup; --allow-* turns each off.
+    Cash builds are untouched."""
+    ss, _ = ext_flags(db, monkeypatch, tmp_path)
+    b = board(db)
+    small = BASE_GPP[:3] + ["20"] + BASE_GPP[4:] + ss
+    js = tmp_path / "cut.json"
+    assert run_main("build_lineups", small + ["--json", str(js)], monkeypatch) == 0
+    cut = json.load(open(js))["lineups"]
+    assert len(cut) == 20 and _ledger_counts(cut, b) == (0, 0)
+    for L in cut:
+        check_lineup(L["ids"], b, stack=2, max_te=1)
+    js2 = tmp_path / "allow.json"
+    assert run_main("build_lineups", small + ["--allow-qb-rb", "--allow-dst-vs", "--json", str(js2)], monkeypatch) == 0
+    allowed = json.load(open(js2))["lineups"]
+    assert len(allowed) == 20 and sum(_ledger_counts(allowed, b)) > 0      # the old build does produce them on this slate
+    import build_lineups
+    a = build_lineups.parse_args(["--contest", "cash"])
+    assert not a.no_qb_rb and not a.no_dst_vs
+    g = build_lineups.parse_args(["--contest", "gpp", "--allow-dst-vs"])
+    assert g.no_qb_rb and not g.no_dst_vs
+
+
 def test_build_gpp_sabersim_setup_runs(db, monkeypatch, tmp_path):
     ss, _ = ext_flags(db, monkeypatch, tmp_path, "sabersim")
     js = tmp_path / "g.json"
